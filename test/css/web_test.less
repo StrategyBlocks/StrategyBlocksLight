@@ -1,0 +1,70 @@
+@import "elements";
+
+
+
+.full_size 		{	margin:0;	padding:0 	}
+.full_page 		{	height: 100%;	width: 100%; 	.full_size; 	overflow:hidden; }
+.centered 		{	margin-left:auto;	margin-right:auto;	}
+.clear 			{	clear:both;	}
+
+.padding_x(@padding: 5px) {
+	padding-left:@padding;
+	padding-right:@padding;	
+}
+.padding_y(@padding: 5px) {
+	padding-left:@padding;
+	padding-right:@padding;	
+}
+
+.font_normal 	{
+	font-family: "myriad-pro-n4", "myriad-pro", Arial, sans-serif;
+	font-weight: 400;
+}
+.font_bold 		{
+	font-family: "myriad-pro-n7", "myriad-pro", Arial, sans-serif;
+	font-weight: 700;
+}	
+
+	
+* 		{ 	.full_size; .font_normal; }
+
+html,
+body 	{	.full_page;	}
+
+
+h1,h2,h3 {	.font_bold; }
+
+.page 			{	display: none; .full_page; 	}
+.page.selected 	{	display: block; }	
+
+
+#blocksPage 	{ 	.gradient(#ddd,#48f,#ddd); }
+#loginPage 		{ 	.gradient(#ddd,#0f0,#ddd); }
+#welcomePage 	{ 	.gradient(#ddd,#f00,#ddd); }
+
+
+form > div  {
+	.centered;
+	width:350px;
+	margin-top:60px;
+	p {
+		display:block;
+		height:30px;
+		padding-top:20px;
+		label {		.font_bold; width:85px; display:block; float:left; line-height:20px;margin-top:5px; text-align:right;	}
+		input {		width:195px; margin-left:10px; float:right; height:20px;  .padding_x;	}	
+	}
+	p.forgot_password {
+		height:20px;
+		padding-top:0px;
+		text-align:right;
+		.font_bold;	
+	}
+	.signin-button {
+		width:80px;
+		display:block;
+		float:left;
+		margin-right:20px;
+	}	
+	
+}
