@@ -6,6 +6,18 @@ This is a work in progress. The code is currently being used by the StrategyBloc
 
 There is no official support for this library at the moment, but feel free to raise issues and ask questions. I'll try to respond as soon as possible. 
 
+
+### Usage
+
+The built / optimized library is in the src/scripts/bin folder as sb_light.<version>.js
+
+
+### Build
+
+Install nodejs. 
+Install requirejs node package: npm install requirejs
+Build: r.js -o build.js
+
 ### Examples
 
 **Node.js**

@@ -28,13 +28,7 @@ var CREATE_WEBSERVER = true;			// Creates a simple webserver to serve the conten
 
 		Your custom client code would be stored in the "src" folder and the "sb_proxy" object handles all non-"src" requests by 
 */	
-var sb_proxy = new httpProxy.HttpProxy({
-	target: {
-		host:SB_HOST,
-		port:SB_PORT,
-		https:SB_HTTPS
-	}
-});
+
 
 var local_proxy = new httpProxy.HttpProxy({
 	target: {
@@ -45,17 +39,29 @@ var local_proxy = new httpProxy.HttpProxy({
 
 
 
-http.createServer(function(req,res,proxy) {
-	console.log(req.url);
+var server = http.createServer(function(req,res,proxy) {
 	if(req.url.match(/^\/(test|src)/) === null) {
 		console.log("Proxy to SB: ");
+		var sb_proxy = new httpProxy.HttpProxy({
+			target: {
+				host:SB_HOST,
+				port:SB_PORT,
+				https:SB_HTTPS,
+				buffer:httpProxy.buffer(req)
+			}
+		});
 		sb_proxy.proxyRequest(req,res);
 	} else {
 		console.log("Proxy to: localhost:8889");
 		local_proxy.proxyRequest(req,res);
 	}
-}).listen(PROXY_PORT);
 
+
+});
+
+
+
+server.listen(PROXY_PORT);
 
 if(CREATE_WEBSERVER) {
 	var local = connect.createServer(

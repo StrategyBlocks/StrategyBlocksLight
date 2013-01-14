@@ -5,11 +5,18 @@ var superAgent = require("superagent");
 
 
 requirejs.config({
-	nodeRequire: require
+	nodeRequire: require,
+	baseUrl:"../src/scripts",
+	paths: {
+		"sb_light": "bin/sb_light.0.0.1"
+	}
 });
 
 
-requirejs(['../src/scripts/sb'], function(sb) {
+//requirejs(["./bin/sb_light.0.0.1"], function(sb) { console.log("SB_BIN", sb?sb.state.host:"null"); });
+
+requirejs(['sb_light'], function(sb) {
+
 
 	program.version('0.0.1')
 		.option('-u, --release [version string]', 'Release Number', '0.0.1')

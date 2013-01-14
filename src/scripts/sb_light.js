@@ -38,5 +38,8 @@ define([
 
 	state.host = "http://demo.strategyblocks.com";
 
+	console.log("Loaded SB: ", globals.state.host);
+
+
 	return globals;
 });
