@@ -4,6 +4,6 @@
 .project
 src/scripts/isv/**
 isv/**
-
+lib/*.js
 
 
