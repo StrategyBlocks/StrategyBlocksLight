@@ -32,7 +32,13 @@ function optimize() {
         	sb:"sb_light"
     	},
     	out: (base+"/bin/sb_light."+version+".js"),
-    	optimize:"uglify2"
+    	optimize:"uglify2",
+
+		wrap:true,
+
+//   		onBuildWrite: function(moduleName, path,contents) {
+//	       return "\n\n /**\n * @version " + version + "\n */\n" + contents; 
+ //  	 	}
 	};
 
 	var config_commonjs = {
@@ -45,7 +51,8 @@ function optimize() {
     	wrap:true,
    		onBuildWrite: function(moduleName, path,contents) {
 			//we no longer need requirejs when using this, but we need to export the global class for commonjs / nodejs purposes.
-	        return contents + '\n\n ;module.exports = sb_light.require("sb_light");\n\n'; 
+	        //return "\n\n /**\n * @version " + version + "\n */\n" + contents + '\n\n ;module.exports = sb_light.require("sb_light");\n\n'; 
+	        return  contents + '\n\n ;module.exports = sb_light.require("sb_light");\n\n'; 
    	 	}
 	};	
 	
