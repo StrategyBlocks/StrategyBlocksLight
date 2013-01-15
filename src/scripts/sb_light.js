@@ -5,6 +5,7 @@ define([
 	'./globals',
 	'./utils/ext',	
 	'./utils/consts',
+	'./utils/Class',
 	'./models',		
 	'./controller',
 	'./api/state',	
@@ -16,6 +17,7 @@ define([
 	globals,
 	ext,	
 	consts,	 
+	Class,	 
 	models,	
 	controller,
 	state,	
@@ -35,6 +37,7 @@ define([
 	globals.urls = urls;	 
 	globals.api = api;	 
 	globals.ajax = ajax; 
+	globals.Class = Class;
 
 	state.host = "http://demo.strategyblocks.com";
 

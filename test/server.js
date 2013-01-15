@@ -40,8 +40,8 @@ var local_proxy = new httpProxy.HttpProxy({
 
 
 var server = http.createServer(function(req,res,proxy) {
-	if(req.url.match(/^\/(test|src)/) === null) {
-		console.log("Proxy to SB: ");
+	if(req.url.match(/^\/(test|src|isv|bin)/) === null) {
+		console.log("Proxy to SB: ",req.url);
 		var sb_proxy = new httpProxy.HttpProxy({
 			target: {
 				host:SB_HOST,
@@ -52,7 +52,7 @@ var server = http.createServer(function(req,res,proxy) {
 		});
 		sb_proxy.proxyRequest(req,res);
 	} else {
-		console.log("Proxy to: localhost:8889");
+		console.log("Proxy to: localhost:8889", req.url);
 		local_proxy.proxyRequest(req,res);
 	}
 
@@ -64,8 +64,9 @@ var server = http.createServer(function(req,res,proxy) {
 server.listen(PROXY_PORT);
 
 if(CREATE_WEBSERVER) {
+	console.log("DIRNAME: ", __dirname);
 	var local = connect.createServer(
-					connect.static(__dirname)
+					connect.static(__dirname+"/..")
 				).listen(LOCAL_PORT);
 }
 

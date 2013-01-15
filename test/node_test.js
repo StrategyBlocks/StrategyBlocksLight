@@ -4,11 +4,13 @@ var tty = require('tty');
 var superAgent = require("superagent");
 
 
+var base  = __dirname + "/..";
+
 requirejs.config({
 	nodeRequire: require,
-	baseUrl:"../src/scripts",
+	baseUrl:base,
 	paths: {
-		"sb_light": "bin/sb_light.0.0.1"
+		"sb_light": "./bin/sb_light.min"
 	}
 });
 
