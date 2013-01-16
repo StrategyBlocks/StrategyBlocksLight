@@ -159,7 +159,7 @@ define(['../globals'], function(sb) {
 		params = params || {};
 		var s = urlObj.url;
 		for (var p in params) {
-			s = s.replace(this._regExpr(p), params[p]);
+			s = s.replace(_regExpr(p), params[p]);
 		}
 		if(s.indexOf("%") > -1) {
 			throw new Error( "Bad url." + s);
