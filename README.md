@@ -15,27 +15,56 @@ The files are also copied to the root folder using version-less files so that th
 
 ### Build
 
-Install nodejs. 
-Install requirejs node package: npm install requirejs
-Build: node build.js
+ - Install nodejs. 
+ - Install requirejs node package: npm install requirejs
+ - Build: node build/build.js
 
-### Examples
+ 
+ 
+### Examples/Tests
 
-**Node.js**
-This framework supports nodejs (http://nodejs.org/) and an example is provides in the test folder. 
+All tests require an active account with StrategyBlocks. (30-day trials are available).
+All tests do basically the same thing: check the server, prompt for login credentials, and fetch the blocks.
+The node tests simply exit. The web_test.html changes the page type. Red is "unknown" state, green is the login page, and the blue page will notify you when the blocks have been fetched. 
 
-`node node_test.js` will prompt for authentication and fetch the blocks from the server. 
+They're pretty crude tests at the moment, but they handle a lot of the basic setup type things that you'll need when creating your own apps. 
+
+**Pure Node (no requirejs)**
+
+ - Install nodejs.
+ - npm install commander
+ - npm install superagent
+ - npm install prompt
+ - node test/node_test.js
+
+** Nodejs + Requirejs **
+
+ - Install nodejs.
+ - npm install requirejs
+ - npm install commander
+ - npm install superagent
+ - npm install prompt
 
 
-**Web Browser**
-You can run this framework in the browser as well, but the test package provides some tools to make 3rd party-client development a bit easier on the browser. 
+** Web Browser Test **
 
-The file `web_test.html` requires several components to run properly:
+The tests folder has a nodejs proxy server. (server.js). Run this, and then connect to your localhost:8888.
 
-1. The "connect" and "http-proxy" packages for nodejs. 
-2. A valid account on a StrategyBlocks server. 
-3. 3rd party libraries for the src/scripts/isv folder. Currently required are: "less" (less-1.3.1.min.js), require.js, and jquery (jquery-1.8.3.min.js).
-4. If your browser doesn't support JSON, you also need to include the json2.js library. 
-5. Any changes to the ISV files (version/name changes, additional files) need to be made in web_test.html. See the example "require" statement for how this works. Also see the requirejs documentation. 
+To run the server, you need:
 
+ - nodejs
+ - npm install connect 
+ - npm install http-proxy
 
+The server will proxy all the StrategyBlocks requests to the server listed in server.js, and fetch all other files from the local machine 
+(any file located in "test,src,lib, or bin" folders).
+
+The test file is located at: http://localhost:8888/test/web_test.js
+
+You also need:
+
+ - requirejs (http://requirejs.org/docs/release/2.1.2/minified/require.js)
+ - jquery (http://code.jquery.com/jquery-1.8.3.min.js)
+ - less (https://raw.github.com/cloudhead/less.js/master/dist/less-1.3.3.min.js)
+
+(If any of the versions change, just update test/web_test.html)
