@@ -6,4 +6,4 @@ src/scripts/isv/**
 isv/**
 lib/*.js
 
-
+node_modules/**
