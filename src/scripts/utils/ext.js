@@ -79,13 +79,13 @@ define(['../globals'], function(sb) {
 	};
 	
 		/************  DATES ***************************/
-	ext.parseDate = function(d) { return moment(d).toDate();	};
-	ext.daysDiff = function(da, db) {return moment(db).diff(moment(da),"days")};
+	ext.parseDate = function(d) { return sb.moment(d).toDate();	};
+	ext.daysDiff = function(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
 	ext.today = function() { return new Date(); };
 	ext.minDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
 	ext.maxDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate).last()); };
-	ext.serverDate = function(d) { return moment(d).format("YYYY/MM/DD"); };
-	ext.userDate = function(d) { return moment(d).format("dddd, DD MMMM YYYY"); };
+	ext.serverDate = function(d) { return sb.moment(d).format("YYYY/MM/DD"); };
+	ext.userDate = function(d) { return sb.moment(d).format("dddd, DD MMMM YYYY"); };
 	
 		/************  REGEXPS ***************************/
 	ext.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");

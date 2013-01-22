@@ -24,9 +24,10 @@ define(['../globals'], function(sb) {
 	};};
 
 
-	ajax.node = function() {  return function(opts) {
-		var _req = opts.type == "POST" ? sb.requestAgent.post(opts.url).send(opts.data) :
-										sb.requestAgent.get(opts.url).query(opts.data);
+	ajax.node = function(requestAgent) {  return function(opts) {
+		sb.ext.debug("Request Agent: ", requestAgent);
+		var _req = opts.type == "POST" ? requestAgent.post(opts.url).send(opts.data) :
+										requestAgent.get(opts.url).query(opts.data);
 		
 		_req.set("Accept", "application/json")
 			.end(function(res) {

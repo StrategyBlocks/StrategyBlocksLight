@@ -1,9 +1,23 @@
+var requirejs = require('requirejs');
 var program = require('commander');
 var tty = require('tty');
 var superAgent = require("superagent");
-var sb = require("../bin/sb_light_commonjs.uncompressed");
+
 
 var base  = __dirname + "/..";
+
+requirejs.config({
+	nodeRequire: require,
+	baseUrl:base,
+	paths: {
+		"sb_light": "./bin/sb_light.uncompressed"
+	}
+});
+
+
+//requirejs(["./bin/sb_light.0.0.1"], function(sb) { console.log("SB_BIN", sb?sb.state.host:"null"); });
+
+requirejs(['sb_light'], function(sb) {
 
 
 	program.version('0.0.1')
@@ -56,17 +70,12 @@ var base  = __dirname + "/..";
 		});
 	}
 
+	console.log("SB_MOMENT: ", moment);
+
 	sb.state.host = "https://app.strategyblocks.com";	
-
-	console.log("SB_MOMENT: ", sb.moment);
-
-
-	
 	sb.api.ajax = sb.ajax.node(superAgent.agent());
+	
 	sb.state.subscribe("session", handleSession);
 	//sb.model.subscribe("blocks", handleBlocks);
 	sb.state.login();
-
-
-
-
+});

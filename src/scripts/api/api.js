@@ -27,8 +27,11 @@ define(['../globals'], function(sb) {
 	
 	function _request (url, params, post, success, failure) {
 		sb.ext.debug("Sending request to ", url, JSON.stringify(params));
+		if(!api.ajax) {
+			throw "Error: sb.api.ajax has not been inititalized. Please set this value to one of the functions available in sb.ajax";
+		}
 		sb.state.addTimestamps(params || {});
-		sb.AJAX({
+		api.ajax({
 			url: url,
 			type: (post ? "POST" : "GET"),
 			data:params,
@@ -70,10 +73,7 @@ define(['../globals'], function(sb) {
 	
 	function _failure (reqArray, data) {
 		sb.ext.debug("FAILURE SB_Api", JSON.stringify(data));
-		
-		var args = ([1000]).concat(reqArray);
-		
-		api.request.bindDelay.apply(null, args);
+		sb.state.value("session", sb.state.session_disconnected);
 	}
 	
 	function _pushQueue (data) {

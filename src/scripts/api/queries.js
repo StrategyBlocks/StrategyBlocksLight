@@ -304,10 +304,10 @@ define(['../globals'], function(sb) {
 	// 4. Block cannot END after its parent unless that parent it floating
 	q.dateRange = function(b) {
 		var dates = {
-			minStart: moment(new Date(1980,1,1)),	
-			maxStart: moment(new Date(2038,12,31)),	
-			minEnd: moment(new Date(1980,1,1)),	
-			maxEnd: moment(new Date(2038,12,31))	
+			minStart: sb.moment(new Date(1980,1,1)),	
+			maxStart: sb.moment(new Date(2038,12,31)),	
+			minEnd: sb.moment(new Date(1980,1,1)),	
+			maxEnd: sb.moment(new Date(2038,12,31))	
 		};
 		
 		var p = q.block(b.default_parent);

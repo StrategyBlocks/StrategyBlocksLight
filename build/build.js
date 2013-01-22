@@ -14,9 +14,12 @@ var config = {
    	name:"sb_light",
    	baseUrl: (base+"/src/scripts"),
    	paths: {
-       	sb:"sb_light"
+       	sb:"sb_light",
+		moment:"lib/moment"
    	},
-   	optimize:"none"
+   	optimize:"none",
+	cjsTranslate: false,
+	skipModuleInsertion:true
 };
 
 var config_commonjs = {
@@ -25,15 +28,22 @@ var config_commonjs = {
    	include: "sb_light",
    	optimize:"none",
    	namespace:"sb_light",
+	paths: {
+		moment: "lib/moment"
+	},
    	wrap:true,
 	onBuildWrite: function(moduleName, path,contents) {
-		if(moduleName == "sb_light") {
-			console.log("OnBuild sb_light");
-			return contents + "\n\n module.exports = require('sb_light');\n\n";
-		} else {
-			return contents;
+		var expName = moduleName.split("/");
+		expName = expName[expName.length-1];
+		if(!expName.match(/(almond)/)) {
+			return contents + "\n\n exports."+ expName + " = require('" + moduleName + "');\n\n";
 		}
-	}
+		return contents;
+	},
+	cjsTranslate: true,
+	
+	skipModuleInsertion:true
+	
 };
 
 var types = [

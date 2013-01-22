@@ -29,6 +29,11 @@ var CREATE_WEBSERVER = true;			// Creates a simple webserver to serve the conten
 		Your custom client code would be stored in the "src" folder and the "sb_proxy" object handles all non-"src" requests by 
 */	
 
+console.log("SB HOST: ", SB_HOST);
+console.log("SB PORT: ", SB_PORT);
+console.log("SB HTTPS: ", SB_HTTPS);
+
+
 
 var local_proxy = new httpProxy.HttpProxy({
 	target: {

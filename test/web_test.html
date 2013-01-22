@@ -57,6 +57,9 @@
 						console.log("EL: ", el);
 						if(el.id == p) { 
 							$(el).addClass("selected");
+							if(p == "blocksPage") {
+								$(el).append("<h1>Blocks Fetched: " + moment().fromNow() + "</h1>");
+							}
 						} else {
 							$(el).removeClass("selected");
 						}
@@ -64,7 +67,7 @@
 				}
 				console.log(sb);	
 				sb.state.host = window.location.host;
-				sb.AJAX = sb.ajax.jquery();
+				sb.api.ajax = sb.ajax.jquery();
 				sb.jquery = window.jQuery; //jQuery
 				
 				sb.state.subscribe("session", handleSession);

@@ -145,6 +145,9 @@ define(['../globals'], function(sb) {
 	state.invalid = function() {	return  _state.session == state.session_invalid;	};
 	//has user/company
 	state.authorized = function() {	return _state.session == state.session_normal || _state.session == state.session_payment; };	
+
+	//failed server response
+	state.disconnected = function() { return _state.session == state.session_disconnected; };
 	
 	//returns true / false depending on whether the response session is valid
 	state.update = function(data) {
@@ -154,10 +157,6 @@ define(['../globals'], function(sb) {
 		return state.authorized();
 	};
 	
-	state.setDisconnected = function() {
-		_state.session = state.session_disconnected;
-		state.publish.bindDelay(state, 50, "session");
-	};
 	
 	//setter/getter
 	//supports "State.value()" to determine the current session state

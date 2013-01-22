@@ -3,6 +3,7 @@
 
 define([
 	'./globals',
+	'moment',		//needs to be mapped properly in the requirejs config
 	'./utils/ext',	
 	'./utils/consts',
 	'./utils/Class',
@@ -15,6 +16,7 @@ define([
 	'./api/ajax'
 ], function(
 	globals,
+	moment,
 	ext,	
 	consts,	 
 	Class,	 
@@ -28,6 +30,7 @@ define([
 ) {
 	//globals.version = "0.0.1";
 	
+	globals.moment = moment;
 	globals.ext = ext;
 	globals.consts = consts;
 	globals.models = models;
@@ -39,9 +42,9 @@ define([
 	globals.ajax = ajax; 
 	globals.Class = Class;
 
-	state.host = "http://demo.strategyblocks.com";
+	state.host = "https://app.strategyblocks.com";
 
-	console.log("Loaded SB: ", globals.state.host);
+	globals.ext.debug("Loaded SB: ", globals.state.host);
 
 
 	return globals;
