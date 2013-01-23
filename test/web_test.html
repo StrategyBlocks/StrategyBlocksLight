@@ -67,8 +67,7 @@
 				}
 				console.log(sb);	
 				sb.state.host = window.location.host;
-				sb.api.ajax = sb.ajax.jquery();
-				sb.jquery = window.jQuery; //jQuery
+				sb.api.ajax = sb.ajax.jquery($);
 				
 				sb.state.subscribe("session", handleSession);
 				//sb.model.subscribe("blocks", handleBlocks);

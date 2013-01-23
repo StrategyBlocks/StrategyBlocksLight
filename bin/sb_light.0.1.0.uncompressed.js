@@ -3903,13 +3903,13 @@ define('api/ajax',['../globals'], function(sb) {
 
 
 
-	ajax.jquery = function() { return function(opts) {
+	ajax.jquery = function(jquery) { return function(opts) {
 		//strip the host part of the url. Make this request server relative.  
 		opts.url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
 		sb.ext.debug("jquery", opts.type, opts.url);
 		
 
-		sb.jquery.ajax({
+		jquery.ajax({
 			type: 		opts.type,
 			url: 		opts.url,
 			data:		opts.data,
