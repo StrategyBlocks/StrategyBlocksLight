@@ -2,7 +2,7 @@
 
 
 define(['../globals'], function(sb) {
-	console.log("ext", sb.version);
+	//console.log("ext", sb.version);
 	var ext = {};
 
 
@@ -18,6 +18,7 @@ define(['../globals'], function(sb) {
 	};
 	
 	ext.debug = function() {
+		if(!sb.debug) { return; }
 		var str = ([(new Date()).toTimeString()]).concat(ext.slice(arguments)).join(" ");
 		if(ext.ti()) {
 			Ti.API.debug(str);

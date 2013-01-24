@@ -1,7 +1,7 @@
 
 
 define(['../globals'], function(sb) {
-	console.log("urls", sb.version);
+	//console.log("urls", sb.version);
 	var _regExprs = {};
 
 	var urls = {

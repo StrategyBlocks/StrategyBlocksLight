@@ -1,14 +1,21 @@
 
 define(['../globals'], function(sb) {
-	console.log("State:",sb.version);
-	var state = {
-		session_unknown: 0,
-		session_normal: 1,
-		session_payment:  2,
-		session_invalid: 3,
-		session_disconnected: 4	
-	};
-		
+	//console.log("State:",sb.version);
+	
+	var state = {};
+	
+	state.stateKeys = [ 
+		"session_unknown", 
+		"session_normal", 
+		"session_payment", 
+		"session_invalid", 
+		"session_disconnected"
+	];
+	//create a map
+	state.stateKeys.reduce(function(prev,el,i) {
+		prev[el] = i;
+		return prev;
+	}, state);
 
 	var _state = {
 		page:"",
@@ -23,7 +30,7 @@ define(['../globals'], function(sb) {
 		company: null,
 		user: null,
 		
-		session: 0,
+		session: state.session_unknown,
 		url:"",
 
 		
@@ -207,7 +214,7 @@ define(['../globals'], function(sb) {
 	};
 	
 	state.subscribe = function(type, cb) {
-		console.log(sb.version);
+		//console.log(sb.version);
 		sb.ext.debug("subscribing to: ", type);
 		state.subscriptions[type] = state.subscriptions[type] || [];
 		

@@ -29,6 +29,7 @@ define([
 	ajax
 ) {
 	//globals.version = "0.0.1";
+	globals.debug = true;
 	
 	globals.moment = moment;
 	globals.ext = ext;
@@ -41,6 +42,7 @@ define([
 	globals.api = api;	 
 	globals.ajax = ajax; 
 	globals.Class = Class;
+	
 
 	state.host = "https://app.strategyblocks.com";
 
