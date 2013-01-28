@@ -1296,6 +1296,16 @@ define('utils/ext',['../globals'], function(sb) {
 		}
 		return 0;
 	};
+	//takes a list of objects and a key property and converts the array to a hash map
+	ext.toObject= function(list, key) {
+		return list.reduce(function(prev, el) {
+			return prev[el[key]] = el;
+		}, {});
+	}	
+	//takes a list of objects and a key property and converts the array to a hash map
+	ext.values= function(map) {
+		return ext.map(map, function(el) { return el; });
+	}	
 	
 		/************  TYPES ***************************/
 	ext.isArray = function(obj) {
@@ -1308,6 +1318,17 @@ define('utils/ext',['../globals'], function(sb) {
 		/************  STRINGS  ***************************/
 	ext.capitalize = function(s) {
 		return s.charAt(0).toUpperCase() + s.slice(1);
+	};
+	
+	
+	ext.replace = function(src, obj) {
+		var s = src;
+		ext.each(obj, function(v,k) {
+			var r = new RegExp("%"+k.toUpperCase()+"%")
+			s = s.replace(r, v);
+		});
+		return s;
+	
 	};
 	
 		/************  DATES ***************************/
@@ -2728,8 +2749,8 @@ define('controller',['./globals'], function(sb) {
 				}
 			}
 		}
-		
-		sb.api.request(url, params, urlObj.post || true, successCb, errorCb, stateCheck||null);
+		var post = typeof urlObj.post === "undefined" || urlObj.post || false;
+		sb.api.request(url, params, post, successCb, errorCb, stateCheck||null);
 	};
 	
 	
@@ -3822,7 +3843,7 @@ define('api/api',['../globals'], function(sb) {
 	};
 	
 	function _request (url, params, post, success, failure) {
-		sb.ext.debug("Sending request to ", url, JSON.stringify(params));
+		sb.ext.debug("Sending request to ", url, post, JSON.stringify(params));
 		if(!api.ajax) {
 			throw "Error: sb.api.ajax has not been inititalized. Please set this value to one of the functions available in sb.ajax";
 		}

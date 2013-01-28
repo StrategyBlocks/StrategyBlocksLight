@@ -26,7 +26,7 @@ define(['../globals'], function(sb) {
 	};
 	
 	function _request (url, params, post, success, failure) {
-		sb.ext.debug("Sending request to ", url, JSON.stringify(params));
+		sb.ext.debug("Sending request to ", url, post, JSON.stringify(params));
 		if(!api.ajax) {
 			throw "Error: sb.api.ajax has not been inititalized. Please set this value to one of the functions available in sb.ajax";
 		}

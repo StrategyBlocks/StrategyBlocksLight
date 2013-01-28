@@ -65,6 +65,16 @@ define(['../globals'], function(sb) {
 		}
 		return 0;
 	};
+	//takes a list of objects and a key property and converts the array to a hash map
+	ext.toObject= function(list, key) {
+		return list.reduce(function(prev, el) {
+			return prev[el[key]] = el;
+		}, {});
+	}	
+	//takes a list of objects and a key property and converts the array to a hash map
+	ext.values= function(map) {
+		return ext.map(map, function(el) { return el; });
+	}	
 	
 		/************  TYPES ***************************/
 	ext.isArray = function(obj) {
@@ -77,6 +87,17 @@ define(['../globals'], function(sb) {
 		/************  STRINGS  ***************************/
 	ext.capitalize = function(s) {
 		return s.charAt(0).toUpperCase() + s.slice(1);
+	};
+	
+	
+	ext.replace = function(src, obj) {
+		var s = src;
+		ext.each(obj, function(v,k) {
+			var r = new RegExp("%"+k.toUpperCase()+"%")
+			s = s.replace(r, v);
+		});
+		return s;
+	
 	};
 	
 		/************  DATES ***************************/

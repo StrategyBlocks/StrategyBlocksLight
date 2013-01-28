@@ -26,8 +26,8 @@ define(['./globals'], function(sb) {
 				}
 			}
 		}
-		
-		sb.api.request(url, params, urlObj.post || true, successCb, errorCb, stateCheck||null);
+		var post = typeof urlObj.post === "undefined" || urlObj.post || false;
+		sb.api.request(url, params, post, successCb, errorCb, stateCheck||null);
 	};
 	
 	
