@@ -27,6 +27,8 @@ define(['../globals'], function(sb) {
 		}
 	};
 	
+	//check is Titanium framework exists. probably shouldn't be needed any longer
+	//TODO: investigate removal
 	ext.ti = function() {
 		return typeof Ti !== "undefined";	
 	};
@@ -71,7 +73,7 @@ define(['../globals'], function(sb) {
 			return prev[el[key]] = el;
 		}, {});
 	}	
-	//takes a list of objects and a key property and converts the array to a hash map
+	//takes a hash map and returns an array of values. 
 	ext.values= function(map) {
 		return ext.map(map, function(el) { return el; });
 	}	
@@ -121,9 +123,13 @@ define(['../globals'], function(sb) {
 		return function(a,b) {	return func(a[prop],b[prop]) * (reverse ? -1 : 1);		};
 	},
 	ext.sortTime = function(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
-	ext.sortNumbers = function(a,b){ return a-b; };
+	ext.sortNumber = function(a,b){ return a-b; };
+	ext.sortNumbers = ext.sortNumber;
 	ext.sortDate = function(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias 
+	ext.sortDates = ext.sortDate;
 	ext.sortString = function(a,b){ return a.localeCompare(b); };
+	ext.sortStrings = ext.sortString;
+	ext.sortBool = function(a,b) { return ext.sortNumber(a?1:0, b?1:0); }
 	 
 	ext.sortDateValue = function(a,b) { return ext.sortDate(a.date,b.date); };
 	ext.sortUsers = function(a,b) {  return a.last_name.localeCompare(b.last_name); }
