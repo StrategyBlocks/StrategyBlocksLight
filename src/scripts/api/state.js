@@ -276,6 +276,9 @@ define(['../globals'], function(sb) {
 		}
 		if(state.value("userId") == null) {
 			sb.ext.debug("setting session to unauthorized");
+			if(state.unknown()) {
+				data.flash = {notice:"Please enter your login credentials."};
+			}
 			_state.session =  state.session_invalid;
 		} else {
 			_state.company = data.company;
@@ -292,6 +295,8 @@ define(['../globals'], function(sb) {
 		if(!state.authorized()) {
 			sb.models.reset();
 		}
+		_state.value("flash", data.flash);
+		_state.value("errors", data.errors);
 	}
 	
 	function _updateModels (data) {
