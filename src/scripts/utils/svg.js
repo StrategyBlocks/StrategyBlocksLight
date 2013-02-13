@@ -1,5 +1,5 @@
 
-define('../globals', function(sb) {
+define(['../globals'], function(sb) {
 
 	var svg =  {};
 	
@@ -96,9 +96,13 @@ define('../globals', function(sb) {
 			var nodes = selector.split(" ");
 			nodes.forEach(function(el) {
 				//protect from extra spaces (or invalid elements)
-				if(el && el.length > 0) {
-					var parts = el.split(".");
-					res =res.append(parts.shift()).attr("class", parts.join(" "));
+				if(el && el.length > 0 ) {
+					if( res.select(el).empty()) {
+						var parts = el.split(".");
+						res =res.append(parts.shift()).attr("class", parts.join(" "));
+					} else {
+						res = res.select(el);
+					}
 				}
 			});
 			//only execute when this is being created

@@ -1305,23 +1305,63 @@ define('utils/ext',['../globals'], function(sb) {
 		}, {});
 	}	
 	//takes a hash map and returns an array of values. 
-	ext.values= function(map) {
-		return ext.map(map, function(el) { return el; });
+	ext.values= function(map, keyName) {
+		return ext.map(map, function(el,k) { 
+			if(keyName) { el[keyName] = el[keyName] || k; }
+			return el; 
+		});
 	}	
 	
+	//this only works with objects that contain only native JS object (e.g., Object-derived)
+	//probably won't work very well for system,proprietary, etc.. objects.
+	//converts the entire things to a string, so might have performance issues.
+	ext.deepClone = function(obj) {
+		return JSON.parse(JSON.stringify(obj));
+	}
+	
 		/************  TYPES ***************************/
-	ext.isArray = function(obj) {
-		return obj && (typeof obj.forEach === "function");		
+	ext.isArr = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Array]";
 	};
-	ext.isString = function(obj) {
-		return obj && (typeof obj === "string");		
+	ext.isArray = ext.isArr;
+	
+	ext.isFunc = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Function]";
 	};
+	ext.isFunction = ext.isFunc;
+	
+	ext.isStr = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object String]";
+	};
+	ext.isString = ext.isStr;
+	
+	ext.isBool = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Boolean]";
+	}
+	ext.isBoolean = ext.isBool;
+	
+	ext.isNum = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Number]";
+	}
+	ext.isNumber = ext.isNum;
+	
+	ext.isDate = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Date]";
+	}
+	
+	
+	//helper function that gets executed in the context of the callee.
+	ext._getClass= {}.toString;
+	
 	
 		/************  STRINGS  ***************************/
-	ext.capitalize = function(s) {
-		return s.charAt(0).toUpperCase() + s.slice(1);
+	ext.caps = function(s) {
+		s = ext.isArray(s) ? s : [s];
+		return s.reduce( function(prev,el) {
+			return prev + " " + el.charAt(0).toUpperCase() + el.slice(1);
+		}, "");
 	};
-	
+	ext.capitalize = ext.caps;
 	
 	ext.replace = function(src, obj) {
 		var s = src;
@@ -1339,9 +1379,17 @@ define('utils/ext',['../globals'], function(sb) {
 	ext.today = function() { return new Date(); };
 	ext.minDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
 	ext.maxDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate).last()); };
-	ext.serverDate = function(d) { return sb.moment(d).format("YYYY/MM/DD"); };
-	ext.userDate = function(d) { return sb.moment(d).format("dddd, DD MMMM YYYY"); };
-	
+	ext._serverFormat = "YYYY/MM/DD";
+	ext._userFormat = "dddd, DD MMMM YYYY";
+	ext.serverDate = function(d) { return sb.moment(d).format(ext._serverFormat); };
+	ext.userDate = function(d) { return sb.moment(d).format("dddd, DD MMMM YYYY"); 	};
+	ext.dateFromNow = function(d, format, reverse) { 
+		if(reverse) {
+			return "(" + sb.moment(d).fromNow() + ") " + sb.moment(d).format(format || ext._userFormat);
+		} else {
+			return sb.moment(d).format(format || ext._userFormat) + " (" + sb.moment(d).fromNow() + ")";
+		}
+	};
 		/************  REGEXPS ***************************/
 	ext.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");
 	
@@ -1536,26 +1584,31 @@ define('utils/ext',['../globals'], function(sb) {
 	
 	};
 	
-	ext.mixin = function (/*Object*/ target, /*Object*/ source, ignore){
+	
+	//source gets priority over target
+	//all source properties are applied to target.
+	//  EXCEPT the ones in ignore.
+	//	ignore can be an array of names, or an object with keys. All these key names are skipped from being applied,
+	//	but they will not be removed from target if they exist there. 
+	ext.mixin = function (/*Object*/ target, /*Object*/ source, /*Object or Array*/ ignore ){
 		var empty = ignore || {}; //default template for properties to ignore
 		var name, s, i;
 		for(name in source){
 		    s = source[name];
-		    if(!(name in target) || (target[name] !== s && (!(name in empty) || empty[name] !== s))){
-		        target[name] = s;
-		    }
+			var skip =  ext.isArray(empty) ? (empty.indexOf(name) >= 0) : (name in empty);
+			if(skip) { continue; }
+	        target[name] = s;
 		}
 		return target; // Object
 	};
 	 
 	// Create a new object, combining the properties of the passed objects with the last arguments having
 	// priority over the first ones
-	ext.combine = function(/*Object*/ obj, /*Object...*/ props) {
-	    var newObj = {};
-	    for(var i=0, l=arguments.length; i<l; i++){
-	    	ext.mixin(newObj, arguments[i]);
-	    }
-	    return newObj;
+	ext.combine = function( /*Object or array*/ props, /*object or array*/ ignore) {
+		props = ext.isArray(props) ? props : [props];
+		return props.reduce(function(newObj, v) {
+			return ext.mixin(newObj, v, ignore);
+		},{});
 	};		
 	
 
@@ -1628,6 +1681,8 @@ define('utils/ext',['../globals'], function(sb) {
 		return ([]).concat(this);
 	  }  
 	}  
+	
+
 	
 	
 	
@@ -1947,6 +2002,139 @@ define('utils/ext',['../globals'], function(sb) {
 	
 });
 
+
+define('utils/svg',['../globals'], function(sb) {
+
+	var svg =  {};
+	
+	//given a series of x points and y points, generate a
+	//grid that fits the given dimension
+	//returns an SVG path string
+	svg.gridPath = function(x,y,w,h, xLinesOrStep, yLinesOrStep) {
+		var p = [];
+		var t= this;
+		var xlines = (typeof xLinesOrStep == "number") ? d3.range(x+xLinesOrStep,x+w,xLinesOrStep) : xLinesOrStep;
+		yLinesOrStep = yLinesOrStep || xLinesOrStep;
+		var ylines = (typeof yLinesOrStep == "number") ? d3.range(y+yLinesOrStep,y+h,yLinesOrStep) : yLinesOrStep;
+		
+		xlines.forEach(function(el) {	p.put(t.M(el,y),t.v(h));	});
+		ylines.forEach(function(el) {	p.put(t.M(x, el),t.h(w));	});
+		return p.join("");
+	};
+		
+		
+		//Generate a path definition for a simple popup
+		//pointerType supports 12 types (string): (Default is "TM")
+		// TL, TM, TR: Top positions (left  middle  right)
+		// LT, LM, LB: Left positions (top middle bottom)
+		// BL, BM, BR: Bottom positions (left  middle  right)
+		// RT, RM, RB: Right positions (top middle bottom)
+		
+	svg.popupPath = function(x,y, w,h, pointerType) {
+		var cr = 10;
+		var cr2 = cr*2;
+		var pw = 15; //half pointer width
+		var pw2 = pw*2;
+		var ph = 15; //full pointer height
+		var t = this;
+		
+		pointerType = pointerType || "TM";
+		var path = [];
+		if(pointerType.charAt(0) == "T") {
+			path.put(t.M(x+cr,y));
+			switch(pointerType.charAt(1)) {
+				case "L": path.put(t.l(pw,-ph),t.l(pw,ph), t.h(w-pw2-cr2)); 	break;
+				case "M": path.put(t.h( (w-cr2-pw2)/2), t.l(pw,-ph),t.l(pw,ph), t.h((w-cr2-pw2)/2 )); 	break;
+				case "R": path.put(t.h(w-pw2-cr2), t.l(pw,-ph),t.l(pw,ph)); 	break;
+			}
+			
+			path.put(	t.q(cr,0,cr,cr),		t.v(h-cr2));
+			path.put(	t.q(0,cr,-cr, cr),		t.h(cr2-w));
+			path.put(	t.q(-cr,0,-cr,-cr),		t.v(cr2-h));
+			path.put(	t.q(0,-cr,cr,-cr));
+		} else if(pointerType.charAt(0) == "R") {
+			
+		} else if(pointerType.charAt(0) == "B") {
+		} else if(pointerType.charAt(0) == "L") {
+		}
+		
+		return path.join("");
+	};
+		
+	svg.transform = function(o) { 
+		var t = [];
+		
+		if(o.r) { t.put(this.rotate.apply(this,o.r)); }
+		if(o.s) { t.put(this.scale.apply(this,o.s)); }
+		if(o.t) { t.put(this.translate.apply(this, o.t)); }
+		return t.join(" "); 
+	};
+	
+	svg.translate = 	function(x,y) { return (isNaN(y) ? ["translate(",x,")"] : ["translate(",x,", ",y,")"]).join("");  };
+	svg.scale =  		function(x,y) { return (isNaN(y) ? ["scale(",x,")"] : ["scale(",x,", ",y,")"]).join(""); };
+	svg.rotate =	 	function(x) { return "rotate("+x+")"; };
+	svg.viewBox = 		function(x,y,w,h) { return [x,y,w,h].join(" "); };
+	svg.l =				function(x,y) { return ["l",x,this._sep,y].join(""); };
+	svg.L = 			function(x,y) { return ["L",x,this._sep,y].join(""); };
+	svg.m =				function(x,y) { return ["m",x,this._sep,y].join(""); };
+	svg.M =				function(x,y) { return ["M",x,this._sep,y].join(""); };
+	svg.h = 			function(d) { return ["h",d].join(""); };
+	svg.H =				function(d) { return ["H",d].join(""); };
+	svg.v =				function(d) { return ["v",d].join(""); };
+	svg.V = 			function(d) { return ["V",d].join(""); };
+	svg.q = 			function(cx,cy,x,y) { var s= this._sep; return ["q",cx,s,cy,s,x,s,y].join(""); };
+	svg.Q =				function(cx,cy,x,y) { var s= this._sep; return ["Q",cx,s,cy,s,x,s,y].join(""); };
+		
+		
+		//utils for d3
+		
+		//takes "x.foo y.bar.stuff" and appends the nodes, returning the last node created (y) so we get
+		//  src > x[class=foo] > y[class=bar stuff]
+		// "src" needs to be a d3 object
+		// "selector" needs to be a string
+		// "func" takes the element to be returned and applies custom creation logic to it. 
+	svg.append =  function(src, selector, func) {
+		var res = src.select(selector);
+		if(res.empty()) {
+			res = src;
+			var nodes = selector.split(" ");
+			nodes.forEach(function(el) {
+				//protect from extra spaces (or invalid elements)
+				if(el && el.length > 0 ) {
+					if( res.select(el).empty()) {
+						var parts = el.split(".");
+						res =res.append(parts.shift()).attr("class", parts.join(" "));
+					} else {
+						res = res.select(el);
+					}
+				}
+			});
+			//only execute when this is being created
+			if(func != null) {
+				func(res);
+			}
+		}
+		return res;
+	};
+		
+		//takes "x.foo y.bar.stuff" and removes only y.var.stuff
+	svg.remove = function(src, selector) {
+		var el = src.select(selector);
+		if(!el.empty()) {
+			el.remove();
+		}
+	};
+		
+		//selection comes last so you can bind the function with args first, then use it in the d3 selection "call"
+		//e.g., svg.selectAll("rect").call(sb.svg.dims.bind(null, 0,0,100,100));
+	svg.dims = function(x,y,w,h, selection) {
+		selection.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
+		return selection;
+	};
+
+	return svg;
+	
+});
 
 
 define('utils/consts',['../globals'], function(sb) {
@@ -3062,6 +3250,9 @@ define('api/state',['../globals'], function(sb) {
 		}
 		if(state.value("userId") == null) {
 			sb.ext.debug("setting session to unauthorized");
+			if(state.unknown()) {
+				data.flash = {notice:"Please enter your login credentials."};
+			}
 			_state.session =  state.session_invalid;
 		} else {
 			_state.company = data.company;
@@ -3078,6 +3269,8 @@ define('api/state',['../globals'], function(sb) {
 		if(!state.authorized()) {
 			sb.models.reset();
 		}
+		state.value("flash", data.flash);
+		state.value("errors", data.errors);
 	}
 	
 	function _updateModels (data) {
@@ -4080,6 +4273,7 @@ define('sb_light',[
 	'./globals',
 	'moment',		//needs to be mapped properly in the requirejs config
 	'./utils/ext',	
+	'./utils/svg',	
 	'./utils/consts',
 	'./utils/Class',
 	'./models',		
@@ -4093,6 +4287,7 @@ define('sb_light',[
 	globals,
 	moment,
 	ext,	
+	svg,
 	consts,	 
 	Class,	 
 	models,	
@@ -4108,6 +4303,7 @@ define('sb_light',[
 	
 	globals.moment = moment;
 	globals.ext = ext;
+	globals.svg = svg;
 	globals.consts = consts;
 	globals.models = models;
 	globals.controller = controller;

@@ -295,8 +295,8 @@ define(['../globals'], function(sb) {
 		if(!state.authorized()) {
 			sb.models.reset();
 		}
-		_state.value("flash", data.flash);
-		_state.value("errors", data.errors);
+		state.value("flash", data.flash);
+		state.value("errors", data.errors);
 	}
 	
 	function _updateModels (data) {

@@ -5,6 +5,7 @@ define([
 	'./globals',
 	'moment',		//needs to be mapped properly in the requirejs config
 	'./utils/ext',	
+	'./utils/svg',	
 	'./utils/consts',
 	'./utils/Class',
 	'./models',		
@@ -18,6 +19,7 @@ define([
 	globals,
 	moment,
 	ext,	
+	svg,
 	consts,	 
 	Class,	 
 	models,	
@@ -33,6 +35,7 @@ define([
 	
 	globals.moment = moment;
 	globals.ext = ext;
+	globals.svg = svg;
 	globals.consts = consts;
 	globals.models = models;
 	globals.controller = controller;

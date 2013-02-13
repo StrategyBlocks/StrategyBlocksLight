@@ -74,23 +74,63 @@ define(['../globals'], function(sb) {
 		}, {});
 	}	
 	//takes a hash map and returns an array of values. 
-	ext.values= function(map) {
-		return ext.map(map, function(el) { return el; });
+	ext.values= function(map, keyName) {
+		return ext.map(map, function(el,k) { 
+			if(keyName) { el[keyName] = el[keyName] || k; }
+			return el; 
+		});
 	}	
 	
+	//this only works with objects that contain only native JS object (e.g., Object-derived)
+	//probably won't work very well for system,proprietary, etc.. objects.
+	//converts the entire things to a string, so might have performance issues.
+	ext.deepClone = function(obj) {
+		return JSON.parse(JSON.stringify(obj));
+	}
+	
 		/************  TYPES ***************************/
-	ext.isArray = function(obj) {
-		return obj && (typeof obj.forEach === "function");		
+	ext.isArr = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Array]";
 	};
-	ext.isString = function(obj) {
-		return obj && (typeof obj === "string");		
+	ext.isArray = ext.isArr;
+	
+	ext.isFunc = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Function]";
 	};
+	ext.isFunction = ext.isFunc;
+	
+	ext.isStr = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object String]";
+	};
+	ext.isString = ext.isStr;
+	
+	ext.isBool = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Boolean]";
+	}
+	ext.isBoolean = ext.isBool;
+	
+	ext.isNum = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Number]";
+	}
+	ext.isNumber = ext.isNum;
+	
+	ext.isDate = function(obj) {
+		return Object.prototype.toString.call(obj) == "[object Date]";
+	}
+	
+	
+	//helper function that gets executed in the context of the callee.
+	ext._getClass= {}.toString;
+	
 	
 		/************  STRINGS  ***************************/
-	ext.capitalize = function(s) {
-		return s.charAt(0).toUpperCase() + s.slice(1);
+	ext.caps = function(s) {
+		s = ext.isArray(s) ? s : [s];
+		return s.reduce( function(prev,el) {
+			return prev + " " + el.charAt(0).toUpperCase() + el.slice(1);
+		}, "");
 	};
-	
+	ext.capitalize = ext.caps;
 	
 	ext.replace = function(src, obj) {
 		var s = src;
@@ -108,9 +148,17 @@ define(['../globals'], function(sb) {
 	ext.today = function() { return new Date(); };
 	ext.minDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
 	ext.maxDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate).last()); };
-	ext.serverDate = function(d) { return sb.moment(d).format("YYYY/MM/DD"); };
-	ext.userDate = function(d) { return sb.moment(d).format("dddd, DD MMMM YYYY"); };
-	
+	ext._serverFormat = "YYYY/MM/DD";
+	ext._userFormat = "dddd, DD MMMM YYYY";
+	ext.serverDate = function(d) { return sb.moment(d).format(ext._serverFormat); };
+	ext.userDate = function(d) { return sb.moment(d).format("dddd, DD MMMM YYYY"); 	};
+	ext.dateFromNow = function(d, format, reverse) { 
+		if(reverse) {
+			return "(" + sb.moment(d).fromNow() + ") " + sb.moment(d).format(format || ext._userFormat);
+		} else {
+			return sb.moment(d).format(format || ext._userFormat) + " (" + sb.moment(d).fromNow() + ")";
+		}
+	};
 		/************  REGEXPS ***************************/
 	ext.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");
 	
@@ -305,26 +353,31 @@ define(['../globals'], function(sb) {
 	
 	};
 	
-	ext.mixin = function (/*Object*/ target, /*Object*/ source, ignore){
+	
+	//source gets priority over target
+	//all source properties are applied to target.
+	//  EXCEPT the ones in ignore.
+	//	ignore can be an array of names, or an object with keys. All these key names are skipped from being applied,
+	//	but they will not be removed from target if they exist there. 
+	ext.mixin = function (/*Object*/ target, /*Object*/ source, /*Object or Array*/ ignore ){
 		var empty = ignore || {}; //default template for properties to ignore
 		var name, s, i;
 		for(name in source){
 		    s = source[name];
-		    if(!(name in target) || (target[name] !== s && (!(name in empty) || empty[name] !== s))){
-		        target[name] = s;
-		    }
+			var skip =  ext.isArray(empty) ? (empty.indexOf(name) >= 0) : (name in empty);
+			if(skip) { continue; }
+	        target[name] = s;
 		}
 		return target; // Object
 	};
 	 
 	// Create a new object, combining the properties of the passed objects with the last arguments having
 	// priority over the first ones
-	ext.combine = function(/*Object*/ obj, /*Object...*/ props) {
-	    var newObj = {};
-	    for(var i=0, l=arguments.length; i<l; i++){
-	    	ext.mixin(newObj, arguments[i]);
-	    }
-	    return newObj;
+	ext.combine = function( /*Object or array*/ props, /*object or array*/ ignore) {
+		props = ext.isArray(props) ? props : [props];
+		return props.reduce(function(newObj, v) {
+			return ext.mixin(newObj, v, ignore);
+		},{});
 	};		
 	
 
@@ -397,6 +450,8 @@ define(['../globals'], function(sb) {
 		return ([]).concat(this);
 	  }  
 	}  
+	
+
 	
 	
 	
