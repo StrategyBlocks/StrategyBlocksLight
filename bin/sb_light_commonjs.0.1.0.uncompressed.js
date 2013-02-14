@@ -2002,6 +2002,9 @@ sb_light.define('utils/ext',['../globals'], function(sb) {
 	//	but they will not be removed from target if they exist there. 
 	ext.mixin = function (/*Object*/ target, /*Object*/ source, /*Object or Array*/ ignore ){
 		var empty = ignore || {}; //default template for properties to ignore
+		var target = target || {};
+		var source = source || {};
+		
 		var name, s, i;
 		for(name in source){
 		    s = source[name];
