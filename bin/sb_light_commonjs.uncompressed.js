@@ -1711,7 +1711,8 @@ sb_light.define('utils/ext',['../globals'], function(sb) {
 	//takes a list of objects and a key property and converts the array to a hash map
 	ext.toObject= function(list, key) {
 		return list.reduce(function(prev, el) {
-			return prev[el[key]] = el;
+			prev[el[key]] = el;
+			return prev;
 		}, {});
 	}	
 	//takes a hash map and returns an array of values. 
