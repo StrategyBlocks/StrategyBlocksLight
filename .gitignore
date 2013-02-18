@@ -2,7 +2,6 @@
 .DS_Store
 *.swp
 .project
-src/scripts/isv/**
 isv/**
 lib/*.js
 

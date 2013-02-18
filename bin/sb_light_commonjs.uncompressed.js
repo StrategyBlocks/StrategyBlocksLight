@@ -3850,9 +3850,15 @@ sb_light.define('api/queries',['../globals'], function(sb) {
 		var us = sb.models.raw("users");
 		return us[uid];	
 	};
-	q.companyMembership = function(cid) {
+	q.companyMembership = function() {
 		var u = q.currentUser();
-		return (cid && u && u.companies[cid]) || null;
+		if(u.company_membership) {
+			return u.company_membership;
+		} else {
+			//TODO: Remove this code - legacy api.
+			var c = q.company();
+			return u && c && u.companies[c.id] || null;
+		}
 	}; 
 	q.userDate = function(date, opts) {
 		var u = q.currentUser();
@@ -3869,7 +3875,9 @@ sb_light.define('api/queries',['../globals'], function(sb) {
 	q.authors  = function() {
 		var cid = sb.state.value("companyId");
 		return sb.models.rawArray("users").filter(function(el) {
-			var cm = (el.companies && Object.keys(el.companies).length && el.companies[cid] ) || null;
+			
+												//TODO: Remove legacy API support
+			var cm = el.company_membership || (el.companies && el.companies[cid] || null);
 			return cm && cm.active && (cm.role == "Author" || cm.role =="Administrator");
 		}).sort(sb.ext.sortUsers);
 	};
@@ -4083,21 +4091,6 @@ sb_light.define('api/queries',['../globals'], function(sb) {
 		return q.blockPath(apath, true) == q.blockPath(bpath, true);
 	};
 	
-	q.managers = function() {
-		var companyId = sb.state.value("companyId");
-		var users = sb.models.rawArray("users");
-		
-		var ret = users.reduce(function(pre, el) {
-			var cm = el.companies[companyId];
-			
-			if(cm.role == "Author" || cm.role == "Administrator") {
-				return pre.put(el);
-			} 
-			return pre;
-		}, []);
-		
-		return ret;
-	};
 	
 	q.maxDate = function() {
 		return sb.ext.parseDate(q.rootBlock().end_date);

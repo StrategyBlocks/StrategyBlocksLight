@@ -12,7 +12,7 @@ var version = "0.0.1";
 
 var config = {
    	name:"sb_light",
-   	baseUrl: (base+"/src/scripts"),
+   	baseUrl: (base+"/src"),
    	paths: {
        	sb:"sb_light",
 		moment:"lib/moment"
@@ -23,8 +23,8 @@ var config = {
 };
 
 var config_commonjs = {
-   	name:('../../build/almond'),
-   	baseUrl:(base+"/src/scripts"),
+   	name:('../build/almond'),
+   	baseUrl:(base+"/src"),
    	include: "sb_light",
    	optimize:"none",
    	namespace:"sb_light",
