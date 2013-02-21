@@ -1393,6 +1393,7 @@ define('utils/ext',['../globals'], function(sb) {
 	};
 		/************  REGEXPS ***************************/
 	ext.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");
+	ext.regUrl = new RegExp("^https?:\/\/");
 	
 	
 	
@@ -1614,7 +1615,10 @@ define('utils/ext',['../globals'], function(sb) {
 			return ext.mixin(newObj, v, ignore);
 		},{});
 	};		
-	
+	//same as combine but only takes two properties.
+	ext.merge = function(a, b, ignore) {
+		return ext.combine([a,b], ignore);	
+	}
 
 	
 	//From Mozilla
@@ -3122,6 +3126,8 @@ define('api/state',['../globals'], function(sb) {
 	
 	state.any = function() { 		return true; };
 	
+	//any state but unknown 
+	state.known = function() {	return _state.session != state.session_unknown;	};
 	//not tried auth yet. 
 	state.unknown = function() {	return _state.session == state.session_unknown;	};
 	//no auth
@@ -4172,7 +4178,7 @@ define('api/ajax',['../globals'], function(sb) {
 		if(!sb.ext.ti()) { return; }
 		
 	    // Merge with default props
-	    var o = sb.ext.combine({
+	    var o = sb.ext.merge({
 	        type: 'GET',
 	        url: null,
 	        data: false,

@@ -162,6 +162,7 @@ define(['../globals'], function(sb) {
 	};
 		/************  REGEXPS ***************************/
 	ext.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");
+	ext.regUrl = new RegExp("^https?:\/\/");
 	
 	
 	
@@ -383,7 +384,10 @@ define(['../globals'], function(sb) {
 			return ext.mixin(newObj, v, ignore);
 		},{});
 	};		
-	
+	//same as combine but only takes two properties.
+	ext.merge = function(a, b, ignore) {
+		return ext.combine([a,b], ignore);	
+	}
 
 	
 	//From Mozilla

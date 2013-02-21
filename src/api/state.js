@@ -144,6 +144,8 @@ define(['../globals'], function(sb) {
 	
 	state.any = function() { 		return true; };
 	
+	//any state but unknown 
+	state.known = function() {	return _state.session != state.session_unknown;	};
 	//not tried auth yet. 
 	state.unknown = function() {	return _state.session == state.session_unknown;	};
 	//no auth

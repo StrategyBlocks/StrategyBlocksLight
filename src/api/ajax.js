@@ -51,7 +51,7 @@ define(['../globals'], function(sb) {
 		if(!sb.ext.ti()) { return; }
 		
 	    // Merge with default props
-	    var o = sb.ext.combine({
+	    var o = sb.ext.merge({
 	        type: 'GET',
 	        url: null,
 	        data: false,
