@@ -1790,15 +1790,18 @@ sb_light.define('utils/ext',['../globals'], function(sb) {
 	ext.today = function() { return new Date(); };
 	ext.minDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
 	ext.maxDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate).last()); };
-	ext._serverFormat = "YYYY/MM/DD";
-	ext._userFormat = "dddd, DD MMMM YYYY";
-	ext.serverDate = function(d) { return sb.moment(d).format(ext._serverFormat); };
-	ext.userDate = function(d) { return sb.moment(d).format("dddd, DD MMMM YYYY"); 	};
+	ext.serverFormat = "YYYY/MM/DD";
+	ext.userFormat = function() { 
+		var u = sb.state && sb.state.value("user");
+		return u ? u.date_format : ext.serverFormat;
+	}
+	ext.serverDate = function(d) { return sb.moment(d).format(ext.serverFormat); };
+	ext.userDate = function(d) { return sb.moment(d).format( ext.userFormat()); };
 	ext.dateFromNow = function(d, format, reverse) { 
 		if(reverse) {
-			return "(" + sb.moment(d).fromNow() + ") " + sb.moment(d).format(format || ext._userFormat);
+			return "(" + sb.moment(d).fromNow() + ") " + sb.moment(d).format(format || ext.userFormat());
 		} else {
-			return sb.moment(d).format(format || ext._userFormat) + " (" + sb.moment(d).fromNow() + ")";
+			return sb.moment(d).format(format || ext.userFormat()) + " (" + sb.moment(d).fromNow() + ")";
 		}
 	};
 		/************  REGEXPS ***************************/
