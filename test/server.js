@@ -32,6 +32,7 @@ var CREATE_WEBSERVER = true;			// Creates a simple webserver to serve the conten
 console.log("SB HOST: ", SB_HOST);
 console.log("SB PORT: ", SB_PORT);
 console.log("SB HTTPS: ", SB_HTTPS);
+console.log("Listening on: ", PROXY_PORT);
 
 
 
