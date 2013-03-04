@@ -3473,7 +3473,8 @@ sb_light.define('api/state',['../globals'], function(sb) {
 		"session_normal", 
 		"session_payment", 
 		"session_invalid", 
-		"session_disconnected"
+		"session_disconnected",
+		"session_startup"
 	];
 	//create a map
 	state.stateKeys.reduce(function(prev,el,i) {
@@ -3494,7 +3495,7 @@ sb_light.define('api/state',['../globals'], function(sb) {
 		company: null,
 		user: null,
 		
-		session: state.session_unknown,
+		session: state.session_startup,
 		url:"",
 
 		
@@ -3527,7 +3528,6 @@ sb_light.define('api/state',['../globals'], function(sb) {
 	state.models = {};
 	state.subscriptions = {};
 	
-	state.session = state.session_unknown;
 	
 		
 	//accepts several value types specified by: sb.urls.url_to_o
@@ -3607,13 +3607,18 @@ sb_light.define('api/state',['../globals'], function(sb) {
 	
 	
 	state.any = function() { 		return true; };
+
+	//startup -- the first state of this system. This used to be "unknown", but in some cases it's useful to
+	//know that we're in the initialization phase. So we always start in the "startup" state, and then
+	//move into the "unknown" state.  
+	state.startup = function() {	return _state.session == state.session_startup;	};
 	
 	//any state but unknown 
 	state.known = function() {	return _state.session != state.session_unknown;	};
 	//not tried auth yet. 
 	state.unknown = function() {	return _state.session == state.session_unknown;	};
 	//no auth
-	state.unauthorized = function() {	return  _state.session == state.session_unknown || _state.session == state.session_invalid;	};
+	state.unauthorized = function() {	return  _state.session == state.session_unknown || _state.session == state.session_invalid || _state.session == state.session_startup;	};
 	//invalid
 	state.invalid = function() {	return  _state.session == state.session_invalid;	};
 	//has user/company
