@@ -3685,6 +3685,10 @@ sb_light.define('api/state',['../globals'], function(sb) {
 	};
 	
 	state.subscribe = function(type, cb) {
+		if(!sb.ext.isFunc(cb)) {
+			throw "SB_LIGHT:State -- subscribing to an event with an invalid function.";
+		}
+		
 		//console.log(sb.version);
 		sb.ext.debug("subscribing to: ", type);
 		state.subscriptions[type] = state.subscriptions[type] || [];
