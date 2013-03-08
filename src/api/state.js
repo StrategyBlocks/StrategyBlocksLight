@@ -287,7 +287,7 @@ define(['../globals'], function(sb) {
 		}
 		if(state.value("userId") == null) {
 			sb.ext.debug("setting session to unauthorized");
-			if(state.unknown()) {
+			if(state.unknown() || state.startup()) {
 				data.flash = {notice:"Please enter your login credentials."};
 			}
 			_state.session =  state.session_invalid;

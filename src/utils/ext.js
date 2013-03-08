@@ -128,8 +128,8 @@ define(['../globals'], function(sb) {
 	ext.caps = function(s) {
 		s = ext.isArray(s) ? s : [s];
 		return s.reduce( function(prev,el) {
-			return prev + " " + el.charAt(0).toUpperCase() + el.slice(1);
-		}, "");
+			return (prev ? (prev + " ") : "") + el.charAt(0).toUpperCase() + el.slice(1);
+		}, null);
 	};
 	ext.capitalize = ext.caps;
 	
@@ -178,7 +178,7 @@ define(['../globals'], function(sb) {
 	ext.sortTime = function(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
 	ext.sortNumber = function(a,b){ return a-b; };
 	ext.sortNumbers = ext.sortNumber;
-	ext.sortDate = function(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias 
+	ext.sortDate = function(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias - this sorts descending by default
 	ext.sortDates = ext.sortDate;
 	ext.sortString = function(a,b){ return a.localeCompare(b); };
 	ext.sortStrings = ext.sortString;

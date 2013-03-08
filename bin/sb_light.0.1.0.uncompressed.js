@@ -1359,8 +1359,8 @@ define('utils/ext',['../globals'], function(sb) {
 	ext.caps = function(s) {
 		s = ext.isArray(s) ? s : [s];
 		return s.reduce( function(prev,el) {
-			return prev + " " + el.charAt(0).toUpperCase() + el.slice(1);
-		}, "");
+			return (prev ? (prev + " ") : "") + el.charAt(0).toUpperCase() + el.slice(1);
+		}, null);
 	};
 	ext.capitalize = ext.caps;
 	
@@ -1409,7 +1409,7 @@ define('utils/ext',['../globals'], function(sb) {
 	ext.sortTime = function(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
 	ext.sortNumber = function(a,b){ return a-b; };
 	ext.sortNumbers = ext.sortNumber;
-	ext.sortDate = function(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias 
+	ext.sortDate = function(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias - this sorts descending by default
 	ext.sortDates = ext.sortDate;
 	ext.sortString = function(a,b){ return a.localeCompare(b); };
 	ext.sortStrings = ext.sortString;
@@ -2994,7 +2994,8 @@ define('api/state',['../globals'], function(sb) {
 		"session_normal", 
 		"session_payment", 
 		"session_invalid", 
-		"session_disconnected"
+		"session_disconnected",
+		"session_startup"
 	];
 	//create a map
 	state.stateKeys.reduce(function(prev,el,i) {
@@ -3015,7 +3016,7 @@ define('api/state',['../globals'], function(sb) {
 		company: null,
 		user: null,
 		
-		session: state.session_unknown,
+		session: state.session_startup,
 		url:"",
 
 		
@@ -3048,7 +3049,6 @@ define('api/state',['../globals'], function(sb) {
 	state.models = {};
 	state.subscriptions = {};
 	
-	state.session = state.session_unknown;
 	
 		
 	//accepts several value types specified by: sb.urls.url_to_o
@@ -3128,13 +3128,18 @@ define('api/state',['../globals'], function(sb) {
 	
 	
 	state.any = function() { 		return true; };
+
+	//startup -- the first state of this system. This used to be "unknown", but in some cases it's useful to
+	//know that we're in the initialization phase. So we always start in the "startup" state, and then
+	//move into the "unknown" state.  
+	state.startup = function() {	return _state.session == state.session_startup;	};
 	
 	//any state but unknown 
 	state.known = function() {	return _state.session != state.session_unknown;	};
 	//not tried auth yet. 
 	state.unknown = function() {	return _state.session == state.session_unknown;	};
 	//no auth
-	state.unauthorized = function() {	return  _state.session == state.session_unknown || _state.session == state.session_invalid;	};
+	state.unauthorized = function() {	return  _state.session == state.session_unknown || _state.session == state.session_invalid || _state.session == state.session_startup;	};
 	//invalid
 	state.invalid = function() {	return  _state.session == state.session_invalid;	};
 	//has user/company
@@ -3267,7 +3272,7 @@ define('api/state',['../globals'], function(sb) {
 		}
 		if(state.value("userId") == null) {
 			sb.ext.debug("setting session to unauthorized");
-			if(state.unknown()) {
+			if(state.unknown() || state.startup()) {
 				data.flash = {notice:"Please enter your login credentials."};
 			}
 			_state.session =  state.session_invalid;
