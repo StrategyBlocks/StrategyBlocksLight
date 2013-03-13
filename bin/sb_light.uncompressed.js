@@ -1359,6 +1359,7 @@ define('utils/ext',['../globals'], function(sb) {
 	ext.caps = function(s) {
 		s = ext.isArray(s) ? s : [s];
 		return s.reduce( function(prev,el) {
+			if(!el) { return prev; }
 			return (prev ? (prev + " ") : "") + el.charAt(0).toUpperCase() + el.slice(1);
 		}, null);
 	};
@@ -1414,6 +1415,7 @@ define('utils/ext',['../globals'], function(sb) {
 	ext.sortString = function(a,b){ return a.localeCompare(b); };
 	ext.sortStrings = ext.sortString;
 	ext.sortBool = function(a,b) { return ext.sortNumber(a?1:0, b?1:0); }
+	ext.sortBoolean = ext.sortBool;
 	 
 	ext.sortDateValue = function(a,b) { return ext.sortDate(a.date,b.date); };
 	ext.sortUsers = function(a,b) {  return a.last_name.localeCompare(b.last_name); }
