@@ -1,14 +1,9 @@
+var program = require("commander")
 var connect = require('connect');
 var http = require('http');
 var httpProxy = require('http-proxy');
 
-var SB_HOST = "app.strategyblocks.com";	//StrategyBlocks Server Domain
-var SB_PORT= 443;						//StrategyBlocks Server Port
-var SB_HTTPS = true;					//StrategyBlocks uses HTTPS?
-var LOCAL_HOST = "localhost";			//Hostname of the local "src" web server (created here if CREATE_WEBSERVER=true)
-var LOCAL_PORT = "8889";				//Port of the local "src" web server
-var PROXY_PORT = "8888";				//Port of the proxy server running on this server
-var CREATE_WEBSERVER = true;			// Creates a simple webserver to serve the content of the "src" and "test" folders
+
 
 /*This is set to the default production StrategyBlocks address. If you want to use a different server,
 //you need to update these settings. 
@@ -29,17 +24,38 @@ var CREATE_WEBSERVER = true;			// Creates a simple webserver to serve the conten
 		Your custom client code would be stored in the "src" folder and the "sb_proxy" object handles all non-"src" requests by 
 */	
 
-console.log("SB HOST: ", SB_HOST);
-console.log("SB PORT: ", SB_PORT);
-console.log("SB HTTPS: ", SB_HTTPS);
-console.log("Listening on: ", PROXY_PORT);
+program
+  .version('0.0.1')
+  .option('-h, --sb_host <sb_host>', 'specify the strategyblocks host [app.strategyblocks.com]', String, "app.strategyblocks.com")
+  .option('-p, --sb_port <sb_port>', 'specify the port [443]', Number, 443)
+  .option('-S, --no-ssl', 'disable ssl to strategyblocks')
+  .option('-W, --no-webserver', 'disable creating a webserver to serve up non-strategyblocks files')
+  .option('-w, --webserver_root <path>', 'create a webserver at a specific path [' + __dirname + "]", String, __dirname )
+
+  .option('-H, --localhost <localhost>', 'specify the host name of your webserver', String, "localhost")
+  .option('-l, --localport <localport>', 'specify the host posrt of your webserver', Number, 8889)
+  .option('-x, --proxyport <proxyport>', 'specify the port [8888]', Number, 8888)
+  .parse(process.argv);
+
+
+
+console.log("StrategyBlocks Host: ", program.sb_host);
+console.log("StrategyBlocks Port: ", program.sb_port);
+console.log("Using SSL?", program.ssl);
+if(program.webserver) {
+	console.log("Created Webserver", program.localhost, program.localport);	
+} else {
+	console.log("Proxy to webserver at: ", program.localhost, program.localport);
+}
+
+console.log("Proxy Server Listening on: ", program.proxyport);
 
 
 
 var local_proxy = new httpProxy.HttpProxy({
 	target: {
-		host:LOCAL_HOST,
-		port:LOCAL_PORT
+		host:program.localhost,
+		port:program.localport
 	}
 });
 
@@ -50,15 +66,14 @@ var server = http.createServer(function(req,res,proxy) {
 		console.log("Proxy to SB: ",req.url);
 		var sb_proxy = new httpProxy.HttpProxy({
 			target: {
-				host:SB_HOST,
-				port:SB_PORT,
-				https:SB_HTTPS,
+				host:sb_host,
+				port:program.sb_port,
+				https:program.ssl,
 				buffer:httpProxy.buffer(req)
 			}
 		});
 		sb_proxy.proxyRequest(req,res);
 	} else {
-		console.log("Proxy to: localhost:8889", req.url);
 		local_proxy.proxyRequest(req,res);
 	}
 
@@ -67,12 +82,12 @@ var server = http.createServer(function(req,res,proxy) {
 
 
 
-server.listen(PROXY_PORT);
+server.listen(program.proxyport);
 
-if(CREATE_WEBSERVER) {
-	console.log("DIRNAME: ", __dirname);
+if(program.webserver) {
+	console.log("DIRNAME: ", __dirname, program.localport);
 	var local = connect.createServer(
 					connect.static(__dirname+"/..")
-				).listen(LOCAL_PORT);
+				).listen(program.localport);
 }
 
