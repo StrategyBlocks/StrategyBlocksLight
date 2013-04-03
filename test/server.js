@@ -30,7 +30,7 @@ program
   .option('-p, --sb_port <sb_port>', 'specify the port [443]', Number, 443)
   .option('-S, --no-ssl', 'disable ssl to strategyblocks')
   .option('-W, --no-webserver', 'disable creating a webserver to serve up non-strategyblocks files')
-  .option('-w, --webserver_root <path>', 'create a webserver at a specific path [' + __dirname + "]", String, __dirname )
+  .option('-w, --webserver_root <path>', 'create a webserver at a specific path [' + __dirname + "/..]", String, __dirname+"/.." )
 
   .option('-H, --localhost <localhost>', 'specify the host name of your webserver', String, "localhost")
   .option('-l, --localport <localport>', 'specify the host posrt of your webserver', Number, 8889)
@@ -66,7 +66,7 @@ var server = http.createServer(function(req,res,proxy) {
 		console.log("Proxy to SB: ",req.url);
 		var sb_proxy = new httpProxy.HttpProxy({
 			target: {
-				host:sb_host,
+				host:program.sb_host,
 				port:program.sb_port,
 				https:program.ssl,
 				buffer:httpProxy.buffer(req)
@@ -85,9 +85,9 @@ var server = http.createServer(function(req,res,proxy) {
 server.listen(program.proxyport);
 
 if(program.webserver) {
-	console.log("DIRNAME: ", __dirname, program.localport);
+	console.log("DIRNAME: ", __dirname, program.webserver_root);
 	var local = connect.createServer(
-					connect.static(__dirname+"/..")
+					connect.static(program.webserver_root)
 				).listen(program.localport);
 }
 
