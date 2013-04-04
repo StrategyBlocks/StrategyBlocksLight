@@ -174,22 +174,26 @@ define(['../globals'], function(sb) {
 		//sort an array based on a property, and the function to use
 		//so if an array is [{date:...,value:...},...], you can sort using ext.sortProp("date",ext.sortDate); 
 	ext.sortFactory = function(prop, func, reverse) {
-		return function(a,b) {	return func(a[prop],b[prop]) * (reverse ? -1 : 1);		};
+		return function(a,b) {	
+			var aprop = a ? a[prop] : null;
+			var bprop = b ? b[prop] : null;
+			return func(aprop, bprop) * (reverse ? -1 : 1);		
+		};
 	},
 	ext.sortTime = function(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
 	ext.sortNumber = function(a,b){ return a-b; };
 	ext.sortNumbers = ext.sortNumber;
 	ext.sortDate = function(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias - this sorts descending by default
 	ext.sortDates = ext.sortDate;
-	ext.sortString = function(a,b){ return a.localeCompare(b); };
+	ext.sortString = function(a,b){ return String(a).localeCompare(String(b)); };
 	ext.sortStrings = ext.sortString;
 	ext.sortBool = function(a,b) { return ext.sortNumber(a?1:0, b?1:0); }
 	ext.sortBoolean = ext.sortBool;
 	 
 	ext.sortDateValue = function(a,b) { return ext.sortDate(a.date,b.date); };
-	ext.sortUsers = function(a,b) {  return a.last_name.localeCompare(b.last_name); }
-	ext.sortFocus = function(a,b) {  return a.title.localeCompare(b.title); }
-	ext.sortName = function(a,b) {  return a.name.localeCompare(b.name); }
+	ext.sortUsers = function(a,b) {  return ext.sortFunc("last_name", ext.sortString); }
+	ext.sortFocus = function(a,b) {  return ext.sortFunc("title", ext.sortString); }
+	ext.sortName = function(a,b) {  return ext.sortFunc("name", ext.sortString);; }
 	ext.sortBlocksByProgress = function(a,b) {
 		//closed blocks 
 		var ac = a.closed, bc = b.closed;
