@@ -8,35 +8,53 @@ var rjs = require('requirejs');
 
 var base  = __dirname+"/..";
 
-var version = "0.0.1";
+var _package = fs.readFileSync(base+"/sb_light/package.json", 'utf8');
+var version = JSON.parse(_package).version;
 
 var config = {
-   	name:"sb_light",
-   	baseUrl: (base+"/src"),
+	name:"sb_light/main",
+	//namespace:"sb_light",
+   	baseUrl: (base),
    	paths: {
-       	sb:"sb_light",
-		moment:"lib/moment"
+       	sb_light:"sb_light",
+       	moment:"sb_light/lib/moment"
    	},
    	optimize:"none",
 	cjsTranslate: false,
-	skipModuleInsertion:true
+	skipModuleInsertion:true,
+	onBuildWrite: function(moduleName,path, contents) {
+		if(moduleName == "sb_light/main") {
+			contents = contents += '\n\n define("sb_light", ["sb_light/main"], function(sb) {    return sb; })';
+		}
+		return contents;
+	}
 };
 
 var config_commonjs = {
-   	name:('../build/almond'),
-   	baseUrl:(base+"/src"),
-   	include: "sb_light",
+   	name:('build/almond'),
+   	baseUrl:(base),
+   	include: "sb_light/main",
    	optimize:"none",
    	namespace:"sb_light",
 	paths: {
-		moment: "lib/moment"
+		sb_light: "sb_light",
+		moment:"sb_light/lib/moment"
 	},
    	wrap:true,
 	onBuildWrite: function(moduleName, path,contents) {
 		var expName = moduleName.split("/");
 		expName = expName[expName.length-1];
-		if(!expName.match(/(almond)/)) {
-			return contents + "\n\n exports."+ expName + " = require('" + moduleName + "');\n\n";
+
+		 if(!expName.match(/(almond)/) && !expName.match(/(moment)/) && !expName.match(/(main)/)) {
+		 	return contents + "\n\n exports."+ expName + " = require('" + moduleName + "');\n\n";
+		 }
+
+		 if(expName.match(/(moment)/)) {
+		 	return contents.replace(/module\.exports/, "exports.moment");
+		 }
+
+		if(expName.match(/(main)/)) {
+			return contents + "\n\n exports.sb_light = require('" + moduleName + "');\n\n";
 		}
 		return contents;
 	},
@@ -59,7 +77,6 @@ function addVersion(f) {
 	return "/**\n * @version " + version + "\n * \n */\n\n" + output;
 }
 
-var version = fs.readFileSync(base+'/version','utf8');
 
 
 //chain all the types into a series of daisy-chained functions

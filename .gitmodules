@@ -1,0 +1,12 @@
+[submodule "lib/dtk/dojo"]
+	path = lib/dtk/dojo
+	url = git://github.com/dojo/dojo.git
+[submodule "lib/dtk/dijit"]
+	path = lib/dtk/dijit
+	url = git://github.com/dojo/dijit.git
+[submodule "lib/dtk/dojox"]
+	path = lib/dtk/dojox
+	url = git://github.com/dojo/dojox.git
+[submodule "lib/dtk/util"]
+	path = lib/dtk/util
+	url = git://github.com/dojo/util.git

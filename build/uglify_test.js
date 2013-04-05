@@ -36,6 +36,6 @@ function writeOutput() {
 	fs.writeFileSync(output+'.map', res.map);	
 };
 
-var walker = walk.walk('./src', {followLinks:false});
+var walker = walk.walk('./sb_light', {followLinks:false});
 walker.on('file',pushFile); 
 walker.on('end', writeOutput); 

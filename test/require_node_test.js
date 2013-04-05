@@ -22,7 +22,7 @@ requirejs(['sb_light'], function(sb) {
 
 	program.version('0.0.1')
 		.option('-u, --release [version string]', 'Release Number', '0.0.1')
-		.option('-p, --output [name]', 'Output Name', 'sb_light.js') 	 
+		.option('-p, --output [name]', 'Output Name', 'sb_light.js')
 		.parse(process.argv);
 
 	
@@ -71,6 +71,7 @@ requirejs(['sb_light'], function(sb) {
 	}
 
 	console.log("SB_MOMENT: ", moment);
+	console.log("SB: ", sb);
 
 	sb.state.host = "https://app.strategyblocks.com";	
 	sb.api.ajax = sb.ajax.node(superAgent.agent());

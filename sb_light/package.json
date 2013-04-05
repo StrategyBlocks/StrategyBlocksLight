@@ -1,0 +1,13 @@
+{
+	"name": "sb_light",
+	"version": "0.1.0",
+	"main": "main",
+	"dependencies": {
+		"moment": "2.x.x"
+	},
+	"description": "A lightweight StrategyBlocks client that hides the complexities of interacting with the StrategyBlocks server. This provides a foundation for anyone who wants to write their own SB client, on any platform that supports javascript (e.g., nodejs, browser, titanium)",
+	"bugs": "https://github.com/glenn-strategyblocks/StrategyBlocksLight/issues",
+	"keywords": ["StrategyBlocks", "Strategy", "Execution"],
+	"homepage": "https://github.com/glenn-strategyblocks/StrategyBlocksLight",
+	"dojoBuild": "package.js"
+}

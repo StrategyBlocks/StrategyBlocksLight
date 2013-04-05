@@ -1,0 +1,37 @@
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Demo: helloworld</title>
+</head>	
+<body>
+	<h1>Demo: helloworld</h1>
+	<div id="helloworld"></div>
+	<!-- load dojo and provide config via data attribute -->
+	<script>
+		dojoConfig = {
+			baseUrl: "/",
+			async:true,
+			tlmSiblingOfDojo: false,
+			packages: [
+ 				{ name: "dojo", location: "lib/dtk/dojo" },
+        		{ name: "dijit", location: "lib/dtk/dijit" },
+        		{ name: "dojox", location: "lib/dtk/dojox" },
+        		{ name: "moment", location: "sb_light/lib/", main:"moment" },
+        		{ name: "sb_light", location: "sb_light", main: "main" }				
+			]
+
+		};
+	</script>
+	<script src="/lib/dtk/dojo/dojo.js"></script>
+	<script>
+		require(["dojo/dom","dojo/request", "sb_light", "dojo/domReady!"], function(dom,request,sb){
+
+			console.log("State:", sb.state);
+			dom.byId("helloworld").innerHTML = "Hello New World!";
+
+			sb.api.ajax = sb.ajax.dojo(request);
+			sb.state.login();
+		});
+	</script>
+</body>
+</html>
