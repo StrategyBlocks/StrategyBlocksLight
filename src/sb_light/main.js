@@ -6,6 +6,7 @@ define([
 	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
 	'sb_light/utils/svg',	
+	'sb_light/utils/events',	
 	'sb_light/layout',	
 	'sb_light/utils/consts',
 	'sb_light/utils/Class',
@@ -21,6 +22,7 @@ define([
 	moment,
 	ext,	
 	svg,
+	events,
 	layout,
 	consts,	 
 	Class,	 
@@ -38,6 +40,7 @@ define([
 	globals.moment = moment;
 	globals.ext = ext;
 	globals.svg = svg;
+	globals.events = events;
 	globals.layout = layout;
 	globals.consts = consts;
 	globals.models = models;

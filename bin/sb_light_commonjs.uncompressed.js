@@ -2919,6 +2919,27 @@ sb_light.define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
  exports.svg = sb_light.require('sb_light/utils/svg');
 
 
+
+sb_light.define('sb_light/utils/events',['sb_light/globals'], function(sb) {
+
+	var events = {};
+
+	events.stop = function(e) {
+		if(e && e.stopImmediatePropagation) {
+			e.stopImmediatePropagation();
+		}
+		if(e && e.preventDefault) {
+			e.preventDefault();
+		}
+	}
+
+	return events;
+	
+});			
+
+ exports.events = sb_light.require('sb_light/utils/events');
+
+
 /* Simple JavaScript Inheritance
  * By John Resig http://ejohn.org/
  * MIT Licensed.
@@ -5673,6 +5694,7 @@ sb_light.define('sb_light/main',[
 	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
 	'sb_light/utils/svg',	
+	'sb_light/utils/events',	
 	'sb_light/layout',	
 	'sb_light/utils/consts',
 	'sb_light/utils/Class',
@@ -5688,6 +5710,7 @@ sb_light.define('sb_light/main',[
 	moment,
 	ext,	
 	svg,
+	events,
 	layout,
 	consts,	 
 	Class,	 
@@ -5705,6 +5728,7 @@ sb_light.define('sb_light/main',[
 	globals.moment = moment;
 	globals.ext = ext;
 	globals.svg = svg;
+	globals.events = events;
 	globals.layout = layout;
 	globals.consts = consts;
 	globals.models = models;

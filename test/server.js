@@ -74,6 +74,7 @@ var server = http.createServer(function(req,res,proxy) {
 		});
 		sb_proxy.proxyRequest(req,res);
 	} else {
+		console.log("Proxy to Local: ", program.webserver_root + req.url);
 		local_proxy.proxyRequest(req,res);
 	}
 
