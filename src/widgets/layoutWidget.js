@@ -33,7 +33,8 @@ define(['widgets/widget'], function( Widget ) {
 			this._handleResize();
 		},
 
-		_handleResize: function() {
+		handleResize: function(e) {
+			this._super(e);
 			var rect = this._dom.getBoundingClientRect();
 			this._layout.rootWidth = rect.width;
 			this._layout.rootHeight = rect.height;

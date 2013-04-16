@@ -143,8 +143,8 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this._handleResize();
 		},
 
-		_handleResize: function() {
-
+		handleResize: function(e) {
+			sb.events.stop(e);
 		}
 
 	});
