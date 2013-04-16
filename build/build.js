@@ -17,7 +17,8 @@ var config = {
    	baseUrl: (base),
    	paths: {
        	sb_light:"sb_light",
-       	moment:"sb_light/lib/moment"
+       	moment:"sb_light/lib/moment",
+       	widgets:"sb_light/layout/widgets"
    	},
    	optimize:"none",
 	cjsTranslate: false,
@@ -38,7 +39,8 @@ var config_commonjs = {
    	namespace:"sb_light",
 	paths: {
 		sb_light: "sb_light",
-		moment:"sb_light/lib/moment"
+		moment:"sb_light/lib/moment",
+       	widgets:"sb_light/layout/widgets"
 	},
    	wrap:true,
 	onBuildWrite: function(moduleName, path,contents) {

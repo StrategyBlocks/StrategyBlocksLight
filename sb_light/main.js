@@ -6,6 +6,7 @@ define([
 	'moment',		//needs to be mapped properly in the requirejs config
 	'sb_light/utils/ext',	
 	'sb_light/utils/svg',	
+	'sb_light/layout/layout',	
 	'sb_light/utils/consts',
 	'sb_light/utils/Class',
 	'sb_light/models',		
@@ -20,6 +21,7 @@ define([
 	moment,
 	ext,	
 	svg,
+	layout,
 	consts,	 
 	Class,	 
 	models,	
@@ -36,6 +38,7 @@ define([
 	globals.moment = moment;
 	globals.ext = ext;
 	globals.svg = svg;
+	globals.layout = layout;
 	globals.consts = consts;
 	globals.models = models;
 	globals.controller = controller;

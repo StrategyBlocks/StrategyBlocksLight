@@ -5,6 +5,10 @@ define(['sb_light/globals'], function(sb) {
 	//console.log("ext", sb.version);
 	var ext = {};
 
+	ext._unique = 0;
+	ext.unique = function() {
+		return ++ext._unique;
+	}
 
 	//helps convert arguments into array
 	//a is an array or arguments.
@@ -90,6 +94,27 @@ define(['sb_light/globals'], function(sb) {
 	}
 	
 		/************  TYPES ***************************/
+	ext.valid = function(obj, type) {
+		switch(type || "object") {
+			case "object": return obj !== null && typeof obj !== "undefined"; break;
+
+			case "arr":
+			case "array": return ext.isArr(obj); break;
+
+			case "func": 
+			case "function": return ext.isFunc(obj); break;
+
+			case "str": 	
+			case "string": 	return ext.isStr(obj) && obj !== ""; break;
+
+
+			case "num": 
+			case "number": return ext.isNum(obj) && !isNaN(obj); break;
+
+		}
+	}
+
+
 	ext.isArr = function(obj) {
 		return Object.prototype.toString.call(obj) == "[object Array]";
 	};
@@ -155,8 +180,8 @@ define(['sb_light/globals'], function(sb) {
 		var u = sb.state && sb.state.value("user");
 		return u ? u.date_format : ext.serverFormat;
 	}
-	ext.serverDate = function(d) { return sb.moment(d).format(ext.serverFormat); };
-	ext.userDate = function(d) { return sb.moment(d).format( ext.userFormat()); };
+	ext.serverDate = function(d) { return sb.moment(d||new Date()).format(ext.serverFormat); };
+	ext.userDate = function(d) { return sb.moment(d||new Date()).format( ext.userFormat()); };
 	ext.dateFromNow = function(d, format, reverse) { 
 		if(reverse) {
 			return "(" + sb.moment(d).fromNow() + ") " + sb.moment(d).format(format || ext.userFormat());
@@ -225,39 +250,98 @@ define(['sb_light/globals'], function(sb) {
 		
 		//************  Math ***************************/
 	ext.roundTo = function(number, dec) {
-		var val = Math.pow(10,dec);
+		var val = Math.pow(10,ext.number(dec,0));
 		return Math.round(number * val)/val;
+	};
+	ext.floorTo = function(number, dec) {
+		var val = Math.pow(10,ext.number(dec,0));
+		return Math.floor(number * val)/val;
+	};
+	ext.ceilTo = function(number, dec) {
+		var val = Math.pow(10,ext.number(dec,0));
+		return Math.ceil(number * val)/val;
 	};
 	
 	ext.to_i =  function(str, base, def/*=0*/) {
 		var i = parseInt(str, base||10);
-		return isNaN(i) ? (def===undefined?0:def) : i; 
+		return isNaN(i) ? ext.number(def,0) : i; 
+	};
+	ext.to_f =  function(str, def/*=0*/) {
+		var f = parseFloat(str);
+		return isNaN(f) ? ext.number(def,0) : f; 
+	};
+	ext.rand = function(min, max, dec/*==0*/) {
+    	return ext.floorTo( (Math.random() * (max - min + 1)), dec) + min;
 	};
 	ext.to_color = function(num) {
 	    return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
 	};
 	
+	// The argument [n] can be:
+	//		literal numbers (e.g., 24)
+	//		a function that returns a number n==foo, where foo() returns 24
+	//		an array with a function as the first argument, so n=[foo, "bar", "stuff"] and foo("bar", "stuff") returns 24
 	ext.number = function(n,def/*==0*/) {
+		var n = ext.isFunc(n) ? n() : n;
+		n = ext.isArr(n) && ext.isFunc(n[0]) ? n[0].apply(null, n.slice(1)) : n;
 		return isNaN(n) ? (def||0) : n;
 	};
 	ext.max =  function(/*etc....*/) {
-		var m = Number.NEGATIVE_INFINITY;
-		var c;
-		for(var i = 0; i < arguments.length; ++i) {
-			c = this.number(arguments[i],Number.NEGATIVE_INFINITY);
-			m = c > m ? c : m;
-		}
-		return m;
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.NEGATIVE_INFINITY)});
+		var max = args.reduce(function(prev,el){
+			return prev > el ? prev : el;
+		},Number.NEGATIVE_INFINITY);
+
+		return max;
 	};
 	ext.min = function(/*etc....*/) {
-		var m = Number.POSITIVE_INFINITY;
-		var c;
-		for(var i = 0; i < arguments.length; ++i) {
-			c = this.number(arguments[i],Number.POSITIVE_INFINITY);
-			m = c < m ? c : m;
-		}
-		return m;
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.POSITIVE_INFINITY)});
+		var min = args.reduce(function(prev,el){
+			return prev < el ? prev : el;
+		},Number.POSITIVE_INFINITY);
+
+		return min;
 	};
+
+
+	//takes an array of literals or functions and sums the result
+	ext.sum = function() {
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el)});
+		var sum = args.reduce(function(prev,el){
+			return prev + ext.number(el);
+		},0);
+
+		return sum;
+
+	}
+
+	//takes an array of literals or functions and subtracts them the first element in the list
+	ext.diff = function() {
+		var base = ext.number(arguments[0]);
+		var args  = ext.slice(arguments,1).map(function(el) {return ext.number(el)});
+		var diff = args.reduce(function(prev,el){
+			return prev - ext.number(el);
+		},base);
+
+		return diff;
+	}
+
+	//takes an array of literals or functions and multiplies the result
+	ext.prod = function() {
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,1)});
+		var prod = args.reduce(function(prev,el){
+			return prev * ext.number(el);
+		},1);
+
+		return prod;
+
+	}
+	//compare two numbers and return true if their difference is less/equals to "within".
+	//the purpose of this function is to ameliorate problems with DOM co-ords
+	ext.compareInt = function(a,b,within/*==0*/) {
+		within = ext.number(within,0);
+		return Math.abs(a-b) <= within;
+	}
 		
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)

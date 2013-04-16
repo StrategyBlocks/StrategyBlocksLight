@@ -1501,6 +1501,10 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	//console.log("ext", sb.version);
 	var ext = {};
 
+	ext._unique = 0;
+	ext.unique = function() {
+		return ++ext._unique;
+	}
 
 	//helps convert arguments into array
 	//a is an array or arguments.
@@ -1586,6 +1590,27 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	}
 	
 		/************  TYPES ***************************/
+	ext.valid = function(obj, type) {
+		switch(type || "object") {
+			case "object": return obj !== null && typeof obj !== "undefined"; break;
+
+			case "arr":
+			case "array": return ext.isArr(obj); break;
+
+			case "func": 
+			case "function": return ext.isFunc(obj); break;
+
+			case "str": 	
+			case "string": 	return ext.isStr(obj) && obj !== ""; break;
+
+
+			case "num": 
+			case "number": return ext.isNum(obj) && !isNaN(obj); break;
+
+		}
+	}
+
+
 	ext.isArr = function(obj) {
 		return Object.prototype.toString.call(obj) == "[object Array]";
 	};
@@ -1651,8 +1676,8 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 		var u = sb.state && sb.state.value("user");
 		return u ? u.date_format : ext.serverFormat;
 	}
-	ext.serverDate = function(d) { return sb.moment(d).format(ext.serverFormat); };
-	ext.userDate = function(d) { return sb.moment(d).format( ext.userFormat()); };
+	ext.serverDate = function(d) { return sb.moment(d||new Date()).format(ext.serverFormat); };
+	ext.userDate = function(d) { return sb.moment(d||new Date()).format( ext.userFormat()); };
 	ext.dateFromNow = function(d, format, reverse) { 
 		if(reverse) {
 			return "(" + sb.moment(d).fromNow() + ") " + sb.moment(d).format(format || ext.userFormat());
@@ -1721,39 +1746,98 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 		
 		//************  Math ***************************/
 	ext.roundTo = function(number, dec) {
-		var val = Math.pow(10,dec);
+		var val = Math.pow(10,ext.number(dec,0));
 		return Math.round(number * val)/val;
+	};
+	ext.floorTo = function(number, dec) {
+		var val = Math.pow(10,ext.number(dec,0));
+		return Math.floor(number * val)/val;
+	};
+	ext.ceilTo = function(number, dec) {
+		var val = Math.pow(10,ext.number(dec,0));
+		return Math.ceil(number * val)/val;
 	};
 	
 	ext.to_i =  function(str, base, def/*=0*/) {
 		var i = parseInt(str, base||10);
-		return isNaN(i) ? (def===undefined?0:def) : i; 
+		return isNaN(i) ? ext.number(def,0) : i; 
+	};
+	ext.to_f =  function(str, def/*=0*/) {
+		var f = parseFloat(str);
+		return isNaN(f) ? ext.number(def,0) : f; 
+	};
+	ext.rand = function(min, max, dec/*==0*/) {
+    	return ext.floorTo( (Math.random() * (max - min + 1)), dec) + min;
 	};
 	ext.to_color = function(num) {
 	    return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
 	};
 	
+	// The argument [n] can be:
+	//		literal numbers (e.g., 24)
+	//		a function that returns a number n==foo, where foo() returns 24
+	//		an array with a function as the first argument, so n=[foo, "bar", "stuff"] and foo("bar", "stuff") returns 24
 	ext.number = function(n,def/*==0*/) {
+		var n = ext.isFunc(n) ? n() : n;
+		n = ext.isArr(n) && ext.isFunc(n[0]) ? n[0].apply(null, n.slice(1)) : n;
 		return isNaN(n) ? (def||0) : n;
 	};
 	ext.max =  function(/*etc....*/) {
-		var m = Number.NEGATIVE_INFINITY;
-		var c;
-		for(var i = 0; i < arguments.length; ++i) {
-			c = this.number(arguments[i],Number.NEGATIVE_INFINITY);
-			m = c > m ? c : m;
-		}
-		return m;
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.NEGATIVE_INFINITY)});
+		var max = args.reduce(function(prev,el){
+			return prev > el ? prev : el;
+		},Number.NEGATIVE_INFINITY);
+
+		return max;
 	};
 	ext.min = function(/*etc....*/) {
-		var m = Number.POSITIVE_INFINITY;
-		var c;
-		for(var i = 0; i < arguments.length; ++i) {
-			c = this.number(arguments[i],Number.POSITIVE_INFINITY);
-			m = c < m ? c : m;
-		}
-		return m;
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.POSITIVE_INFINITY)});
+		var min = args.reduce(function(prev,el){
+			return prev < el ? prev : el;
+		},Number.POSITIVE_INFINITY);
+
+		return min;
 	};
+
+
+	//takes an array of literals or functions and sums the result
+	ext.sum = function() {
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el)});
+		var sum = args.reduce(function(prev,el){
+			return prev + ext.number(el);
+		},0);
+
+		return sum;
+
+	}
+
+	//takes an array of literals or functions and subtracts them the first element in the list
+	ext.diff = function() {
+		var base = ext.number(arguments[0]);
+		var args  = ext.slice(arguments,1).map(function(el) {return ext.number(el)});
+		var diff = args.reduce(function(prev,el){
+			return prev - ext.number(el);
+		},base);
+
+		return diff;
+	}
+
+	//takes an array of literals or functions and multiplies the result
+	ext.prod = function() {
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,1)});
+		var prod = args.reduce(function(prev,el){
+			return prev * ext.number(el);
+		},1);
+
+		return prod;
+
+	}
+	//compare two numbers and return true if their difference is less/equals to "within".
+	//the purpose of this function is to ameliorate problems with DOM co-ords
+	ext.compareInt = function(a,b,within/*==0*/) {
+		within = ext.number(within,0);
+		return Math.abs(a-b) <= within;
+	}
 		
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
@@ -2417,6 +2501,580 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 	return svg;
 	
 });
+/* Simple JavaScript Inheritance
+ * By John Resig http://ejohn.org/
+ * MIT Licensed.
+ */
+// Inspired by base2 and Prototype
+define('sb_light/utils/Class',[],function(){
+  var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
+  // The base Class implementation (does nothing)
+  this.Class = function(){};
+  
+  // Create a new Class that inherits from this class
+  Class.extend = function(prop) {
+    var _super = this.prototype;
+    
+    // Instantiate a base class (but only create the instance,
+    // don't run the init constructor)
+    initializing = true;
+    var prototype = new this();
+    initializing = false;
+    
+    // Copy the properties over onto the new prototype
+    for (var name in prop) {
+      // Check if we're overwriting an existing function
+      prototype[name] = typeof prop[name] == "function" && 
+        typeof _super[name] == "function" && fnTest.test(prop[name]) ?
+        (function(name, fn){
+          return function() {
+            var tmp = this._super;
+            
+            // Add a new ._super() method that is the same method
+            // but on the super-class
+            this._super = _super[name];
+            
+            // The method only need to be bound temporarily, so we
+            // remove it when we're done executing
+            var ret = fn.apply(this, arguments);        
+            this._super = tmp;
+            
+            return ret;
+          };
+        })(name, prop[name]) :
+        prop[name];
+    }
+    
+    // The dummy class constructor
+    function Class() {
+      // All construction is actually done in the init method
+      if ( !initializing && this.init )
+        this.init.apply(this, arguments);
+    }
+    
+    // Populate our constructed prototype object
+    Class.prototype = prototype;
+    
+    // Enforce the constructor to be what we expect
+    Class.prototype.constructor = Class;
+
+    // And make this class extendable
+    Class.extend = arguments.callee;
+    return Class;
+  };
+	return (Class);
+});
+
+
+
+
+define('widgets/widget',['sb_light/utils/Class'], function( Class ) {
+
+	var Widget = Class.extend({
+		//called by "new Widget()"
+		_sb:null,
+		_dom:null,
+		_def:null,
+		_domFuncs:null,
+		_sizeFuncs:null,
+		_sizeDefs:null,
+		_parent: null,
+		_name:null,
+
+		init:function(sb, parentNode, def) {
+			this._sb = sb;
+			this._domFuncs = this._propertyOverrides();
+			this._sizeFuncs = {};
+			this._sizeDefs = {};
+			
+			this._parent = parentNode;
+			this._def = def;
+			this._dom = this.createDom(this._def);
+			this.parentDom().appendChild(this._dom);
+			
+			this.applyProperties();
+		},
+
+		dom:function() {	return this._dom;	},
+		id:function() {		return this._def.id || this._dom.id;},
+		name:function() {	return this._name || this._def.widget;		},
+
+		parentId:function() {
+			return this._parent ? (this._sb.ext.isFunc(this._parent.id) ? this._parent.id() : this._parent.id ) : null;
+		},
+		parentDom:function() {
+			return this._parent ? (this._sb.ext.isFunc(this._parent.dom) ? this._parent.dom() : this._parent ) : null;
+		},
+		
+
+		_noop: function() {},
+		_propertyOverrides: function() { 
+			return {
+				"default": this.property.bind(this),
+				"style": this.style.bind(this),
+				"widget": this._noop,
+				"class":this.className.bind(this),
+				"children":this._noop,
+				"text": this.text.bind(this),
+
+				"left": this._noop,
+				"right": this._noop,	
+				"top": this._noop,
+				"bottom": this._noop,
+				"x": this._noop,
+				"y": this._noop,
+				"height": this._noop,
+				"width": this._noop,
+				"fringe": this._noop
+			};
+		},
+
+		appendChild: function(c) {
+			if(this._dom && c) {
+				this._dom.appendChild(c);
+			}
+		},
+		createDom:function(opts) {
+			if(!opts.widget) { throw "The 'widget' option must be specified, and be the name of a valid HTML element."; }
+			return document.createElement(opts.widget);
+
+		},
+
+		applyProperties: function() {
+			for(var k in this._def) {
+				var f = this._domFuncs[k] || this._domFuncs["default"];
+				f(k, this._def[k]);
+			}
+			this.className("sb_light_widget");
+			this.dataProperty("name", this.name());
+
+		},
+
+		source: function(name) {
+			return typeof this._def[name] === "undefined" ? null : this._def[name];
+		},
+		className: function(value/*==null*/, remove/*==false*/) { 
+			if(arguments.length > 0) {
+				this._dom.className = this._dom.className.replace(new RegExp("(^|\s)"+value+"(\s|$)"), " ") + (remove ? "": (" " + value));
+			}
+			return this._dom.className; 
+		},
+		property: function(name, value /*==null*/) {
+			if(arguments.length > 1) {
+				this._dom.setAttribute(name, value);
+			}
+			return this._dom.getAttribute(name); 
+		},
+		dataProperty: function(name, value /*==null*/) {
+			this.property.call(this, "data-"+name, value);
+		},
+
+		style: function(name, value /*==null*/) {
+			if(arguments.length > 1) {
+				this._dom.style.cssText = value;
+			}
+			return this._dom.style.cssText;
+		},
+
+		text: function(name, value/*==null*/) { 
+			if(value != null) {
+				this._dom.textContent = value;
+			}
+			return this._dom.textContent; 
+		},
+
+		sizeDefs:function(name, value) {
+			if(arguments.length > 1) {
+				this._sizeDefs[name] = value;
+			}
+
+			return this._sizeDefs[name];
+		},
+
+		sizeFuncs:function(name, value) {
+			if(arguments.length > 1) {
+				this._sizeFuncs[name] = value;
+			}
+			return this._sizeFuncs[name];
+		},
+
+		applyLayout: function() {
+			var d = this.dom();
+			var px = this._sb.ext.px;
+			var sz = this.sizeFuncs.bind(this);
+
+			["left","top","width","height"].forEach(function(s) {
+				d.style[s] = px( sz(s)() );
+			});
+
+			this._sb.ext.debug(this.id(), this.style());
+			this._handleResize();
+		},
+
+		_handleResize: function() {
+
+		}
+
+	});
+
+	return Widget;
+
+});
+
+
+
+define('sb_light/layout/layout',['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
+	var lo =  {};
+
+	lo.init = function() {
+	}
+
+
+	lo.create = function(parent, def) {
+		var el;
+		if(sb.ext.isStr(def.widget)) {
+			el = (new Widget(sb, parent, def));
+		} else {
+			//widget -- needs to inherit from layout/widget.js
+			var W = def.widget;
+			el = new W(sb, parent, def);
+		}
+		return el;
+	};
+
+	var handlers = {
+		"noop": 		function() {},
+		"text": 		function(domEl, name, value/*==null*/) { 
+							if(value != null) {
+								console.log("Setting Text:", domEl.id,value);
+								domEl.textContent = value;
+							}
+							return domEl.textContent; 
+						},
+		"class": 		function(domEl, name, value/*==null*/) { 
+							if(value != null) {
+								console.log("Setting Class:", domEl.id,value);
+								domEl.className = domEl.className.replace(new RegExp("(^|\s)"+value+"(\s|$)"), " ") + " " + value;
+							}
+							return domEl.className; 
+						},
+		"property": 	function(domEl, name, value /*==null*/) {
+							if(value != null) {
+								console.log("Setting property:", domEl.id, name,value);
+								domEl.setAttribute(name, value);
+							}
+							return domEl.getAttribute(name); 
+						},
+		"style": 		function(domEl, name, value /*==null*/) {
+							if(value != null) {
+								domEl.style.cssText = value;
+							}
+							return domEl.style.cssText;
+						},
+		"position": 	function(domEl, name, value /*==null*/) {
+							if(value != null) {
+								domEl.setAttribute("data-position-"+name, value);
+							}
+							return domEl.getAttribute("data-position-"+name, value);
+						}
+
+	};
+
+
+	lo.propertyOverrides = {
+		"default": handlers.property,
+		"style": handlers.style,
+		"id": handlers.noop,
+		"type": handlers.noop,
+		"children":handlers.noop,
+		"text": handlers.text,
+
+		"left": handlers.noop,
+		"right": handlers.noop,	
+		"top": handlers.noop,
+		"bottom": handlers.noop,
+		"x": handlers.noop,
+		"y": handlers.noop,
+		"height": handlers.noop,
+		"width": handlers.noop,
+		"fringe": handlers.noop
+	};
+
+
+
+	//parse the def(inition) of the layout and inject the widgets into root.
+	lo.parse = function(root, def, preventResize/*==false*/) {
+		var rect = root.getBoundingClientRect();
+		var layout = {root: root, widgets:{}, rootWidth:rect.width, rootHeight:rect.height};
+		_createWidgets(null, def, layout);
+		if(!preventResize) {
+			lo.resize(layout)
+		}
+		return layout;
+	};
+
+	lo.resize = function(layout) {
+		_buildLayout(layout);
+		_evalLayout(layout);
+		_applyLayout(layout);
+	}
+
+	//change the layout def for a single item and relayout.
+	//specify "true" if you want to prevent the re-layout -- this is useful when applying a bunch of changes (e.g., in a loop) and you 
+	//		want to call resize manually. 
+	lo.change = function(layout, key, dim, value, wait/*==false*/) {
+		layout.widgets[key].source[dim] = value;
+		if(!wait) {
+			lo.resize(layout);
+		}
+	}
+
+	var _createWidgets = function(parentId,def, layout) {
+		var p = parentId ? layout.widgets[parentId] : layout.root
+		if(!p) { 
+			throw "Warning: missing parent id", parentId;
+		}
+		def = sb.ext.isArray(def) ? def : [def];
+		def.forEach(function(d,i) {
+			if(!d.id) { 
+				var id = "unknown_" + sb.ext.unique();
+				d.id = id;
+			}
+			var widget = lo.create(p, d);
+			layout.widgets[d.id] = widget; //{id:d.id, source:d, dom:obj, parentId:parentId};
+
+			if(d.children && d.children.length) {
+				_createWidgets(d.id, d.children, layout);
+			}
+
+		});
+	};
+
+
+
+	var _matchLink = /^@(.+?)(#(left|right|top|bottom|height|width))?(#(-?\d+))?$/;
+	var _matchNum = /^(-?\d+)([^0-9]+)?$/;
+	var _dimList = ["left","right", "top","bottom", "height","width"];
+	var _vDimList = ["top","bottom", "height"];
+
+	var _buildLayout = function( layout) {
+		for(var wid in layout.widgets) {
+			var w = layout.widgets[wid];
+			var p = layout.widgets[w.parentId()] || null; //parent might be root
+
+
+			var sz = w.sizeDefs.bind(w);//func
+			var v = sb.ext.valid;
+			
+			_dimList.forEach(function(s){
+				sz(s,w.source(s));
+			});
+
+
+			//remove conflicting "right"
+			if(v(sz("left")) && v(sz("width")) && v(sz("right"))) {
+				console.log("sb_light::utils::layout Warning: ", wid, " has left/width/right all specified. Removing 'right'");
+				sz("right", null);
+			}
+			//remove conflicting "bottom"
+			if(v(sz("top")) && v(sz("bottom")) && v(sz("height"))) {
+				console.log("sb_light::utils::layout Warning: ", wid, " has top/height/bottom all specified. Removing 'bottom'")		
+				sz("bottom", null);
+			}
+
+			//apply the "fringe" setting to the left/right/bottom/top where appropriate
+			var fringe = v(w.source("fringe")) ? w.source("fringe") : 0;
+			if(!v(sz("left")) 		&& (!v(sz("width")) 	|| !v(sz("right")))) 		{ sz("left", fringe);}
+			if(!v(sz("right")) 		&& (!v(sz("width")) 	|| !v(sz("left")))) 		{ sz("right", fringe);}
+			if(!v(sz("top")) 		&& (!v(sz("height")) 	|| !v(sz("bottom")))) 		{ sz("top", fringe);}
+			if(!v(sz("bottom")) 	&& (!v(sz("height")) 	|| !v(sz("top")))) 			{ sz("bottom", fringe);}
+		}
+	}
+
+	var _isV = function(dim) { return _vDimList.indexOf(dim) > -1; }
+
+	var _evalLayout = function( layout) {
+		for(var wid in layout.widgets) {
+
+			var w = layout.widgets[wid];
+			var sz = w.sizeFuncs.bind(w);
+			//all elements from here should have a parentId with sizes
+			var p = layout.widgets[w.parentId()] || null; //parent might be root
+			var pid = w.parentId() || "_root"; //parent might be root
+			var pz = (p && p.sizeFuncs.bind(p)) || null;
+			var pzw = pz ? [pz, "width", (pid+"@width") ] : layout.rootWidth;
+			var pzh = pz ? [pz, "height", (pid+"@height") ] : layout.rootHeight;
+
+			var v = sb.ext.valid;
+
+			// if(wid == "divB"){
+			// 	console.log("DivB");
+			// }
+
+			_dimList.forEach(function(s) {
+				var dim = String(w.sizeDefs(s));
+				var m = dim ? dim.match(_matchLink) : null;
+				var mn = dim.match(_matchNum); 
+
+				if(mn) {
+					//25%, -45%, etc... 
+					if(mn.length == 3 && mn[2] == "%") 	{ 
+						mn = (sb.ext.to_f(mn[1])/100);
+						//console.log("Fixed %: ", wid, s, mn);
+						sz(s, _sizeFunc(wid, s, sb.ext.prod,  (_isV(s) ? pzh : pzw), mn));
+					//50, 20, -23, ....
+					} else if(mn.length == 2 || !v(mn[2])) { 
+						//console.log("Fixed Num: ", wid, s, mn);
+					 	mn = sb.ext.to_f(mn[1]);
+						sz(s, _sizeFunc(wid, s, sb.ext.sum, mn));
+					} else {
+						console.log("sb_light::utils::layout Warning: ", "Number is not a valid dimension", w.id, s, dim);
+					}
+				} else if (dim == "auto") {
+					sz(s, _autoFunc(wid, s, w, layout));
+				} else if (!m) {
+					//console.log("Undefined: ", wid, s, w.parentId);
+					//console.log("Undefined: ", pzw, pzh);
+
+						 if(s == "width") 	{ sz(s,_sizeFunc(wid,s, sb.ext.diff, pzw, [sz,"left", (wid+"@left")], 		[sz,"right", (wid+"@right")]))	;}	
+					else if(s == "height") 	{ sz(s,_sizeFunc(wid,s, sb.ext.diff, pzh, [sz,"top", (wid+"@top")], 		[sz,"bottom", (wid+"@bottom")]))	;}	
+					else if(s == "left") 	{ sz(s,_sizeFunc(wid,s, sb.ext.diff, pzw, [sz,"width", (wid+"@width")], 	[sz,"right", (wid+"@right")]))	;}	
+					else if(s == "top") 	{ sz(s,_sizeFunc(wid,s, sb.ext.diff, pzh, [sz,"height", (wid+"@height")],	[sz,"bottom", (wid+"@bottom")]))	;}	
+					else if(s == "right") 	{ sz(s,_sizeFunc(wid,s, sb.ext.diff, pzw, [sz,"width", (wid+"@width")], 	[sz,"left", (wid+"@left")]))	;}	
+					else if(s == "bottom") 	{ sz(s,_sizeFunc(wid,s, sb.ext.diff, pzh, [sz,"height", (wid+"@height")], 	[sz,"top", (wid+"@top")]))		;}	
+					return;
+				} else {
+
+					var linkKey = m[1]  && layout.widgets[m[1]] ? m[1] : null;
+					var linkDim = v(m[3]) ? m[3] : s;
+					var linkAmt = v(m[5]) ? sb.ext.to_f(m[5],0) : 0;
+
+					var lw = layout.widgets[linkKey];
+					if(!lw) {
+						sb.ext.debug("Doo");
+					}
+					var lz = lw.sizeFuncs.bind(lw);
+					if(linkDim == "right" && s == "left") { 
+						sz(s, _sizeFunc(wid, s, sb.ext.sum, [lz,"left", (linkKey+"@left")], [lz,"width", (linkKey+"@width")],  linkAmt));
+					} else if (linkDim == "left" && s == "right") { 
+						sz(s, _sizeFunc(wid, s, sb.ext.sum, [lz,"right", (linkKey+"@right")], [lz,"width", (linkKey+"@width")],  linkAmt));
+					} else if (linkDim == "bottom" && s == "top") { 
+						sz(s, _sizeFunc(wid, s, sb.ext.sum, [lz,"top", (linkKey+"@top")], [lz,"height", (linkKey+"@height")],  linkAmt));
+					} else if (linkDim == "top" && s == "bottom") { 
+						sz(s, _sizeFunc(wid, s, sb.ext.sum, [lz,"bottom", (linkKey+"@bottom")], [lz,"height", (linkKey+"@height")],  linkAmt));
+					} else {
+						sz(s, _sizeFunc(wid, s, sb.ext.sum, [lz,linkDim, (linkKey+"@"+linkDim)], linkAmt));
+					}
+				}
+
+
+			});
+
+		}
+
+	}
+
+	var _sizeFunc = function(id, dim, op /*, list */ ) {
+		var dimId = id + ":" + dim;
+
+		var list = sb.ext.slice(arguments, 3);
+
+		return function(chain) {
+			chain = chain ||"Chain: ";
+			if(chain.match(dimId)) { 
+				throw "sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId;
+			}
+			var nl = list.map(function(el) {	
+				return sb.ext.isArr(el) ? [el[0](el[1]), (chain+"_"+dimId + ( el[2] ? ("("+el[2]+")") :"" ))] : el;
+			});
+			
+			var res = op.apply(op, nl);
+			// if(id=="divB") {
+			// 	console.log(id,dim,chain, res, nl);
+			// }
+			
+			return res;
+		}
+	}
+
+	var _autoFunc = function(id, dim, w, layout) {
+		var dimId = id + ":" + dim;
+		return function(chain) { 
+			chain = chain || "Chain: ";
+			if(chain.match(dimId)) { 
+				throw "sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId;
+			}
+
+			var list = [];
+			for(var wid in layout.widgets)  {
+				var cw = layout.widgets[wid];
+				var cz = cw.sizeFuncs.bind(cw)
+				if(cw.parentId() == id) { 
+					list.push(
+						function() {
+							if(dim == "width") {
+								return  cz("left")(chain+"_"+dimId+"_"+ wid +"@"+dim) + cz("width")(chain+"_"+dimId+"_"+ wid +"@"+dim);
+							} else if (dim == "height") {
+								return cz("top")(chain+"_"+dimId+"_"+ wid +"@"+dim) + cz("height")(chain+"_"+dimId+"_"+ wid +"@"+dim);
+							} else 	if(dim == "left") {
+								return cz("left")(chain+"_"+dimId+"_"+ wid +"@"+dim);
+							} else if (dim == "top") {
+								return cz("top")(chain+"_"+dimId+"_"+ wid +"@"+dim);
+							}
+						}
+						
+					); 
+				}
+			}
+
+			if(list.length) {
+				return (dim == "width" || dim =="height") ? sb.ext.max.apply(null, list) : sb.ext.min.apply(null,list);
+			} else {
+
+				var pid = w.parentId();
+				var p =  layout.widgets[pid] || null;
+				var rect = w.dom().getBoundingClientRect();
+				var prect = p ? p.dom().getBoundingClientRect() : layout.root.getBoundingClientRect();
+				
+				
+				var ph = p ? p.sizeFuncs("height")(chain+"_"+dimId) : layout.rootHeight;
+				var pw = p ? p.sizeFuncs("width")(chain+"_"+dimId) : layout.rootWidth;
+
+				if(dim !== "bottom" && dim != "right") {
+					return rect[dim];
+				} else if(dim == "bottom"){
+					return ph - rect.height - (rect.top- prect.top);
+				} else {
+					return pw - rect.width  - (rect.left - prect.left);
+				}
+			}
+		}
+	}
+
+	var _applyLayout = function(layout) {
+		for (var wid in layout.widgets) {
+			var w = layout.widgets[wid];
+			var sz = w.sizeFuncs.bind(w);
+			var r = sb.ext.roundTo;
+			// console.log(wid, 
+			// 		"left",		r(sz("left")(wid),1),
+			// 		"right",	r(sz("right")(wid),1),
+			// 		"top",		r(sz("top")(wid),1),
+			// 		"bottom",	r(sz("bottom")(wid),1),
+			// 		"width", 	r(sz("width")(wid),1),
+			// 		"height", 	r(sz("height")(wid),1)
+			// );
+
+			w.applyLayout();
+
+		}
+
+	}
+
+
+
+	return lo;
+});
 
 
 define('sb_light/utils/consts',['sb_light/globals'], function(sb) {
@@ -2515,71 +3173,6 @@ define('sb_light/utils/consts',['sb_light/globals'], function(sb) {
 	return consts;
 	
 });
-
-/* Simple JavaScript Inheritance
- * By John Resig http://ejohn.org/
- * MIT Licensed.
- */
-// Inspired by base2 and Prototype
-define('sb_light/utils/Class',[],function(){
-  var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
-  // The base Class implementation (does nothing)
-  this.Class = function(){};
-  
-  // Create a new Class that inherits from this class
-  Class.extend = function(prop) {
-    var _super = this.prototype;
-    
-    // Instantiate a base class (but only create the instance,
-    // don't run the init constructor)
-    initializing = true;
-    var prototype = new this();
-    initializing = false;
-    
-    // Copy the properties over onto the new prototype
-    for (var name in prop) {
-      // Check if we're overwriting an existing function
-      prototype[name] = typeof prop[name] == "function" && 
-        typeof _super[name] == "function" && fnTest.test(prop[name]) ?
-        (function(name, fn){
-          return function() {
-            var tmp = this._super;
-            
-            // Add a new ._super() method that is the same method
-            // but on the super-class
-            this._super = _super[name];
-            
-            // The method only need to be bound temporarily, so we
-            // remove it when we're done executing
-            var ret = fn.apply(this, arguments);        
-            this._super = tmp;
-            
-            return ret;
-          };
-        })(name, prop[name]) :
-        prop[name];
-    }
-    
-    // The dummy class constructor
-    function Class() {
-      // All construction is actually done in the init method
-      if ( !initializing && this.init )
-        this.init.apply(this, arguments);
-    }
-    
-    // Populate our constructed prototype object
-    Class.prototype = prototype;
-    
-    // Enforce the constructor to be what we expect
-    Class.prototype.constructor = Class;
-
-    // And make this class extendable
-    Class.extend = arguments.callee;
-    return Class;
-  };
-	return (Class);
-});
-
 
 
 
@@ -3327,7 +3920,7 @@ define('sb_light/api/state',['sb_light/globals'], function(sb) {
 	state.url = function(value) {
 		//update the url
 		if(value !== undefined) { 
-			value = typeof value == "string" ? sb.url.url_to_o(value) : value;
+			value = typeof value == "string" ? sb.urls.url_to_o(value) : value;
 			sb.ext.each(value, function(k, v) {
 				state.value(k,v, false);
 			});
@@ -4570,6 +5163,7 @@ define('sb_light/main',[
 	'moment',		//needs to be mapped properly in the requirejs config
 	'sb_light/utils/ext',	
 	'sb_light/utils/svg',	
+	'sb_light/layout/layout',	
 	'sb_light/utils/consts',
 	'sb_light/utils/Class',
 	'sb_light/models',		
@@ -4584,6 +5178,7 @@ define('sb_light/main',[
 	moment,
 	ext,	
 	svg,
+	layout,
 	consts,	 
 	Class,	 
 	models,	
@@ -4600,6 +5195,7 @@ define('sb_light/main',[
 	globals.moment = moment;
 	globals.ext = ext;
 	globals.svg = svg;
+	globals.layout = layout;
 	globals.consts = consts;
 	globals.models = models;
 	globals.controller = controller;

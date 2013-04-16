@@ -1,11 +1,17 @@
 @import "elements";
 
+.sb_light_widget {
+	position:absolute;
+}
 
 
 .full_size 		{	margin:0;	padding:0 	}
 .full_page 		{	height: 100%;	width: 100%; 	.full_size; 	overflow:hidden; }
 .centered 		{	margin-left:auto;	margin-right:auto;	}
 .clear 			{	clear:both;	}
+
+
+
 
 .padding_x(@padding: 5px) {
 	padding-left:@padding;
@@ -44,9 +50,8 @@ h1,h2,h3 {	.font_bold; }
 
 
 form > div  {
-	.centered;
-	width:350px;
-	margin-top:60px;
+	/*.centered;
+	width:350px;*/
 	p {
 		display:block;
 		height:30px;

@@ -71,7 +71,7 @@ define(['sb_light/globals'], function(sb) {
 	state.url = function(value) {
 		//update the url
 		if(value !== undefined) { 
-			value = typeof value == "string" ? sb.url.url_to_o(value) : value;
+			value = typeof value == "string" ? sb.urls.url_to_o(value) : value;
 			sb.ext.each(value, function(k, v) {
 				state.value(k,v, false);
 			});

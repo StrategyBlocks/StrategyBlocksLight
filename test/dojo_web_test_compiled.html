@@ -2,11 +2,8 @@
 <head>
 	<meta charset="utf-8">
 	<title>Demo: helloworld</title>
-</head>	
-<body>
-	<h1>Demo: helloworld</h1>
-	<div id="helloworld"></div>
-	<!-- load dojo and provide config via data attribute -->
+
+	<link rel="stylesheet" href="/test/css/dojo.css">
 	<script>
 		dojoConfig = {
 			baseUrl: "/",
@@ -24,14 +21,70 @@
 	</script>
 	<script src="/lib/dtk/dojo/dojo.js"></script>
 	<script>
-		require(["dojo/dom","dojo/request", "sb_light", "dojo/domReady!"], function(dom,request,sb){
-
-			console.log("State:", sb.state);
-			dom.byId("helloworld").innerHTML = "Hello New World!";
-
+		require(["dojo/query", "dojo/parser","dojo/request", "dojo/hash", "sb_light", "dojo/domReady!"], function(q, parser,request,hash, sb){
 			sb.api.ajax = sb.ajax.dojo(request);
-			sb.state.login();
+
+			console.log(hash());
+			sb.state.host = window.location.host;	
+			sb.state.url(hash()); 
+
+			parser.parse(q("body"), {
+				type:"div"
+			});
 		});
-	</script>
+	</script>	
+</head>	
+<body class="claro">
+	<div id="pageWrapper" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline', gutters:true, liveSplitters:true">
+		<div id="pageHeader" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'sidebar', splitter:false, region:'top'" style="width: 100px; height:100px">
+			<div id="pageLogo" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="splitter:false, region:'left'" style="width: 200px;">
+				I'm the logo!
+			</div>
+			<div id="pageTitle" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="splitter:false, region:'center'">
+				I'm the title!
+			</div>
+			<div id="pageSections" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="splitter:false, region:'bottom'">
+				
+			</div>
+
+		</div>
+		<div id="pageControls" data-dojo-type="dojox/layout/ExpandoPane" data-dojo-props="splitter:true, region:'left', maxWidth:300, title:'Left Expando'" style="width: 200px;"
+					title="Left Panel" >
+			<div id="pageAccordion" data-dojo-type="dijit/layout/ContentPane">
+				I'm the left panel!
+			</div>
+		</div>
+
+
+		<div id="pageTabs" data-dojo-type="dijit/layout/TabContainer" data-dojo-props="splitter:false, region:'center', tabPosition:'bottom',useMenu:true" style="width: 200px;">
+			<div id="pageContent" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="splitter:false, region:'center'" 
+				style="width: 100px; height:200px" title="Default">
+
+				<div id="pageToolbar" data-dojo-type="dijit/layout/StackController" data-dojo-props="splitter:false, region:'top', containerId:'mainPage'" style="height: 30px;"></div>
+
+				<div id="mainPage" data-dojo-type="dijit/layout/StackContainer" data-dojo-props="selected:true, region:'center'" title="Default">
+					<div id="loginPage" data-dojo-type="dijit/layout/ContentPane" title="Login">Login</div>
+					<div id="homeNewsPage" data-dojo-type="dijit/layout/ContentPane" title="News">News</div>
+					<div id="homeDashboardPage" data-dojo-type="dijit/layout/ContentPane" title="Dashboard">Dashboard</div>
+					<div id="blocksTreePage" data-dojo-type="dijit/layout/ContentPane" title="Blocks">Blocks</div>
+					<div id="blocksGraphPage" data-dojo-type="dijit/layout/ContentPane" title="Graph">Graph</div>
+					<div id="blocksTimelinePage" data-dojo-type="dijit/layout/ContentPane" title="Timeline">Timeline</div>
+					<div id="blocksTablePage" data-dojo-type="dijit/layout/ContentPane" title="Table">Table</div>
+					<div id="monitorKpisPage" data-dojo-type="dijit/layout/ContentPane" title="Outputs">Outputs</div>
+					<div id="monitorRisksPage" data-dojo-type="dijit/layout/ContentPane" title="Risks">Risks</div>
+					<div id="adminPage" data-dojo-type="dijit/layout/ContentPane" title="Admin">Admin</div>
+					<div id="helpPage" data-dojo-type="dijit/layout/ContentPane" title="Help">Help</div>
+				</div>
+
+			</div>
+			<div id="blockPage-1222" data-dojo-type="dijit/layout/ContentPane" title="Block 1223"  data-dojo-props="closable:true">
+				I'm a block edit tab
+			</div>
+		</div>		
+		
+
+
+	</div>
+
 </body>
 </html>
