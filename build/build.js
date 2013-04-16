@@ -8,7 +8,7 @@ var rjs = require('requirejs');
 
 var base  = __dirname+"/..";
 
-var _package = fs.readFileSync(base+"/sb_light/package.json", 'utf8');
+var _package = fs.readFileSync(base+"/src/sb_light/package.json", 'utf8');
 var version = JSON.parse(_package).version;
 
 var config = {
@@ -16,9 +16,8 @@ var config = {
 	//namespace:"sb_light",
    	baseUrl: (base),
    	paths: {
-       	sb_light:"sb_light",
-       	moment:"sb_light/lib/moment",
-       	widgets:"sb_light/layout/widgets"
+       	sb_light:"src/sb_light",
+       	widgets:"src/widgets"
    	},
    	optimize:"none",
 	cjsTranslate: false,
@@ -26,6 +25,8 @@ var config = {
 	onBuildWrite: function(moduleName,path, contents) {
 		if(moduleName == "sb_light/main") {
 			contents = contents += '\n\n define("sb_light", ["sb_light/main"], function(sb) {    return sb; })';
+		} else if (moduleName == "sb_light/lib/moment" ) {
+			contents = contents.replace('define("moment",', 'define("sb_light/lib/moment",');
 		}
 		return contents;
 	}
@@ -38,22 +39,22 @@ var config_commonjs = {
    	optimize:"none",
    	namespace:"sb_light",
 	paths: {
-		sb_light: "sb_light",
-		moment:"sb_light/lib/moment",
-       	widgets:"sb_light/layout/widgets"
+		sb_light: "src/sb_light",
+		widgets:"src/widgets"
 	},
    	wrap:true,
 	onBuildWrite: function(moduleName, path,contents) {
 		var expName = moduleName.split("/");
 		expName = expName[expName.length-1];
 
-		 if(!expName.match(/(almond)/) && !expName.match(/(moment)/) && !expName.match(/(main)/)) {
-		 	return contents + "\n\n exports."+ expName + " = require('" + moduleName + "');\n\n";
-		 }
+		if (moduleName == "sb_light/lib/moment" ) {
+			contents = contents.replace('define("moment",', 'define("sb_light/lib/moment",').replace(/module\.exports = moment;/, "//");
+		}
 
-		 if(expName.match(/(moment)/)) {
-		 	return contents.replace(/module\.exports/, "exports.moment");
-		 }
+		if(!expName.match(/(almond)/) && !expName.match(/(main)/)) {
+			return contents + "\n\n exports."+ expName + " = require('" + moduleName + "');\n\n";
+		}
+
 
 		if(expName.match(/(main)/)) {
 			return contents + "\n\n exports.sb_light = require('" + moduleName + "');\n\n";

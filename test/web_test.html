@@ -3,7 +3,7 @@
     <head>
         <title>StrategyBlocks Light Client Web Demo</title>
         
-        <script src="/lib/require.js"></script>
+        <script src="/test/lib/require.js"></script>
 
         <link rel="stylesheet/less" type="text/css" href="/test/css/web_test.less">
 
@@ -11,10 +11,10 @@
         	require.config({
         		baseUrl:"/",
         		paths: {
-        			"jquery":"/lib/jquery-1.8.3.min",	
-        			"less":"/lib/less-1.3.3.min",
-        			"sb_light":"/sb_light",
-        			"moment":"/sb_light/lib/moment"
+        			"jquery":"/test/lib/jquery-1.8.3.min",	
+        			"less":"/test/lib/less-1.3.3.min",
+        			"sb_light":"/src/sb_light",
+        			"widgets":"/src/widgets"
         		},
         		shim: {
         			"jquery": {exports: "$"},
@@ -22,7 +22,7 @@
         		}
         	});
         	
-        	require(["jquery", "less","sb_light/main"], function($,less,sb) {
+        	require(["jquery", "less","sb_light/main", "widgets/formInput"], function($,less,sb) {
         		
         		$('#login_form').submit(function() {
         			var list = $(this).serializeArray();

@@ -62,7 +62,7 @@ var local_proxy = new httpProxy.HttpProxy({
 
 
 var server = http.createServer(function(req,res,proxy) {
-	if(req.url.match(/^\/(test|sb_light|lib|bin)/) === null) {
+	if(req.url.match(/^\/(test|src|lib|bin)/) === null) {
 		console.log("Proxy to SB: ",req.url);
 		var sb_proxy = new httpProxy.HttpProxy({
 			target: {

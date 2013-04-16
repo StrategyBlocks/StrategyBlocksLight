@@ -1488,7 +1488,7 @@ define('sb_light/globals',['require'],function (require) {
     }
     /*global define:false */
     if (typeof define === "function" && define.amd) {
-        define("moment", [], function () {
+        define("sb_light/lib/moment", [], function () {
             return moment;
         });
     }
@@ -2723,7 +2723,7 @@ define('widgets/widget',['sb_light/utils/Class'], function( Class ) {
 
 
 
-define('sb_light/layout/layout',['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
+define('sb_light/layout',['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 	var lo =  {};
 
 	lo.init = function() {
@@ -5160,10 +5160,10 @@ define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 
 define('sb_light/main',[
 	'sb_light/globals',
-	'moment',		//needs to be mapped properly in the requirejs config
+	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
 	'sb_light/utils/svg',	
-	'sb_light/layout/layout',	
+	'sb_light/layout',	
 	'sb_light/utils/consts',
 	'sb_light/utils/Class',
 	'sb_light/models',		

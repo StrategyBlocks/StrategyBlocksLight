@@ -3,10 +3,10 @@
 
 define([
 	'sb_light/globals',
-	'moment',		//needs to be mapped properly in the requirejs config
+	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
 	'sb_light/utils/svg',	
-	'sb_light/layout/layout',	
+	'sb_light/layout',	
 	'sb_light/utils/consts',
 	'sb_light/utils/Class',
 	'sb_light/models',		
