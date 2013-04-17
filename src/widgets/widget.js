@@ -144,7 +144,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		handleResize: function(e) {
-			sb.events.stop(e);
+			this._sb.events.stop(e);
 		}
 
 	});
