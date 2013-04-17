@@ -30,7 +30,7 @@ define(['widgets/widget'], function( Widget ) {
 		//and run the resize/
 		applyLayout:function() {
 			this._super()
-			this._handleResize();
+			this.handleResize();
 		},
 
 		handleResize: function(e) {

@@ -140,7 +140,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			});
 
 			this._sb.ext.debug(this.id(), this.style());
-			this._handleResize();
+			this.handleResize();
 		},
 
 		handleResize: function(e) {
