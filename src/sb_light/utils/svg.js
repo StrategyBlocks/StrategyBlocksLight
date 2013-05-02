@@ -1,5 +1,5 @@
 
-define(['d3', 'sb_light/globals'], function(d3, sb) {
+define(['sb_light/globals'], function(sb) {
 
 	var svg =  {};
 
