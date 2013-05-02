@@ -6,6 +6,7 @@ define([
 	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
 	'sb_light/utils/svg',	
+	'sb_light/utils/queue',	
 	'sb_light/utils/events',	
 	'sb_light/layout',	
 	'sb_light/utils/consts',
@@ -22,6 +23,7 @@ define([
 	moment,
 	ext,	
 	svg,
+	queue,
 	events,
 	layout,
 	consts,	 
@@ -40,6 +42,7 @@ define([
 	globals.moment = moment;
 	globals.ext = ext;
 	globals.svg = svg;
+	globals.queue = queue;
 	globals.events = events;
 	globals.layout = layout;
 	globals.consts = consts;

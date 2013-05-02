@@ -54,7 +54,7 @@ define(['sb_light/globals'], function(sb) {
 	
 	ext.each = function(list, fn, scope) {
 		if(ext.isArray(list)) {
-			list.forEach(fn,scope);
+			list.forEach(fn,scope);	
 		} else {
 			for(var el in list) {
 				//func(value,key,list)
@@ -81,9 +81,12 @@ define(['sb_light/globals'], function(sb) {
 	//takes a hash map and returns an array of values. 
 	ext.values= function(map, keyName) {
 		return ext.map(map, function(el,k) { 
-			if(keyName) { el[keyName] = el[keyName] || k; }
-			return el; 
+			return keyName ? el[keyName] : el;
 		});
+	}
+	//alias for Object.keys
+	ext.keys = function(map) {
+		return map ? Object.keys(map) : [];
 	}	
 	
 	//this only works with objects that contain only native JS object (e.g., Object-derived)
@@ -170,6 +173,7 @@ define(['sb_light/globals'], function(sb) {
 	};
 	
 		/************  DATES ***************************/
+	ext.time = function() { return (new Date()).getTime(); };	
 	ext.parseDate = function(d) { return sb.moment(d).toDate();	};
 	ext.daysDiff = function(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
 	ext.today = function() { return new Date(); };
@@ -271,7 +275,7 @@ define(['sb_light/globals'], function(sb) {
 		return isNaN(f) ? ext.number(def,0) : f; 
 	};
 	ext.rand = function(min, max, dec/*==0*/) {
-    	return ext.floorTo( (Math.random() * (max - min + 1)), dec) + min;
+		return ext.floorTo( (Math.random() * (max - min + 1)), dec) + min;
 	};
 	ext.to_color = function(num) {
 	    return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
@@ -282,12 +286,12 @@ define(['sb_light/globals'], function(sb) {
 	//		a function that returns a number n==foo, where foo() returns 24
 	//		an array with a function as the first argument, so n=[foo, "bar", "stuff"] and foo("bar", "stuff") returns 24
 	ext.number = function(n,def/*==0*/) {
-		var n = ext.isFunc(n) ? n() : n;
+		n = ext.isFunc(n) ? n() : n;
 		n = ext.isArr(n) && ext.isFunc(n[0]) ? n[0].apply(null, n.slice(1)) : n;
 		return isNaN(n) ? (def||0) : n;
 	};
 	ext.max =  function(/*etc....*/) {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.NEGATIVE_INFINITY)});
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.NEGATIVE_INFINITY);});
 		var max = args.reduce(function(prev,el){
 			return prev > el ? prev : el;
 		},Number.NEGATIVE_INFINITY);
@@ -295,7 +299,7 @@ define(['sb_light/globals'], function(sb) {
 		return max;
 	};
 	ext.min = function(/*etc....*/) {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.POSITIVE_INFINITY)});
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.POSITIVE_INFINITY);});
 		var min = args.reduce(function(prev,el){
 			return prev < el ? prev : el;
 		},Number.POSITIVE_INFINITY);
@@ -303,50 +307,64 @@ define(['sb_light/globals'], function(sb) {
 		return min;
 	};
 
+	ext.range = function(min,max,num) {
+		return ext.max(min, ext.min(max,num));
+	};
+	ext.snapto = function(list, num) {
+		var diff = Math.abs(list[0]-num);
+		var n = list[0];
+		for(var i =1; i < list.length; ++i) {
+			if(Math.abs(list[i] - num) < diff) {
+				diff = Math.abs(list[i] - num);
+				n = list[i];
+			}
+		}
+		return n;
+	};
 
 	//takes an array of literals or functions and sums the result
 	ext.sum = function() {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el)});
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el);});
 		var sum = args.reduce(function(prev,el){
 			return prev + ext.number(el);
 		},0);
 
 		return sum;
 
-	}
+	};
 
 	//takes an array of literals or functions and subtracts them the first element in the list
 	ext.diff = function() {
 		var base = ext.number(arguments[0]);
-		var args  = ext.slice(arguments,1).map(function(el) {return ext.number(el)});
+		var args  = ext.slice(arguments,1).map(function(el) {return ext.number(el);});
 		var diff = args.reduce(function(prev,el){
 			return prev - ext.number(el);
 		},base);
 
 		return diff;
-	}
+	};
 
 	//takes an array of literals or functions and multiplies the result
 	ext.prod = function() {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,1)});
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,1);});
 		var prod = args.reduce(function(prev,el){
 			return prev * ext.number(el);
 		},1);
 
 		return prod;
 
-	}
+	};
 	//compare two numbers and return true if their difference is less/equals to "within".
 	//the purpose of this function is to ameliorate problems with DOM co-ords
 	ext.compareInt = function(a,b,within/*==0*/) {
 		within = ext.number(within,0);
 		return Math.abs(a-b) <= within;
-	}
+	};
 		
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
-	ext.healthColor = function(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1] };
-	ext.healthText = function(data) { return (["Bad","Warning","Good"])[data.status+1] };
+	ext.healthColor = function(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1]; };
+	ext.healthText = function(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	ext.blockProgressFill = function(block) {
 		switch(block.progress_color) {
 			case "green": 	return ["#176717", 		"url(#progressGood)" ];
@@ -456,8 +474,8 @@ define(['sb_light/globals'], function(sb) {
 	//	but they will not be removed from target if they exist there. 
 	ext.mixin = function (/*Object*/ target, /*Object*/ source, /*Object or Array*/ ignore ){
 		var empty = ignore || {}; //default template for properties to ignore
-		var target = target || {};
-		var source = source || {};
+		target = target || {};
+		source = source || {};
 		
 		var name, s, i;
 		for(name in source){
@@ -472,10 +490,12 @@ define(['sb_light/globals'], function(sb) {
 	// Create a new object, combining the properties of the passed objects with the last arguments having
 	// priority over the first ones
 	ext.combine = function( /*Object or array*/ props, /*object or array*/ ignore) {
-		props = ext.isArray(props) ? props : [props];
-		return props.reduce(function(newObj, v) {
-			return ext.mixin(newObj, v, ignore);
+		props = ext.isArray(props) ? props.concat(ext.slice(arguments,1)) : ext.slice(arguments);
+		var res = props.reduce(function(newObj, v) {
+			var mixed = ext.mixin(newObj, v, ignore);
+			return mixed;
 		},{});
+		return res;
 	};		
 	//same as combine but only takes two properties.
 	ext.merge = function(a, b, ignore) {

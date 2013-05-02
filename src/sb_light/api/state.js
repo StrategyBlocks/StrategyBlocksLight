@@ -33,7 +33,6 @@ define(['sb_light/globals'], function(sb) {
 		
 		session: state.session_startup,
 		url:"",
-
 		
 		childBlock:null,		
 		

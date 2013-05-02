@@ -1,88 +1,42 @@
 
 
 
-define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
+define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget, SvgWidget) {
 	var lo =  {};
 
 	lo.init = function() {
-	}
+	};
 
 
 	lo.create = function(parent, def) {
-		var el;
-		if(sb.ext.isStr(def.widget)) {
-			el = (new Widget(sb, parent, def));
-		} else {
-			//widget -- needs to inherit from layout/widget.js
-			var W = def.widget;
-			el = new W(sb, parent, def);
+		try {
+			var el;
+			if(sb.ext.isStr(def.widget)) {
+				if(def.widget == "svg") {
+					el = (new SvgWidget(sb,parent,def));
+				} else {
+					el = (new Widget(sb, parent, def));
+				}
+			} else {
+				//widget -- needs to inherit from layout/widget.js
+				var W = def.widget;
+				el = new W(sb, parent, def);
+			}
+			return el;
+		} catch(e) {
+			console.log(["SB_Light::Layout::create ", JSON.stringify(e), def.id].join(" -- "));
+			throw new Error(["SB_Light::Layout::create ", JSON.stringify(e), def.id].join(" -- "));
 		}
-		return el;
-	};
-
-	var handlers = {
-		"noop": 		function() {},
-		"text": 		function(domEl, name, value/*==null*/) { 
-							if(value != null) {
-								console.log("Setting Text:", domEl.id,value);
-								domEl.textContent = value;
-							}
-							return domEl.textContent; 
-						},
-		"class": 		function(domEl, name, value/*==null*/) { 
-							if(value != null) {
-								console.log("Setting Class:", domEl.id,value);
-								domEl.className = domEl.className.replace(new RegExp("(^|\s)"+value+"(\s|$)"), " ") + " " + value;
-							}
-							return domEl.className; 
-						},
-		"property": 	function(domEl, name, value /*==null*/) {
-							if(value != null) {
-								console.log("Setting property:", domEl.id, name,value);
-								domEl.setAttribute(name, value);
-							}
-							return domEl.getAttribute(name); 
-						},
-		"style": 		function(domEl, name, value /*==null*/) {
-							if(value != null) {
-								domEl.style.cssText = value;
-							}
-							return domEl.style.cssText;
-						},
-		"position": 	function(domEl, name, value /*==null*/) {
-							if(value != null) {
-								domEl.setAttribute("data-position-"+name, value);
-							}
-							return domEl.getAttribute("data-position-"+name, value);
-						}
-
 	};
 
 
-	lo.propertyOverrides = {
-		"default": handlers.property,
-		"style": handlers.style,
-		"id": handlers.noop,
-		"type": handlers.noop,
-		"children":handlers.noop,
-		"text": handlers.text,
 
-		"left": handlers.noop,
-		"right": handlers.noop,	
-		"top": handlers.noop,
-		"bottom": handlers.noop,
-		"x": handlers.noop,
-		"y": handlers.noop,
-		"height": handlers.noop,
-		"width": handlers.noop,
-		"fringe": handlers.noop
-	};
 
 
 
 	//parse the def(inition) of the layout and inject the widgets into root.
 	lo.parse = function(root, def, preventResize/*==false*/) {
-		var rect = root.getBoundingClientRect();
+		var rect = root.ownerDocument ?  root.getBoundingClientRect() : root.rect();
 		var layout = {root: root, widgets:{}, rootWidth:rect.width, rootHeight:rect.height};
 		_createWidgets(null, def, layout);
 		if(!preventResize) {
@@ -101,28 +55,40 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 	//specify "true" if you want to prevent the re-layout -- this is useful when applying a bunch of changes (e.g., in a loop) and you 
 	//		want to call resize manually. 
 	lo.change = function(layout, key, dim, value, wait/*==false*/) {
-		layout.widgets[key].source[dim] = value;
+		layout.widgets[key].source(dim, value);
 		if(!wait) {
 			lo.resize(layout);
 		}
+	}
+	lo.uniqueId = function(def) {
+		if(!def.id) { 
+			def.id = "unknown_" + sb.ext.unique();;
+		}	
+		return def.id;
 	}
 
 	var _createWidgets = function(parentId,def, layout) {
 		var p = parentId ? layout.widgets[parentId] : layout.root
 		if(!p) { 
-			throw "Warning: missing parent id", parentId;
+			throw new Error("Warning: missing parent id", parentId);
 		}
 		def = sb.ext.isArray(def) ? def : [def];
 		def.forEach(function(d,i) {
-			if(!d.id) { 
-				var id = "unknown_" + sb.ext.unique();
-				d.id = id;
-			}
+			d.id = lo.uniqueId(d);
+			d.style = d.style || "";
+			d.style = d.style + (d.style.match("/z-index/") ? "" : ";z-index:"+i);	
+
 			var widget = lo.create(p, d);
 			layout.widgets[d.id] = widget; //{id:d.id, source:d, dom:obj, parentId:parentId};
-
+			
 			if(d.children && d.children.length) {
-				_createWidgets(d.id, d.children, layout);
+				if(d.widget == "svg") {
+					//skip the layout engine and let the SVG widgets manage themselves. They don't have gimpy
+					//positioning like HTML DOM / CSS (even before using d3 )
+					widget.createChildren(d.children);
+				} else {
+					_createWidgets(d.id, d.children, layout);
+				}
 			}
 
 		});
@@ -151,12 +117,12 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 
 			//remove conflicting "right"
 			if(v(sz("left")) && v(sz("width")) && v(sz("right"))) {
-				console.log("sb_light::utils::layout Warning: ", wid, " has left/width/right all specified. Removing 'right'");
+				//console.log("sb_light::utils::layout Warning: ", wid, " has left/width/right all specified. Removing 'right'");
 				sz("right", null);
 			}
 			//remove conflicting "bottom"
 			if(v(sz("top")) && v(sz("bottom")) && v(sz("height"))) {
-				console.log("sb_light::utils::layout Warning: ", wid, " has top/height/bottom all specified. Removing 'bottom'")		
+				// //console.log("sb_light::utils::layout Warning: ", wid, " has top/height/bottom all specified. Removing 'bottom'")		
 				sz("bottom", null);
 			}
 
@@ -167,9 +133,9 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 			if(!v(sz("top")) 		&& (!v(sz("height")) 	|| !v(sz("bottom")))) 		{ sz("top", fringe);}
 			if(!v(sz("bottom")) 	&& (!v(sz("height")) 	|| !v(sz("top")))) 			{ sz("bottom", fringe);}
 		}
-	}
+	};
 
-	var _isV = function(dim) { return _vDimList.indexOf(dim) > -1; }
+	var _isV = function(dim) { return _vDimList.indexOf(dim) > -1; };
 
 	var _evalLayout = function( layout) {
 		for(var wid in layout.widgets) {
@@ -206,7 +172,7 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 					 	mn = sb.ext.to_f(mn[1]);
 						sz(s, _sizeFunc(wid, s, sb.ext.sum, mn));
 					} else {
-						console.log("sb_light::utils::layout Warning: ", "Number is not a valid dimension", w.id, s, dim);
+						// console.log("sb_light::utils::layout Warning: ", "Number is not a valid dimension", w.id, s, dim);
 					}
 				} else if (dim == "auto") {
 					sz(s, _autoFunc(wid, s, w, layout));
@@ -228,9 +194,6 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 					var linkAmt = v(m[5]) ? sb.ext.to_f(m[5],0) : 0;
 
 					var lw = layout.widgets[linkKey];
-					if(!lw) {
-						sb.ext.debug("Doo");
-					}
 					var lz = lw.sizeFuncs.bind(lw);
 					if(linkDim == "right" && s == "left") { 
 						sz(s, _sizeFunc(wid, s, sb.ext.sum, [lz,"left", (linkKey+"@left")], [lz,"width", (linkKey+"@width")],  linkAmt));
@@ -250,7 +213,7 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 
 		}
 
-	}
+	};
 
 	var _sizeFunc = function(id, dim, op /*, list */ ) {
 		var dimId = id + ":" + dim;
@@ -260,7 +223,7 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 		return function(chain) {
 			chain = chain ||"Chain: ";
 			if(chain.match(dimId)) { 
-				throw "sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId;
+				throw new Error("sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId);
 			}
 			var nl = list.map(function(el) {	
 				return sb.ext.isArr(el) ? [el[0](el[1]), (chain+"_"+dimId + ( el[2] ? ("("+el[2]+")") :"" ))] : el;
@@ -273,14 +236,14 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 			
 			return res;
 		}
-	}
+	};
 
 	var _autoFunc = function(id, dim, w, layout) {
 		var dimId = id + ":" + dim;
 		return function(chain) { 
 			chain = chain || "Chain: ";
 			if(chain.match(dimId)) { 
-				throw "sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId;
+				throw new Error("sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId);
 			}
 
 			var list = [];
@@ -327,7 +290,7 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 				}
 			}
 		}
-	}
+	};
 
 	var _applyLayout = function(layout) {
 		for (var wid in layout.widgets) {
@@ -347,7 +310,7 @@ define(['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
 
 		}
 
-	}
+	};
 
 
 

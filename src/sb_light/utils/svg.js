@@ -1,7 +1,33 @@
 
-define(['sb_light/globals'], function(sb) {
+define(['d3', 'sb_light/globals'], function(d3, sb) {
 
 	var svg =  {};
+
+	svg.multiline = function(el, text, dx,dy) {
+		if(!text) { return ; }
+		el = d3.select(el);
+		var width= el.attr("width");
+		//var domEl = el.get(0);
+		var words = text.split(' ');                        
+		var tspan = el.append("tspan");
+		tspan.text(words[0]);
+
+		for(var i=1; i<words.length; i++){
+			var tst = tspan.text();             // Find number of letters in string
+			var len = tst.length;
+			tspan.text(tst + " " + words[i]);
+
+			if (tspan.node().getComputedTextLength() > width)	{
+				tspan.text(tst);
+
+				tspan = el.append("tspan").attr("x",  sb.ext.number(dx,10))
+											.attr("dy", sb.ext.number(dy,18))
+											.text(words[i])
+				;
+			}
+		}
+		return el;
+	};	
 	
 	//given a series of x points and y points, generate a
 	//grid that fits the given dimension
@@ -39,9 +65,12 @@ define(['sb_light/globals'], function(sb) {
 		if(pointerType.charAt(0) == "T") {
 			path.put(t.M(x+cr,y));
 			switch(pointerType.charAt(1)) {
-				case "L": path.put(t.l(pw,-ph),t.l(pw,ph), t.h(w-pw2-cr2)); 	break;
-				case "M": path.put(t.h( (w-cr2-pw2)/2), t.l(pw,-ph),t.l(pw,ph), t.h((w-cr2-pw2)/2 )); 	break;
-				case "R": path.put(t.h(w-pw2-cr2), t.l(pw,-ph),t.l(pw,ph)); 	break;
+				case "L": path.put(t.l(pw,-ph),t.l(pw,ph), t.h(w-pw2-cr2));
+					break;
+				case "M": path.put(t.h( (w-cr2-pw2)/2), t.l(pw,-ph),t.l(pw,ph), t.h((w-cr2-pw2)/2 ));
+					break;
+				case "R": path.put(t.h(w-pw2-cr2), t.l(pw,-ph),t.l(pw,ph));
+					break;
 			}
 			
 			path.put(	t.q(cr,0,cr,cr),		t.v(h-cr2));
@@ -65,21 +94,21 @@ define(['sb_light/globals'], function(sb) {
 		if(o.t) { t.put(this.translate.apply(this, o.t)); }
 		return t.join(" "); 
 	};
-	
+	var sep = ",";
 	svg.translate = 	function(x,y) { return (isNaN(y) ? ["translate(",x,")"] : ["translate(",x,", ",y,")"]).join("");  };
 	svg.scale =  		function(x,y) { return (isNaN(y) ? ["scale(",x,")"] : ["scale(",x,", ",y,")"]).join(""); };
 	svg.rotate =	 	function(x) { return "rotate("+x+")"; };
 	svg.viewBox = 		function(x,y,w,h) { return [x,y,w,h].join(" "); };
-	svg.l =				function(x,y) { return ["l",x,this._sep,y].join(""); };
-	svg.L = 			function(x,y) { return ["L",x,this._sep,y].join(""); };
-	svg.m =				function(x,y) { return ["m",x,this._sep,y].join(""); };
-	svg.M =				function(x,y) { return ["M",x,this._sep,y].join(""); };
+	svg.l =				function(x,y) { return ["l",x,sep,y].join(""); };
+	svg.L = 			function(x,y) { return ["L",x,sep,y].join(""); };
+	svg.m =				function(x,y) { return ["m",x,sep,y].join(""); };
+	svg.M =				function(x,y) { return ["M",x,sep,y].join(""); };
 	svg.h = 			function(d) { return ["h",d].join(""); };
 	svg.H =				function(d) { return ["H",d].join(""); };
 	svg.v =				function(d) { return ["v",d].join(""); };
 	svg.V = 			function(d) { return ["V",d].join(""); };
-	svg.q = 			function(cx,cy,x,y) { var s= this._sep; return ["q",cx,s,cy,s,x,s,y].join(""); };
-	svg.Q =				function(cx,cy,x,y) { var s= this._sep; return ["Q",cx,s,cy,s,x,s,y].join(""); };
+	svg.q = 			function(cx,cy,x,y) { var s= sep; return ["q",cx,s,cy,s,x,s,y].join(""); };
+	svg.Q =				function(cx,cy,x,y) { var s= sep; return ["Q",cx,s,cy,s,x,s,y].join(""); };
 		
 		
 		//utils for d3
@@ -106,7 +135,7 @@ define(['sb_light/globals'], function(sb) {
 				}
 			});
 			//only execute when this is being created
-			if(func != null) {
+			if(func) {
 				func(res);
 			}
 		}
@@ -126,6 +155,37 @@ define(['sb_light/globals'], function(sb) {
 	svg.dims = function(x,y,w,h, selection) {
 		selection.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
 		return selection;
+	};
+
+	svg.dim = function(sel, dim, value) {
+		if(arguments.length == 3) {
+			return sel.attr(dim, value);
+		}
+		return sb.ext.to_f(sel.attr(dim));
+	};
+
+
+	//quick style
+	svg.style = function(selection/*, arguments*/) {
+		for(var i = 1; i < arguments.length; i+=2) {
+			var prop = arguments[i];
+			prop = styleMap[prop] || prop;
+			selection.style(prop, arguments[i+1]);
+		}
+		return selection;
+	};
+
+	var styleMap = {
+		t: "font",
+		f:"fill",
+		fo:"fill-opacity",
+		s: "stroke",
+		so:"stroke-opacity",
+		sw:"stroke-width",
+		slc: "stroke-linecap",
+		slj: "stroke-linejoin",
+		sda:"stroke-dasharray",
+		ta:"text-anchor"
 	};
 
 	return svg;
