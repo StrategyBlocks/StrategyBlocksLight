@@ -1,5 +1,5 @@
 
-define(['sb_light/globals'], function(sb) {
+define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 	//console.log("State:",sb.version);
 	
 	var state = {};
@@ -40,10 +40,10 @@ define(['sb_light/globals'], function(sb) {
 		blockMapZoom:1,
 		blockSettingsView: "",
 		blockSettingsCollapse: "",
-		blocksTreeView: "progress",
-		blocksMapView: "radial",
-		blocksTimelineView: "chart",
-		manageBlockView: "block",
+		blocksTreeView: consts.BLOCKS_TREE.VIEW.STATUS,
+		blocksMapView: consts.BLOCKS_MAP.VIEW.RADIAL,
+		blocksTimelineView: consts.BLOCKS_TIMELINE.VIEW.CHART,
+		//manageBlockView: "block",
 				
 				
 		previousBlock:null,

@@ -1,4 +1,4 @@
-
+/*globals define*/
 
 define(['sb_light/globals'], function(sb) {
 
@@ -6,9 +6,9 @@ define(['sb_light/globals'], function(sb) {
 	
 	consts.COLOR = {
 		BLOCK: {
-			"green":"#176717", 	
-			"yellow":"#77771B", 	
-			"red": 	"#641717"
+			"green":	"#176717",
+			"yellow":	"#77771B",
+			"red":		"#641717"
 		}
 	};
 	
@@ -57,12 +57,12 @@ define(['sb_light/globals'], function(sb) {
 	
 	consts.BLOCKS_TREE = {
 			VIEW: {
-				STATUS: 	"status",
-				PROGRESS: 	"progress",
-				HEALTH: 	"health",
-				KPI: 		"outputs",
-				RISK: 		"risk",
-				NPV: 		"value"
+				STATUS: 	consts.BLOCK_SETTINGS.VIEW.STATUS.key,
+				PROGRESS: 	consts.BLOCK_SETTINGS.VIEW.PROGRESS.key,
+				HEALTH: 	consts.BLOCK_SETTINGS.VIEW.HEALTH.key,
+				KPI: 		consts.BLOCK_SETTINGS.VIEW.KPI.key,
+				RISK: 		consts.BLOCK_SETTINGS.VIEW.RISK.key,
+				NPV: 		consts.BLOCK_SETTINGS.VIEW.NPV.key
 			}
 	};
 	

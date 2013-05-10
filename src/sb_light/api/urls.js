@@ -183,26 +183,19 @@ define(['sb_light/globals'], function(sb) {
 	// into:
 	//	{ blockA: bs, blockB:bp }
 	urls.s_to_o = function(s) {
-		var res = {};
-		s.split("-").reduce(
-			function(prev, el) { 
-				if(el != "") {
-					var parts = el.split("!");
-					prev[parts[0]] = parts[1];
-					return prev;
-				}
-			}, 	res
-		);
-		return res; 
+		return s.split("-").reduce(function(prev, el) { 
+			if(el != "") {
+				var parts = el.split("!");
+				return sb.ext.set.apply(Object, parts);
+			}
+		}, 	{});
 	};
 
 	//The reverse of s_to_o
 	urls.o_to_s = function(o) {
-		var a = [];
-		sb.ext.each(o, function(k,v) {
-			a.put([k,v].join("!"));
-		})
-		return a.join("-");
+		return sb.ext.map(o, function(v,k) {
+			return [v,k].join("!");
+		}).join("-");
 	};
 	
 	//converts several types into a url object
