@@ -3,6 +3,95 @@ define(['sb_light/globals'], function(sb) {
 
 	var svg =  {};
 
+	svg.ZERO = 1e-6;
+
+	svg.extendD3 = function(name, func) {
+		//prototypes to extend
+		d3.selection.prototype[name] = 
+		d3.transition.prototype[name] = 
+		d3.selection.enter.prototype[name] = 
+		//the function
+		func;
+	}
+
+	//extensions to d3
+	//adds x,y,width,height to "rect" type SVG elements
+	//skips any property that === null
+	svg.extendD3("rect", function(x,y,width,height) {
+		var sel = this;
+		var args= sb.ext.slice(arguments);
+		if(args.length) {
+			["x","y","width","height"].forEach(function(dim,i){
+				if(args[i] !== null) {
+					sel.dim(dim, args[i]);
+				}
+			});
+			return sel;
+		}
+
+		return ["x","y","width","height"].reduce(function(prev, el) {
+			return sb.ext.set(prev, el, sel.dim(el));
+		}, {});
+	});
+
+ 	
+	//basically gets/sets any numeric attribute (dimension).
+	// on set:
+	//		if the element isn't SVG and the value is not a function, add "px" to it
+	// on get:
+	//		parse a  float from the string.
+	svg.extendD3("dim", function(name, value) {
+		return arguments.length ? 
+			this.attr(name, svg.isSvg(this.node() || sb.ext.isFunc(value)) ? value : sb.ext.px(value)) : 
+			sb.ext.to_f(this.attr(name));
+	});
+
+	//get/set the corners on a rect, for instance. (rx/ry)
+	svg.extendD3("corners", function(rx,ry) {
+		if(arguments.length) {
+			this.dim("rx", rx);
+			this.dim("ry", ry);
+			return this;
+		}
+		return {rx:this.dim("rx"), ry:this.dim("ry")};
+	});
+	//get/set the corners on a rect, for instance. (rx/ry)
+	svg.extendD3("class", function(classA/*...*/) {
+		var args = sb.ext.slice(arguments);
+		if(args.length) {
+			this.attr("class", args.join(" "));
+			return this;
+		}
+		return this.attr("class");
+	});
+
+	//get/sets the size and position of a circle
+	svg.extendD3("circle", function(r, cx,cy) {
+		if(arguments.length) {
+			this.dim("r", r);
+			this.dim("cx", cx);
+			this.dim("cy", cy);
+			return this;
+		}
+		return {r:this.dim("r"), cx:this.dim("cx"), cy:this.dim("cy")};
+	});
+	//get/sets the points on a line
+	svg.extendD3("line", function(x1,y1,x2,y2) {
+		if(arguments.length) {
+			this.dim("x1", x1);
+			this.dim("x2", x2);
+			this.dim("y1", y1);
+			this.dim("y2", y2);
+			return this;
+		}
+		return {x1:this.dim("x1"), y1:this.dim("y1"),x2:this.dim("x2"), y2:this.dim("y2")};
+	});
+
+
+	svg.isSvg = function(el) {
+		return el.ownerSVGElement != null; 
+	}
+
 	svg.multiline = function(el, text, dx,dy) {
 		if(!text) { return ; }
 		el = d3.select(el);
@@ -92,6 +181,7 @@ define(['sb_light/globals'], function(sb) {
 		if(o.r) { t.put(this.rotate.apply(this,o.r)); }
 		if(o.s) { t.put(this.scale.apply(this,o.s)); }
 		if(o.t) { t.put(this.translate.apply(this, o.t)); }
+		console.log("transform", t.join(" "));
 		return t.join(" "); 
 	};
 	var sep = ",";
@@ -110,7 +200,10 @@ define(['sb_light/globals'], function(sb) {
 	svg.q = 			function(cx,cy,x,y) { var s= sep; return ["q",cx,s,cy,s,x,s,y].join(""); };
 	svg.Q =				function(cx,cy,x,y) { var s= sep; return ["Q",cx,s,cy,s,x,s,y].join(""); };
 		
-		
+	svg.path = function() {
+		return sb.ext.slice(arguments).join("");
+	}	
+
 		//utils for d3
 		
 		//takes "x.foo y.bar.stuff" and appends the nodes, returning the last node created (y) so we get
@@ -150,6 +243,8 @@ define(['sb_light/globals'], function(sb) {
 		}
 	};
 		
+
+
 		//selection comes last so you can bind the function with args first, then use it in the d3 selection "call"
 		//e.g., svg.selectAll("rect").call(sb.svg.dims.bind(null, 0,0,100,100));
 	svg.dims = function(x,y,w,h, selection) {

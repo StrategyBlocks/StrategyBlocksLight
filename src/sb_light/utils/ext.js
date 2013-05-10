@@ -1,4 +1,5 @@
-
+/*globals define, Ti, console*/
+/*jslint passfail: false */
 
 
 define(['sb_light/globals'], function(sb) {
@@ -6,14 +7,14 @@ define(['sb_light/globals'], function(sb) {
 	var ext = {};
 
 	ext._unique = 0;
-	ext.unique = function() {
-		return ++ext._unique;
-	}
+	ext.unique = function ext_unique() {
+		return (++ext._unique);
+	};
 
 	//helps convert arguments into array
 	//a is an array or arguments.
 	//idx is the starting index of the slice
-	ext.slice = function(a, idx, end) {
+	ext.slice = function ext_slice(a, idx, end) {
 		idx = isNaN(idx) ? 0 : idx;
 		if(isNaN(end)) {
 			return Array.prototype.slice.call(a, idx);
@@ -21,7 +22,7 @@ define(['sb_light/globals'], function(sb) {
 		return Array.prototype.slice.call(a, idx, end);
 	};
 	
-	ext.debug = function() {
+	ext.debug = function ext_debug() {
 		if(!sb.debug) { return; }
 		var str = ([(new Date()).toTimeString()]).concat(ext.slice(arguments)).join(" ");
 		if(ext.ti()) {
@@ -33,14 +34,15 @@ define(['sb_light/globals'], function(sb) {
 	
 	//check is Titanium framework exists. probably shouldn't be needed any longer
 	//TODO: investigate removal
-	ext.ti = function() {
+	ext.ti = function ext_ti() {
 		return typeof Ti !== "undefined";	
 	};
 	
-	ext.map = function(list, fn, scope) {
+	ext.map = function ext_map(list, fn, scope) {
 		var res = [];
+		var i, len;
 		if (ext.isArray(list)) {
-		    for(var i = 0, len = list.length; i < len; ++i) {  
+		    for(i = 0, len = list.length; i < len; ++i) {  
 	    	  res.push( fn.call(scope || this, list[i], i, list));  
 	    	}  
 		} else { //Object
@@ -52,7 +54,7 @@ define(['sb_light/globals'], function(sb) {
 		return res;
 	};
 	
-	ext.each = function(list, fn, scope) {
+	ext.each = function ext_each(list, fn, scope) {
 		if(ext.isArray(list)) {
 			list.forEach(fn,scope);	
 		} else {
@@ -62,8 +64,14 @@ define(['sb_light/globals'], function(sb) {
 			}	
 		}
 	};
+
+	//simplifies set & return for reduce functions
+	ext.set = function ext_set(obj, key, value) {
+		obj[key] = value;
+		return obj;
+	}
 	
-	ext.length = function(list) {
+	ext.length = function ext_length(list) {
 		if(ext.isArray(list)) {
 			return list.length;
 		} else if(list) {
@@ -72,32 +80,32 @@ define(['sb_light/globals'], function(sb) {
 		return 0;
 	};
 	//takes a list of objects and a key property and converts the array to a hash map
-	ext.toObject= function(list, key) {
-		return list.reduce(function(prev, el) {
+	ext.toObject = function ext_toObject(list, key) {
+		return list.reduce(function ext_toObject_reduce(prev, el) {
 			prev[el[key]] = el;
 			return prev;
 		}, {});
 	}	
 	//takes a hash map and returns an array of values. 
-	ext.values= function(map, keyName) {
-		return ext.map(map, function(el,k) { 
+	ext.values = function ext_values(map, keyName) {
+		return ext.map(map, function ext_values_map(el,k) { 
 			return keyName ? el[keyName] : el;
 		});
 	}
 	//alias for Object.keys
-	ext.keys = function(map) {
+	ext.keys = function ext_keys(map) {
 		return map ? Object.keys(map) : [];
 	}	
 	
 	//this only works with objects that contain only native JS object (e.g., Object-derived)
 	//probably won't work very well for system,proprietary, etc.. objects.
 	//converts the entire things to a string, so might have performance issues.
-	ext.deepClone = function(obj) {
+	ext.deepClone = function ext_deepClone(obj) {
 		return JSON.parse(JSON.stringify(obj));
 	}
 	
 		/************  TYPES ***************************/
-	ext.valid = function(obj, type) {
+	ext.valid = function ext_valid(obj, type) {
 		switch(type || "object") {
 			case "object": return obj !== null && typeof obj !== "undefined"; break;
 
@@ -118,32 +126,32 @@ define(['sb_light/globals'], function(sb) {
 	}
 
 
-	ext.isArr = function(obj) {
+	ext.isArr = function ext_isArr(obj) {
 		return Object.prototype.toString.call(obj) == "[object Array]";
 	};
 	ext.isArray = ext.isArr;
 	
-	ext.isFunc = function(obj) {
+	ext.isFunc = function ext_isFunc(obj) {
 		return Object.prototype.toString.call(obj) == "[object Function]";
 	};
 	ext.isFunction = ext.isFunc;
 	
-	ext.isStr = function(obj) {
+	ext.isStr = function ext_isStr(obj) {
 		return Object.prototype.toString.call(obj) == "[object String]";
 	};
 	ext.isString = ext.isStr;
 	
-	ext.isBool = function(obj) {
+	ext.isBool = function ext_isBool(obj) {
 		return Object.prototype.toString.call(obj) == "[object Boolean]";
 	}
 	ext.isBoolean = ext.isBool;
 	
-	ext.isNum = function(obj) {
+	ext.isNum = function ext_isNum(obj) {
 		return Object.prototype.toString.call(obj) == "[object Number]";
 	}
 	ext.isNumber = ext.isNum;
 	
-	ext.isDate = function(obj) {
+	ext.isDate = function ext_isDate(obj) {
 		return Object.prototype.toString.call(obj) == "[object Date]";
 	}
 	
@@ -153,18 +161,18 @@ define(['sb_light/globals'], function(sb) {
 	
 	
 		/************  STRINGS  ***************************/
-	ext.caps = function(s) {
+	ext.caps = function ext_caps(s) {
 		s = ext.isArray(s) ? s : [s];
-		return s.reduce( function(prev,el) {
+		return s.reduce( function ext_caps_reduce(prev,el) {
 			if(!el) { return prev; }
 			return (prev ? (prev + " ") : "") + el.charAt(0).toUpperCase() + el.slice(1);
 		}, null);
 	};
 	ext.capitalize = ext.caps;
 	
-	ext.replace = function(src, obj) {
+	ext.replace = function ext_replace(src, obj) {
 		var s = src;
-		ext.each(obj, function(v,k) {
+		ext.each(obj, function  ext_replace_each(v,k) {
 			var r = new RegExp("%"+k.toUpperCase()+"%")
 			s = s.replace(r, v);
 		});
@@ -173,20 +181,20 @@ define(['sb_light/globals'], function(sb) {
 	};
 	
 		/************  DATES ***************************/
-	ext.time = function() { return (new Date()).getTime(); };	
-	ext.parseDate = function(d) { return sb.moment(d).toDate();	};
-	ext.daysDiff = function(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
-	ext.today = function() { return new Date(); };
-	ext.minDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
-	ext.maxDate = function() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate).last()); };
+	ext.time = function ext_time() { return (new Date()).getTime(); };	
+	ext.parseDate = function ext_parseDate(d) { return sb.moment(d).toDate();	};
+	ext.daysDiff = function ext_daysDiff(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
+	ext.today = function ext_today() { return new Date(); };
+	ext.minDate = function ext_minDate() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
+	ext.maxDate = function ext_maxDate() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate).last()); };
 	ext.serverFormat = "YYYY/MM/DD";
-	ext.userFormat = function() { 
+	ext.userFormat = function ext_userFormat() { 
 		var u = sb.state && sb.state.value("user");
 		return u ? u.date_format : ext.serverFormat;
 	}
-	ext.serverDate = function(d) { return sb.moment(d||new Date()).format(ext.serverFormat); };
-	ext.userDate = function(d) { return sb.moment(d||new Date()).format( ext.userFormat()); };
-	ext.dateFromNow = function(d, format, reverse) { 
+	ext.serverDate = function ext_serverDate(d) { return sb.moment(d||new Date()).format(ext.serverFormat); };
+	ext.userDate = function ext_userDate(d) { return sb.moment(d||new Date()).format( ext.userFormat()); };
+	ext.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
 		if(reverse) {
 			return "(" + sb.moment(d).fromNow() + ") " + sb.moment(d).format(format || ext.userFormat());
 		} else {
@@ -202,28 +210,28 @@ define(['sb_light/globals'], function(sb) {
 		/************  SORTING ***************************/
 		//sort an array based on a property, and the function to use
 		//so if an array is [{date:...,value:...},...], you can sort using ext.sortProp("date",ext.sortDate); 
-	ext.sortFactory = function(prop, func, reverse) {
-		return function(a,b) {	
+	ext.sortFactory = function ext_sortFactory(prop, func, reverse) {
+		return function ext_sortFactory_cb(a,b) {	
 			var aprop = a ? a[prop] : null;
 			var bprop = b ? b[prop] : null;
 			return func(aprop, bprop) * (reverse ? -1 : 1);		
 		};
 	},
-	ext.sortTime = function(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
-	ext.sortNumber = function(a,b){ return a-b; };
+	ext.sortTime = function ext_sortTime(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
+	ext.sortNumber = function ext_sortNumber(a,b){ return a-b; };
 	ext.sortNumbers = ext.sortNumber;
-	ext.sortDate = function(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias - this sorts descending by default
+	ext.sortDate = function ext_sortDate(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias - this sorts descending by default
 	ext.sortDates = ext.sortDate;
-	ext.sortString = function(a,b){ return String(a).localeCompare(String(b)); };
+	ext.sortString = function ext_sortString(a,b){ return String(a).localeCompare(String(b)); };
 	ext.sortStrings = ext.sortString;
-	ext.sortBool = function(a,b) { return ext.sortNumber(a?1:0, b?1:0); }
+	ext.sortBool = function ext_sortBool(a,b) { return ext.sortNumber(a?1:0, b?1:0); }
 	ext.sortBoolean = ext.sortBool;
 	 
-	ext.sortDateValue = function(a,b) { return ext.sortDate(a.date,b.date); };
-	ext.sortUsers = function(a,b) {  return ext.sortFunc("last_name", ext.sortString); }
-	ext.sortFocus = function(a,b) {  return ext.sortFunc("title", ext.sortString); }
-	ext.sortName = function(a,b) {  return ext.sortFunc("name", ext.sortString);; }
-	ext.sortBlocksByProgress = function(a,b) {
+	ext.sortDateValue = function ext_sortDateValue(a,b) { return ext.sortDate(a.date,b.date); };
+	ext.sortUsers = function ext_sortUsers(a,b) {  return ext.sortFunc("last_name", ext.sortString); }
+	ext.sortFocus = function ext_sortFocus(a,b) {  return ext.sortFunc("title", ext.sortString); }
+	ext.sortName = function ext_sortName(a,b) {  return ext.sortFunc("name", ext.sortString);; }
+	ext.sortBlocksByProgress = function ext_sortBlocksByProgress(a,b) {
 		//closed blocks 
 		var ac = a.closed, bc = b.closed;
 		if(ac && !bc) { return 1; }
@@ -249,35 +257,35 @@ define(['sb_light/globals'], function(sb) {
 	
 		
 		/************  CSS ***************************/
-	ext.px = function(number) {		return [number,"px"].join("");	};
-	ext.pc = function(number) {		return [number,"%"].join("");	};
+	ext.px = function ext_px(number) {		return [number,"px"].join("");	};
+	ext.pc = function ext_pc(number) {		return [number,"%"].join("");	};
 		
 		//************  Math ***************************/
-	ext.roundTo = function(number, dec) {
+	ext.roundTo = function ext_roundTo(number, dec) {
 		var val = Math.pow(10,ext.number(dec,0));
 		return Math.round(number * val)/val;
 	};
-	ext.floorTo = function(number, dec) {
+	ext.floorTo = function ext_floorTo(number, dec) {
 		var val = Math.pow(10,ext.number(dec,0));
 		return Math.floor(number * val)/val;
 	};
-	ext.ceilTo = function(number, dec) {
+	ext.ceilTo = function ext_ceilTo(number, dec) {
 		var val = Math.pow(10,ext.number(dec,0));
 		return Math.ceil(number * val)/val;
 	};
 	
-	ext.to_i =  function(str, base, def/*=0*/) {
+	ext.to_i = function ext_to_i(str, base, def/*=0*/) {
 		var i = parseInt(str, base||10);
 		return isNaN(i) ? ext.number(def,0) : i; 
 	};
-	ext.to_f =  function(str, def/*=0*/) {
+	ext.to_f = function ext_to_f(str, def/*=0*/) {
 		var f = parseFloat(str);
 		return isNaN(f) ? ext.number(def,0) : f; 
 	};
-	ext.rand = function(min, max, dec/*==0*/) {
+	ext.rand = function ext_rand(min, max, dec/*==0*/) {
 		return ext.floorTo( (Math.random() * (max - min + 1)), dec) + min;
 	};
-	ext.to_color = function(num) {
+	ext.to_color = function ext_to_color(num) {
 	    return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
 	};
 	
@@ -285,32 +293,32 @@ define(['sb_light/globals'], function(sb) {
 	//		literal numbers (e.g., 24)
 	//		a function that returns a number n==foo, where foo() returns 24
 	//		an array with a function as the first argument, so n=[foo, "bar", "stuff"] and foo("bar", "stuff") returns 24
-	ext.number = function(n,def/*==0*/) {
+	ext.number = function ext_number(n,def/*==0*/) {
 		n = ext.isFunc(n) ? n() : n;
 		n = ext.isArr(n) && ext.isFunc(n[0]) ? n[0].apply(null, n.slice(1)) : n;
 		return isNaN(n) ? (def||0) : n;
 	};
-	ext.max =  function(/*etc....*/) {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.NEGATIVE_INFINITY);});
-		var max = args.reduce(function(prev,el){
+	ext.max = function ext_max(/*etc....*/) {
+		var args =ext.slice(arguments).map(function ext_max_map(el) {return ext.number(el,Number.NEGATIVE_INFINITY);});
+		var max = args.reduce(function  ext_max_reduce(prev,el){
 			return prev > el ? prev : el;
 		},Number.NEGATIVE_INFINITY);
 
 		return max;
 	};
-	ext.min = function(/*etc....*/) {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.POSITIVE_INFINITY);});
-		var min = args.reduce(function(prev,el){
+	ext.min = function ext_min(/*etc....*/) {
+		var args =ext.slice(arguments).map(function ext_min_map(el) {return ext.number(el,Number.POSITIVE_INFINITY);});
+		var min = args.reduce(function ext_min_reduce(prev,el){
 			return prev < el ? prev : el;
 		},Number.POSITIVE_INFINITY);
 
 		return min;
 	};
 
-	ext.range = function(min,max,num) {
+	ext.range = function ext_range(min,max,num) {
 		return ext.max(min, ext.min(max,num));
 	};
-	ext.snapto = function(list, num) {
+	ext.snapto = function ext_snapto(list, num) {
 		var diff = Math.abs(list[0]-num);
 		var n = list[0];
 		for(var i =1; i < list.length; ++i) {
@@ -323,9 +331,9 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 	//takes an array of literals or functions and sums the result
-	ext.sum = function() {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el);});
-		var sum = args.reduce(function(prev,el){
+	ext.sum = function ext_sum() {
+		var args =ext.slice(arguments).map(function ext_sum_map(el) {return ext.number(el);});
+		var sum = args.reduce(function ext_sum_reduce(prev,el){
 			return prev + ext.number(el);
 		},0);
 
@@ -334,10 +342,10 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 	//takes an array of literals or functions and subtracts them the first element in the list
-	ext.diff = function() {
+	ext.diff = function ext_diff() {
 		var base = ext.number(arguments[0]);
-		var args  = ext.slice(arguments,1).map(function(el) {return ext.number(el);});
-		var diff = args.reduce(function(prev,el){
+		var args  = ext.slice(arguments,1).map(function ext_diff_map(el) {return ext.number(el);});
+		var diff = args.reduce(function ext_diff_reduce(prev,el){
 			return prev - ext.number(el);
 		},base);
 
@@ -345,9 +353,9 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 	//takes an array of literals or functions and multiplies the result
-	ext.prod = function() {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,1);});
-		var prod = args.reduce(function(prev,el){
+	ext.prod = function ext_prod() {
+		var args =ext.slice(arguments).map(function ext_prod_map(el) {return ext.number(el,1);});
+		var prod = args.reduce(function ext_prod_reduce(prev,el){
 			return prev * ext.number(el);
 		},1);
 
@@ -356,16 +364,16 @@ define(['sb_light/globals'], function(sb) {
 	};
 	//compare two numbers and return true if their difference is less/equals to "within".
 	//the purpose of this function is to ameliorate problems with DOM co-ords
-	ext.compareInt = function(a,b,within/*==0*/) {
+	ext.compareInt = function ext_compareInt(a,b,within/*==0*/) {
 		within = ext.number(within,0);
 		return Math.abs(a-b) <= within;
 	};
 		
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
-	ext.healthColor = function(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1]; };
-	ext.healthText = function(data) { return (["Bad","Warning","Good"])[data.status+1]; };
-	ext.blockProgressFill = function(block) {
+	ext.healthColor = function ext_healthColor(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1]; };
+	ext.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
+	ext.blockProgressFill = function ext_blockProgressFill(block) {
 		switch(block.progress_color) {
 			case "green": 	return ["#176717", 		"url(#progressGood)" ];
 			case "yellow":	return ["#77771B", 	"url(#progressWarning)"];
@@ -377,7 +385,7 @@ define(['sb_light/globals'], function(sb) {
 			
 		
 	/************  MASSAGE SERVER DATA INTO BETTER OBJECTS FOR D3/presentation ***************************/
-	ext.getResultMessages = function(r) {
+	ext.getResultMessages = function ext_getResultMessages(r) {
 		var res = {
 			errors:null,
 			warnings: null,
@@ -386,10 +394,10 @@ define(['sb_light/globals'], function(sb) {
 		if (r) {
 			//errors that mean something in the form was incorrect, hopefully out of our control (e.g., bad input from user)
 			if(ext.isArray(r.result)) {
-				r.result.forEach(function(o) {
+				r.result.forEach(function ext_getResultMessages_forEach(o) {
 					if(o && o.errors) {
 						res.errors = {
-							form: r.result, 
+							form: r.result.errors, 
 							message:JSON.stringify(r.result)
 						};
 					}
@@ -414,19 +422,19 @@ define(['sb_light/globals'], function(sb) {
 		
 		//merge the target and actuals series into one array of objects. 
 		//parse the date into d3 format as well. "parseDate"
-	ext.massageTA = function(data) {
+	ext.massageTA = function ext_massageTA(data) {
 		var dates = [];
 		var td = [];
 		var vd = [];
 		var dataMap = {};
 		
-		data.values.forEach(function(el) {
+		data.values.forEach(function ext_massageTA_forEachVal(el) {
 			el.date = ext.parseDate(el.date);
 			dates.punique(el.date);
 		});
 		data.values.sort(ext.sortDateValue);
 		
-		data.target.forEach(function(el) {
+		data.target.forEach(function ext_massageTA_forEachTar(el) {
 			el.date = ext.parseDate(el.date);
 			dates.punique(el.date);
 			var rs = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_start : data.tolerance.range_end;
@@ -450,16 +458,16 @@ define(['sb_light/globals'], function(sb) {
 	};
 		
 		//fix dates and sort history for health charts
-	ext.massageHealth = function(data) {
+	ext.massageHealth = function ext_massageHealth(data) {
 		var dates = [];
-		var series = $.map(data.historical_values, function(v, k) {
+		var series = ext.map(data.historical_values, function ext_massageHealth_map(v, k) {
 			return {date: ext.parseDate(k), value:v};
 		});
 		
 		
 		data.series = series.sort(ext.sortDateValue);
 		
-		data.dates = data.series.map(function(el) { return el.date; });
+		data.dates = data.series.map(function ext_massageHealth_mapSeries(el) { return el.date; });
 		data.dates.push(ext.parseDate(data.end_date));
 	
 		return data;
@@ -472,7 +480,7 @@ define(['sb_light/globals'], function(sb) {
 	//  EXCEPT the ones in ignore.
 	//	ignore can be an array of names, or an object with keys. All these key names are skipped from being applied,
 	//	but they will not be removed from target if they exist there. 
-	ext.mixin = function (/*Object*/ target, /*Object*/ source, /*Object or Array*/ ignore ){
+	ext.mixin = function ext_mixin (/*Object*/ target, /*Object*/ source, /*Object or Array*/ ignore ){
 		var empty = ignore || {}; //default template for properties to ignore
 		target = target || {};
 		source = source || {};
@@ -489,16 +497,16 @@ define(['sb_light/globals'], function(sb) {
 	 
 	// Create a new object, combining the properties of the passed objects with the last arguments having
 	// priority over the first ones
-	ext.combine = function( /*Object or array*/ props, /*object or array*/ ignore) {
+	ext.combine = function ext_combine( /*Object or array*/ props, /*object or array*/ ignore) {
 		props = ext.isArray(props) ? props.concat(ext.slice(arguments,1)) : ext.slice(arguments);
-		var res = props.reduce(function(newObj, v) {
+		var res = props.reduce(function ext_combine_reduce(newObj, v) {
 			var mixed = ext.mixin(newObj, v, ignore);
 			return mixed;
 		},{});
 		return res;
 	};		
 	//same as combine but only takes two properties.
-	ext.merge = function(a, b, ignore) {
+	ext.merge = function ext_merge(a, b, ignore) {
 		return ext.combine([a,b], ignore);	
 	}
 
@@ -506,7 +514,7 @@ define(['sb_light/globals'], function(sb) {
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach
 	if ( !Array.prototype.forEach ) {  
-	  Array.prototype.forEach = function(fn, scope) {  
+	  Array.prototype.forEach = function ext_array_forEach(fn, scope) {  
 	    for(var i = 0, len = this.length; i < len; ++i) {  
 	      fn.call(scope || this, this[i], i, this);  
 	    }  
@@ -515,7 +523,7 @@ define(['sb_light/globals'], function(sb) {
 	
 	
 	if (!Function.prototype.bind) {
-	  Function.prototype.bind = function (oThis) {
+	  Function.prototype.bind = function ext_array_bind(oThis) {
 	    if (typeof this !== "function") {
 	      // closest thing possible to the ECMAScript 5 internal IsCallable function
 	      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
@@ -540,12 +548,12 @@ define(['sb_light/globals'], function(sb) {
 	
 	//similar to Func.bind, but executes the function automatically after a delay.
 	if(!Function.prototype.bindDelay) {
-		Function.prototype.bindDelay = function(context, timeout /*, ...prefixArgs*/) {
+		Function.prototype.bindDelay = function ext_array_bindDelay(context, timeout /*, ...prefixArgs*/) {
 			var _method = this;
 			var _context = context;
 			var _args = Array.prototype.slice.call(arguments, 2);
 			return setTimeout( 
-				function(/*...suffixArgs*/) {
+				function ext_array_bindDelay_timeout(/*...suffixArgs*/) {
 					_method.apply(_context, _args);
 				},
 				timeout
@@ -558,7 +566,7 @@ define(['sb_light/globals'], function(sb) {
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach
 	if ( !Array.prototype.forEach ) {  
-	  Array.prototype.forEach = function(fn, scope) {  
+	  Array.prototype.forEach = function ext_array_forEach(fn, scope) {  
 	    for(var i = 0, len = this.length; i < len; ++i) {  
 	      fn.call(scope || this, this[i], i, this);  
 	    }  
@@ -567,7 +575,7 @@ define(['sb_light/globals'], function(sb) {
 	
 	//shallow clone. 
 	if ( !Array.prototype.clone ) {  
-	  Array.prototype.clone = function() {  
+	  Array.prototype.clone = function ext_array_clone() {  
 		return ([]).concat(this);
 	  }  
 	}  
@@ -582,7 +590,7 @@ define(['sb_light/globals'], function(sb) {
 	// e.g., foo.last(0) is the same as foo.last()
 	// and foo.last(1) returns the 2nd last item.
 	if ( !Array.prototype.last ) {  
-	  Array.prototype.last = function(idx) {
+	  Array.prototype.last = function ext_array_last(idx) {
 	  	idx = (this.length-1) - (idx || 0);
 		return (this.length > idx && idx >= 0) ? this[idx] : null;
 	  }  
@@ -641,7 +649,7 @@ define(['sb_light/globals'], function(sb) {
 	//from mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/filter
 	if (!Array.prototype.filter) {
-		Array.prototype.filter = function(fun /*, thisp */) {
+		Array.prototype.filter = function ext_array_filter(fun /*, thisp */) {
 			"use strict";
 			if (this == null) {
 				throw new TypeError();
@@ -675,7 +683,7 @@ define(['sb_light/globals'], function(sb) {
 	// 	The object whose enumerable own properties are to be returned.
 	
 	if (!Object.keys) {
-	  Object.keys = (function () {
+	  Object.keys = (function ext_object_keys() {
 	    var hasOwnProperty = Object.prototype.hasOwnProperty,
 	        hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
 	        dontEnums = [
@@ -710,7 +718,7 @@ define(['sb_light/globals'], function(sb) {
 	
 	
 	if (!Array.prototype.find) {  
-	    Array.prototype.find = function (key, value) {  
+	    Array.prototype.find = function ext_array_find(key, value) {  
 			for(var i = 0; i < this.length; ++i) {
 				if(this[i][key] == value) { return {index:i, value:this[i]} ; }
 			}
@@ -723,7 +731,7 @@ define(['sb_light/globals'], function(sb) {
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/indexOf
 	if (!Array.prototype.indexOf) {  
-	    Array.prototype.indexOf = function (searchElement /*, fromIndex */ ) {  
+	    Array.prototype.indexOf = function ext_array_indexOf(searchElement /*, fromIndex */ ) {  
 	        "use strict";  
 	        if (this == null) {  
 	            throw new TypeError();  
@@ -760,7 +768,7 @@ define(['sb_light/globals'], function(sb) {
 	// Production steps of ECMA-262, Edition 5, 15.4.4.19  
 	// Reference: http://es5.github.com/#x15.4.4.19  
 	if (!Array.prototype.map) {  
-	  Array.prototype.map = function(callback, thisArg) {  
+	  Array.prototype.map = function ext_array_map(callback, thisArg) {  
 	  
 	    var T, A, k;  
 	  
@@ -833,7 +841,7 @@ define(['sb_light/globals'], function(sb) {
 	
 	//made this up. does a push but always returns "this" array
 	if (!Array.prototype.put) {  
-		Array.prototype.put = function() {
+		Array.prototype.put = function ext_array_put() {
 			var args = ext.slice(arguments);
 			while(args.length) {
 				this[this.length] = args.shift();
@@ -845,7 +853,7 @@ define(['sb_light/globals'], function(sb) {
 	//made this up. does a push but always returns "this" array
 	//ensures the push is unique
 	if (!Array.prototype.punique) {  
-		Array.prototype.punique = function() {
+		Array.prototype.punique = function ext_array_punique() {
 			var args = ext.slice(arguments);
 			while(args.length) {
 				var a = args.shift();
@@ -858,9 +866,9 @@ define(['sb_light/globals'], function(sb) {
 	}
 	
 	if (!Array.prototype.cloneExcept) { 
-		Array.prototype.cloneExcept = function(/*items*/) {
+		Array.prototype.cloneExcept = function ext_array_cloneExcept(/*items*/) {
 			var items = ext.slice(arguments);
-			return this.reduce(function(a,el) {
+			return this.reduce(function ext_array_cloneExcept_reduce(a,el) {
 				return items.indexOf(el) < 0 ? a.put(el) : a;
 			}, []);
 		}
@@ -870,12 +878,12 @@ define(['sb_light/globals'], function(sb) {
 	
 	//DATE stuff from 
 	//http://stackoverflow.com/questions/1643320/get-month-name-from-date-using-javascript
-	Date.prototype.getMonthName = function(lang) {
+	Date.prototype.getMonthName = function  ext_date_getMonthName(lang) {
 	    lang = lang && (lang in Date.locale) ? lang : 'en';
 	    return Date.locale[lang].month_names[this.getMonth()];
 	};
 	
-	Date.prototype.getMonthNameShort = function(lang) {
+	Date.prototype.getMonthNameShort = function ext_date_getMonthNameShort(lang) {
 	    lang = lang && (lang in Date.locale) ? lang : 'en';
 	    return Date.locale[lang].month_names_short[this.getMonth()];
 	};

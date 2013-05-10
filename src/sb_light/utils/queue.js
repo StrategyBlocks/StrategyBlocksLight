@@ -27,7 +27,7 @@ define(['sb_light/globals'], function(sb) {
 		name = name || "queued_" + sb.ext.unique();
 		var val = low_list.find("name", name).value;
 		if(!val) {
-			sb.ext.debug("QUEUE: Adding: ", name);
+			//sb.ext.debug("QUEUE: Adding: ", name);
 			low_list.push({name:name, func:func, time:sb.ext.time(), delay:delay});
 			start();
 		}
@@ -37,7 +37,7 @@ define(['sb_light/globals'], function(sb) {
 		name = name || "queued_" + sb.ext.unique();
 		var val = high_list.find("name", name).value;
 		if(!val) {
-			sb.ext.debug("QUEUE: Adding HIGH: ", name);
+			//sb.ext.debug("QUEUE: Adding HIGH: ", name);
 			high_list.push({name:name, func:func,  time:sb.ext.time(), delay:delay});
 			start();
 		}
@@ -59,7 +59,7 @@ define(['sb_light/globals'], function(sb) {
 		while(i < len && !called) {
 			var n = list.shift();
 			if(t - n.time > n.delay) {
-				sb.ext.debug("QUEUE: Calling: ", n.name);
+				//sb.ext.debug("QUEUE: Calling: ", n.name);
 				n.func();
 				called = true;
 			} else {
@@ -76,7 +76,7 @@ define(['sb_light/globals'], function(sb) {
 		var hi = high_list.map(function(el) {return el.name;}).join(" ");
 		var lo = low_list.map(function(el) {return el.name;}).join(" ");
 
-		console.log("Current Queue:", (high_list.length ? (" High: " + hi) : "" ),   (low_list.length ? (" Normal: " + lo) : "" ) );
+		//console.log("Current Queue:", (high_list.length ? (" High: " + hi) : "" ),   (low_list.length ? (" Normal: " + lo) : "" ) );
 	};
 
 	return queue;

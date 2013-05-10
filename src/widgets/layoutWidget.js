@@ -19,7 +19,7 @@ define(['widgets/widget'], function( Widget ) {
 		},
 
 		childrenLayout: function() {
-			return null;
+			return [];
 		},
 
 

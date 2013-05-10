@@ -74,7 +74,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		postCreate:function() {
-			this._sb.ext.debug("Widget", this.id(), "postCreate / apply properties");
+			//this._sb.ext.debug("Widget", this.id(), "postCreate / apply properties");
 			this.applyProperties();
 		},
 
@@ -92,10 +92,15 @@ define(['sb_light/utils/Class'], function( Class ) {
 		cid:function(name) {
 			return [this.id(), name].join("_");
 		},
+
+		_dims: {"b":"bottom", "l":"left", "r":"right", "t":"top", "h":"height","w":"width", "f":"fringe"},
+		_dimReg: /left|right|top|bottom|height|width|fringe/,
+
 		cidDim:function(name, dim, amt) {
+			var _dim = String(this._dims[dim] || dim || "");
 			var _base = ["@",this.cid(name)];
-			var _dim = (dim||"").match(/left|right|top|bottom|height|width|fringe/) ? dim : null;
-			var _amt = arguments.length == 2 && !dim ? dim : (amt||0);
+			var _dim = _dim.match(this._dimReg) ? _dim : null;
+			var _amt = arguments.length == 2 && !_dim ? dim : (amt||0);
 			if(_dim) {
 				_base.put("#", _dim);
 			}
@@ -138,9 +143,9 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		applyProperties: function() {
-			this._sb.ext.debug("Apply Properties to ", this.id());
+			// this._sb.ext.debug("Apply Properties to ", this.id());
 
-			this._def["class"]  = (this._def.className ||"") + " sb_light_widget";
+			this._def["class"]  = (this._def["class"] || "") + " sb_light_widget";
 			this._def["widget-name"]  = this.name();
 
 

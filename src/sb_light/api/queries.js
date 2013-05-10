@@ -281,6 +281,12 @@ define(['sb_light/globals'], function(sb) {
 	q.arePathsEqual = function(apath, bpath) {
 		return q.blockPath(apath, true) == q.blockPath(bpath, true);
 	};
+	q.isCenterPath = function(apath) {
+		return q.currentBlockPath(true).indexOf(q.blockPath(apath,true)) > -1;
+	};
+	q.isCurrentPath = function(apath) {
+		return q.arePathsEqual(apath, q.currentBlockPath());
+	};
 	
 	
 	q.maxDate = function() {

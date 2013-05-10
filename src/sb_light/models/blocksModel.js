@@ -39,6 +39,24 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 			this._sb.ext.debug("Finished massaging blocks");
 		},
 		
+
+		//return the raw object map, but use the paths as keys
+		rawPaths: function() {
+			var bl = this.rawArray() || [];
+			var paths = {};
+			bl.forEach(function(b) {
+				b.paths.forEach(function(bp) {
+					paths[bp] = b;
+				});
+			});
+			return paths;
+		},
+		//return an array of all the paths + blocks from rawPaths
+		rawArrayPaths: function() {
+			return this._sb.ext.map(this.rawPaths(), function(v,k) {
+				return {path:k, block:v};
+			});
+		},
 		
 		progress: function(cb) {
 			this._data(cb, "_progress", this._sb.urls.BLOCKS_PROGRESS);

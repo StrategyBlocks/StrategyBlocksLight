@@ -30,7 +30,8 @@ define(['sb_light/globals'], function(sb) {
 		if(!api.ajax) {
 			throw "Error: sb.api.ajax has not been inititalized. Please set this value to one of the functions available in sb.ajax";
 		}
-		sb.state.addTimestamps(params || {});
+		params = params || {};
+		sb.state.addTimestamps(params);
 		api.ajax({
 			url: url,
 			type: (post ? "POST" : "GET"),

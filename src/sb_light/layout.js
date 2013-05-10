@@ -40,7 +40,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		var layout = {root: root, widgets:{}, rootWidth:rect.width, rootHeight:rect.height};
 		_createWidgets(null, def, layout);
 		if(!preventResize) {
-			lo.resize(layout)
+			lo.resize(layout);
 		}
 		return layout;
 	};
@@ -49,7 +49,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		_buildLayout(layout);
 		_evalLayout(layout);
 		_applyLayout(layout);
-	}
+	};
 
 	//change the layout def for a single item and relayout.
 	//specify "true" if you want to prevent the re-layout -- this is useful when applying a bunch of changes (e.g., in a loop) and you 
@@ -59,16 +59,16 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		if(!wait) {
 			lo.resize(layout);
 		}
-	}
+	};
 	lo.uniqueId = function(def) {
 		if(!def.id) { 
-			def.id = "unknown_" + sb.ext.unique();;
+			def.id = "unknown_" + sb.ext.unique();
 		}	
 		return def.id;
-	}
+	};
 
 	var _createWidgets = function(parentId,def, layout) {
-		var p = parentId ? layout.widgets[parentId] : layout.root
+		var p = parentId ? layout.widgets[parentId] : layout.root;
 		if(!p) { 
 			throw new Error("Warning: missing parent id", parentId);
 		}
@@ -114,7 +114,6 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 				sz(s,w.source(s));
 			});
 
-
 			//remove conflicting "right"
 			if(v(sz("left")) && v(sz("width")) && v(sz("right"))) {
 				//console.log("sb_light::utils::layout Warning: ", wid, " has left/width/right all specified. Removing 'right'");
@@ -151,8 +150,8 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 			var v = sb.ext.valid;
 
-			// if(wid == "divB"){
-			// 	console.log("DivB");
+			// if(wid == "infoResize"){
+			// //	console.log("DivB");
 			// }
 
 			_dimList.forEach(function(s) {

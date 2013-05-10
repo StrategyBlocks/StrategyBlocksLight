@@ -60,7 +60,6 @@ define(['widgets/widget'], function( W ) {
 			var po = this._super();
 			var self = this;
 			po["default"] = this.bind("attr");
-			delete po.class;
 			po.style = this.bind("css");
 			po.dispatches = this.bind("dispatches");
 
@@ -133,6 +132,19 @@ define(['widgets/widget'], function( W ) {
 		text: function() {
 			var t = this._sb.ext.slice(arguments, arguments.length == 2 ? 1 : 0);
 			return this.d3().text.apply(this.d3(), t);
+		},
+
+		className: function() {
+			var args = this._sb.ext.slice(arguments, (arguments[0] == "class" || arguments[0] == "className") ? 1 : 0 );
+			var d3 = this._svgDiv || this._d3;
+			if(args.length) {
+				var classes = args[0].split(/\s/);
+				classes.forEach(function(c) {
+					d3.classed(c, args[1] !== true );
+				});
+				return this;
+			}
+			return d3.attr("class");
 		},
 
 

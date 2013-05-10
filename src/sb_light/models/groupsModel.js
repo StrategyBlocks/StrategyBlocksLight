@@ -1,13 +1,13 @@
 
 
-define(['sb_light/models/_abstractModel'], function( _Model ) {
+// define(['sb_light/models/_abstractModel'], function( _Model ) {
 
-	var Model = _Model.extend({
+// 	var Model = _Model.extend({
 
-		init: function(sb) {
-			this._super(sb, "levels", sb.urls.MODEL_GROUPS);
-		}
-	});
+// 		init: function(sb) {
+// 			this._super(sb, "levels", sb.urls.MODEL_GROUPS);
+// 		}
+// 	});
 	
-	return Model;	
-});
+// 	return Model;	
+// });
