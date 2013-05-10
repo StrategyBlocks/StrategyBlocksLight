@@ -35,6 +35,7 @@ program
   .option('-H, --localhost <localhost>', 'specify the host name of your webserver', String, "localhost")
   .option('-l, --localport <localport>', 'specify the host posrt of your webserver', Number, 8889)
   .option('-x, --proxyport <proxyport>', 'specify the port [8888]', Number, 8888)
+  .option('-i, --ignore_paths <keys>', 'include any path names you want to server locally and not proxy , comma separated (e.g., "foo/images,bar,ggg/hhh/css"', String, "")
   .parse(process.argv);
 
 
@@ -60,9 +61,12 @@ var local_proxy = new httpProxy.HttpProxy({
 });
 
 
+var rm = "^\/(test|src|lib|bin|mobile|"+program.ignore_paths.replace(/\//, "\\/").split(",").join("|") + ")";
+var match = new RegExp(rm);
+console.log("Ignore: ", rm);
 
 var server = http.createServer(function(req,res,proxy) {
-	if(req.url.match(/^\/(test|src|lib|bin|mobile)/) === null) {
+	if(req.url.match(match) === null) {
 		console.log("Proxy to SB: ",req.url);
 		var sb_proxy = new httpProxy.HttpProxy({
 			target: {

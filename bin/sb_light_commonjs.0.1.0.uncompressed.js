@@ -1960,7 +1960,7 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	
 	ext.each = function(list, fn, scope) {
 		if(ext.isArray(list)) {
-			list.forEach(fn,scope);
+			list.forEach(fn,scope);	
 		} else {
 			for(var el in list) {
 				//func(value,key,list)
@@ -1987,9 +1987,12 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	//takes a hash map and returns an array of values. 
 	ext.values= function(map, keyName) {
 		return ext.map(map, function(el,k) { 
-			if(keyName) { el[keyName] = el[keyName] || k; }
-			return el; 
+			return keyName ? el[keyName] : el;
 		});
+	}
+	//alias for Object.keys
+	ext.keys = function(map) {
+		return map ? Object.keys(map) : [];
 	}	
 	
 	//this only works with objects that contain only native JS object (e.g., Object-derived)
@@ -2076,6 +2079,7 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	};
 	
 		/************  DATES ***************************/
+	ext.time = function() { return (new Date()).getTime(); };	
 	ext.parseDate = function(d) { return sb.moment(d).toDate();	};
 	ext.daysDiff = function(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
 	ext.today = function() { return new Date(); };
@@ -2177,7 +2181,7 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 		return isNaN(f) ? ext.number(def,0) : f; 
 	};
 	ext.rand = function(min, max, dec/*==0*/) {
-    	return ext.floorTo( (Math.random() * (max - min + 1)), dec) + min;
+		return ext.floorTo( (Math.random() * (max - min + 1)), dec) + min;
 	};
 	ext.to_color = function(num) {
 	    return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
@@ -2188,12 +2192,12 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	//		a function that returns a number n==foo, where foo() returns 24
 	//		an array with a function as the first argument, so n=[foo, "bar", "stuff"] and foo("bar", "stuff") returns 24
 	ext.number = function(n,def/*==0*/) {
-		var n = ext.isFunc(n) ? n() : n;
+		n = ext.isFunc(n) ? n() : n;
 		n = ext.isArr(n) && ext.isFunc(n[0]) ? n[0].apply(null, n.slice(1)) : n;
 		return isNaN(n) ? (def||0) : n;
 	};
 	ext.max =  function(/*etc....*/) {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.NEGATIVE_INFINITY)});
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.NEGATIVE_INFINITY);});
 		var max = args.reduce(function(prev,el){
 			return prev > el ? prev : el;
 		},Number.NEGATIVE_INFINITY);
@@ -2201,7 +2205,7 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 		return max;
 	};
 	ext.min = function(/*etc....*/) {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.POSITIVE_INFINITY)});
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,Number.POSITIVE_INFINITY);});
 		var min = args.reduce(function(prev,el){
 			return prev < el ? prev : el;
 		},Number.POSITIVE_INFINITY);
@@ -2209,50 +2213,64 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 		return min;
 	};
 
+	ext.range = function(min,max,num) {
+		return ext.max(min, ext.min(max,num));
+	};
+	ext.snapto = function(list, num) {
+		var diff = Math.abs(list[0]-num);
+		var n = list[0];
+		for(var i =1; i < list.length; ++i) {
+			if(Math.abs(list[i] - num) < diff) {
+				diff = Math.abs(list[i] - num);
+				n = list[i];
+			}
+		}
+		return n;
+	};
 
 	//takes an array of literals or functions and sums the result
 	ext.sum = function() {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el)});
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el);});
 		var sum = args.reduce(function(prev,el){
 			return prev + ext.number(el);
 		},0);
 
 		return sum;
 
-	}
+	};
 
 	//takes an array of literals or functions and subtracts them the first element in the list
 	ext.diff = function() {
 		var base = ext.number(arguments[0]);
-		var args  = ext.slice(arguments,1).map(function(el) {return ext.number(el)});
+		var args  = ext.slice(arguments,1).map(function(el) {return ext.number(el);});
 		var diff = args.reduce(function(prev,el){
 			return prev - ext.number(el);
 		},base);
 
 		return diff;
-	}
+	};
 
 	//takes an array of literals or functions and multiplies the result
 	ext.prod = function() {
-		var args =ext.slice(arguments).map(function(el) {return ext.number(el,1)});
+		var args =ext.slice(arguments).map(function(el) {return ext.number(el,1);});
 		var prod = args.reduce(function(prev,el){
 			return prev * ext.number(el);
 		},1);
 
 		return prod;
 
-	}
+	};
 	//compare two numbers and return true if their difference is less/equals to "within".
 	//the purpose of this function is to ameliorate problems with DOM co-ords
 	ext.compareInt = function(a,b,within/*==0*/) {
 		within = ext.number(within,0);
 		return Math.abs(a-b) <= within;
-	}
+	};
 		
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
-	ext.healthColor = function(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1] };
-	ext.healthText = function(data) { return (["Bad","Warning","Good"])[data.status+1] };
+	ext.healthColor = function(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1]; };
+	ext.healthText = function(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	ext.blockProgressFill = function(block) {
 		switch(block.progress_color) {
 			case "green": 	return ["#176717", 		"url(#progressGood)" ];
@@ -2362,8 +2380,8 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	//	but they will not be removed from target if they exist there. 
 	ext.mixin = function (/*Object*/ target, /*Object*/ source, /*Object or Array*/ ignore ){
 		var empty = ignore || {}; //default template for properties to ignore
-		var target = target || {};
-		var source = source || {};
+		target = target || {};
+		source = source || {};
 		
 		var name, s, i;
 		for(name in source){
@@ -2378,10 +2396,12 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	// Create a new object, combining the properties of the passed objects with the last arguments having
 	// priority over the first ones
 	ext.combine = function( /*Object or array*/ props, /*object or array*/ ignore) {
-		props = ext.isArray(props) ? props : [props];
-		return props.reduce(function(newObj, v) {
-			return ext.mixin(newObj, v, ignore);
+		props = ext.isArray(props) ? props.concat(ext.slice(arguments,1)) : ext.slice(arguments);
+		var res = props.reduce(function(newObj, v) {
+			var mixed = ext.mixin(newObj, v, ignore);
+			return mixed;
 		},{});
+		return res;
 	};		
 	//same as combine but only takes two properties.
 	ext.merge = function(a, b, ignore) {
@@ -2786,6 +2806,32 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 sb_light.define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 
 	var svg =  {};
+
+	svg.multiline = function(el, text, dx,dy) {
+		if(!text) { return ; }
+		el = d3.select(el);
+		var width= el.attr("width");
+		//var domEl = el.get(0);
+		var words = text.split(' ');                        
+		var tspan = el.append("tspan");
+		tspan.text(words[0]);
+
+		for(var i=1; i<words.length; i++){
+			var tst = tspan.text();             // Find number of letters in string
+			var len = tst.length;
+			tspan.text(tst + " " + words[i]);
+
+			if (tspan.node().getComputedTextLength() > width)	{
+				tspan.text(tst);
+
+				tspan = el.append("tspan").attr("x",  sb.ext.number(dx,10))
+											.attr("dy", sb.ext.number(dy,18))
+											.text(words[i])
+				;
+			}
+		}
+		return el;
+	};	
 	
 	//given a series of x points and y points, generate a
 	//grid that fits the given dimension
@@ -2823,9 +2869,12 @@ sb_light.define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		if(pointerType.charAt(0) == "T") {
 			path.put(t.M(x+cr,y));
 			switch(pointerType.charAt(1)) {
-				case "L": path.put(t.l(pw,-ph),t.l(pw,ph), t.h(w-pw2-cr2)); 	break;
-				case "M": path.put(t.h( (w-cr2-pw2)/2), t.l(pw,-ph),t.l(pw,ph), t.h((w-cr2-pw2)/2 )); 	break;
-				case "R": path.put(t.h(w-pw2-cr2), t.l(pw,-ph),t.l(pw,ph)); 	break;
+				case "L": path.put(t.l(pw,-ph),t.l(pw,ph), t.h(w-pw2-cr2));
+					break;
+				case "M": path.put(t.h( (w-cr2-pw2)/2), t.l(pw,-ph),t.l(pw,ph), t.h((w-cr2-pw2)/2 ));
+					break;
+				case "R": path.put(t.h(w-pw2-cr2), t.l(pw,-ph),t.l(pw,ph));
+					break;
 			}
 			
 			path.put(	t.q(cr,0,cr,cr),		t.v(h-cr2));
@@ -2849,21 +2898,21 @@ sb_light.define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		if(o.t) { t.put(this.translate.apply(this, o.t)); }
 		return t.join(" "); 
 	};
-	
+	var sep = ",";
 	svg.translate = 	function(x,y) { return (isNaN(y) ? ["translate(",x,")"] : ["translate(",x,", ",y,")"]).join("");  };
 	svg.scale =  		function(x,y) { return (isNaN(y) ? ["scale(",x,")"] : ["scale(",x,", ",y,")"]).join(""); };
 	svg.rotate =	 	function(x) { return "rotate("+x+")"; };
 	svg.viewBox = 		function(x,y,w,h) { return [x,y,w,h].join(" "); };
-	svg.l =				function(x,y) { return ["l",x,this._sep,y].join(""); };
-	svg.L = 			function(x,y) { return ["L",x,this._sep,y].join(""); };
-	svg.m =				function(x,y) { return ["m",x,this._sep,y].join(""); };
-	svg.M =				function(x,y) { return ["M",x,this._sep,y].join(""); };
+	svg.l =				function(x,y) { return ["l",x,sep,y].join(""); };
+	svg.L = 			function(x,y) { return ["L",x,sep,y].join(""); };
+	svg.m =				function(x,y) { return ["m",x,sep,y].join(""); };
+	svg.M =				function(x,y) { return ["M",x,sep,y].join(""); };
 	svg.h = 			function(d) { return ["h",d].join(""); };
 	svg.H =				function(d) { return ["H",d].join(""); };
 	svg.v =				function(d) { return ["v",d].join(""); };
 	svg.V = 			function(d) { return ["V",d].join(""); };
-	svg.q = 			function(cx,cy,x,y) { var s= this._sep; return ["q",cx,s,cy,s,x,s,y].join(""); };
-	svg.Q =				function(cx,cy,x,y) { var s= this._sep; return ["Q",cx,s,cy,s,x,s,y].join(""); };
+	svg.q = 			function(cx,cy,x,y) { var s= sep; return ["q",cx,s,cy,s,x,s,y].join(""); };
+	svg.Q =				function(cx,cy,x,y) { var s= sep; return ["Q",cx,s,cy,s,x,s,y].join(""); };
 		
 		
 		//utils for d3
@@ -2890,7 +2939,7 @@ sb_light.define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 				}
 			});
 			//only execute when this is being created
-			if(func != null) {
+			if(func) {
 				func(res);
 			}
 		}
@@ -2912,11 +2961,130 @@ sb_light.define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		return selection;
 	};
 
+	svg.dim = function(sel, dim, value) {
+		if(arguments.length == 3) {
+			return sel.attr(dim, value);
+		}
+		return sb.ext.to_f(sel.attr(dim));
+	};
+
+
+	//quick style
+	svg.style = function(selection/*, arguments*/) {
+		for(var i = 1; i < arguments.length; i+=2) {
+			var prop = arguments[i];
+			prop = styleMap[prop] || prop;
+			selection.style(prop, arguments[i+1]);
+		}
+		return selection;
+	};
+
+	var styleMap = {
+		t: "font",
+		f:"fill",
+		fo:"fill-opacity",
+		s: "stroke",
+		so:"stroke-opacity",
+		sw:"stroke-width",
+		slc: "stroke-linecap",
+		slj: "stroke-linejoin",
+		sda:"stroke-dasharray",
+		ta:"text-anchor"
+	};
+
 	return svg;
 	
 });
 
  exports.svg = sb_light.require('sb_light/utils/svg');
+
+
+sb_light.define('sb_light/utils/queue',['sb_light/globals'], function(sb) {
+
+	var queue = {};
+	var low_list = [];
+	var high_list = [];
+	var interval = 0;
+
+	var start = function() {
+		queue.next();
+		start = function() {}; //remove the function
+	}
+
+	queue.interval = function(value) {
+		if(arguments.length) {
+			interval = value;
+		}
+		return interval;
+	}
+
+
+
+	//add a function with an optional unique name. 
+	//if the queue already contains an item with the same name, it's ignored. 
+	//delay will make sure the function isn't executed before the time has passed, but could take much longer...
+	queue.add = function(func, name, delay) {
+		delay = sb.ext.number(delay, 0)
+		name = name || "queued_" + sb.ext.unique();
+		var val = low_list.find("name", name).value;
+		if(!val) {
+			sb.ext.debug("QUEUE: Adding: ", name);
+			low_list.push({name:name, func:func, time:sb.ext.time(), delay:delay});
+			start();
+		}
+	};
+	queue.high = function(func,name, delay) {
+		delay = sb.ext.number(delay,0);
+		name = name || "queued_" + sb.ext.unique();
+		var val = high_list.find("name", name).value;
+		if(!val) {
+			sb.ext.debug("QUEUE: Adding HIGH: ", name);
+			high_list.push({name:name, func:func,  time:sb.ext.time(), delay:delay});
+			start();
+		}
+	};
+
+	queue.next = function() {
+		if(!_next(high_list)) { 
+			_next(low_list);
+		}		
+		queue.next.bindDelay(queue, interval);
+	};
+
+	var _next = function(list) {
+		var t = sb.ext.time();
+		var len = list.length;
+		var i = 0;
+		var called = false;
+		var wait = [];
+		while(i < len && !called) {
+			var n = list.shift();
+			if(t - n.time > n.delay) {
+				sb.ext.debug("QUEUE: Calling: ", n.name);
+				n.func();
+				called = true;
+			} else {
+				wait.push(n);
+			}
+			i = i + 1;
+		}
+		//waiting items are inserted at the front
+		list.unshift.apply(list, wait);
+		return called;
+	};
+
+	queue.report = function() {
+		var hi = high_list.map(function(el) {return el.name;}).join(" ");
+		var lo = low_list.map(function(el) {return el.name;}).join(" ");
+
+		console.log("Current Queue:", (high_list.length ? (" High: " + hi) : "" ),   (low_list.length ? (" Normal: " + lo) : "" ) );
+	};
+
+	return queue;
+
+});
+
+ exports.queue = sb_light.require('sb_light/utils/queue');
 
 
 
@@ -3023,18 +3191,69 @@ sb_light.define('widgets/widget',['sb_light/utils/Class'], function( Class ) {
 		_sizeDefs:null,
 		_parent: null,
 		_name:null,
+		_events:null,
+		_binds:null,
+		_props:null,
 
-		init:function(sb, parentNode, def) {
+
+		//do not override
+		init:function(sb, parent, def) {
 			this._sb = sb;
-			this._domFuncs = this._propertyOverrides();
+			this._props = this._buildPropsList();
+
+			//storage place for bound functions. Storing bound functions here allows us to unsubscribe
+			//from DOM event handlers, since the "bind" method returns a different function each time. 
+			this._binds = {};
+
 			this._sizeFuncs = {};
 			this._sizeDefs = {};
-			
-			this._parent = parentNode;
+			this._parent = parent;
 			this._def = def;
+
+			this._domFuncs = this._propertyOverrides();
+
+			try {
+				this.create();
+				this.postCreate();
+			}catch(e) {
+				console.log( "Failed to create widget " + def.id + " " + JSON.stringify(e.message? (e.message + "\n" + e.source) : e)); 
+				throw new Error("Failed to create widget " + def.id + " " + JSON.stringify(e.message? (e.message + "\n" + e.source) : e)); 
+			}
+			
+
+
+			//this._provideEvents(); // not necessary if it doesn't provide anything... just for example
+		},
+
+		bind: function(name) {
+			if(!this._binds[name]) {
+				if(!this[name]) {
+					throw new Error("SB_Light Widget (" + name + ") is not a function of : " + this.id());
+				}
+				this._binds[name] = this[name].bind(this);
+			}
+			return this._binds[name];
+		},
+
+		_buildPropsList: function() {
+			var a = [];
+			for(var i in this) { a.push(i); }
+			return a.join(",");
+		},
+
+		//hasOwnProperty doesn't follow the prototype chain properly. This fixes it.
+		has: function(name) {
+			var re = new RegExp("(^|,)_?"+name+"(,|$)");
+			return this._props.match(re);
+		},
+
+		create:function() {
 			this._dom = this.createDom(this._def);
 			this.parentDom().appendChild(this._dom);
-			
+		},
+
+		postCreate:function() {
+			this._sb.ext.debug("Widget", this.id(), "postCreate / apply properties");
 			this.applyProperties();
 		},
 
@@ -3048,20 +3267,35 @@ sb_light.define('widgets/widget',['sb_light/utils/Class'], function( Class ) {
 		parentDom:function() {
 			return this._parent ? (this._sb.ext.isFunc(this._parent.dom) ? this._parent.dom() : this._parent ) : null;
 		},
-		
+
+		cid:function(name) {
+			return [this.id(), name].join("_");
+		},
+		cidDim:function(name, dim, amt) {
+			var _base = ["@",this.cid(name)];
+			var _dim = (dim||"").match(/left|right|top|bottom|height|width|fringe/) ? dim : null;
+			var _amt = arguments.length == 2 && !dim ? dim : (amt||0);
+			if(_dim) {
+				_base.put("#", _dim);
+			}
+			_base.put("#", _amt);
+			return _base.join("");
+		},
 
 		_noop: function() {},
-		_propertyOverrides: function() { 
+		_propertyOverrides: function() {
 			return {
-				"default": this.property.bind(this),
-				"style": this.style.bind(this),
+				"default": this.bind("property"),
+				"subscribe": this.bind("subscribe"),
+				"css": this.bind("cssText"),
+				"style": this.bind("cssText"),
 				"widget": this._noop,
-				"class":this.className.bind(this),
+				"widget-name": this.bind("dataProperty"),
+				"class":this.bind("className"),
 				"children":this._noop,
-				"text": this.text.bind(this),
-
+				"text": this.bind("text"),
 				"left": this._noop,
-				"right": this._noop,	
+				"right": this._noop,
 				"top": this._noop,
 				"bottom": this._noop,
 				"x": this._noop,
@@ -3078,57 +3312,121 @@ sb_light.define('widgets/widget',['sb_light/utils/Class'], function( Class ) {
 			}
 		},
 		createDom:function(opts) {
-			if(!opts.widget) { throw "The 'widget' option must be specified, and be the name of a valid HTML element."; }
+			if(!opts.widget) { throw new Error("The \'widget\' option must be specified, and be the name of a valid HTML element."); }
 			return document.createElement(opts.widget);
-
 		},
 
 		applyProperties: function() {
+			this._sb.ext.debug("Apply Properties to ", this.id());
+
+			this._def["class"]  = (this._def.className ||"") + " sb_light_widget";
+			this._def["widget-name"]  = this.name();
+
+
 			for(var k in this._def) {
 				var f = this._domFuncs[k] || this._domFuncs["default"];
 				f(k, this._def[k]);
 			}
-			this.className("sb_light_widget");
-			this.dataProperty("name", this.name());
-
+			//this._domFuncs("className",  "sb_light_widget");
+			//this._domFuncs("widget-name", this.name());
 		},
 
-		source: function(name) {
+		//widget property, not dom property
+		prop:function(name,value) {
+			//convert the name to "_name" if necessary
+			var innerName;
+
+			innerName = this.has("_"+name) ? ("_"+name) : name;
+			if(!this.has(innerName)) {
+				throw new Error("SB_Light Widget (" + name + ") is not a property of : " + this._name);
+			}
+			if(arguments.length > 1) {
+				this[innerName] = value;
+				return this;
+			}
+			return this[innerName];
+		},
+
+		source: function(name, value) {
+			if(arguments.length > 1) {
+				this._def[name] = value;
+				return this;
+			}
 			return typeof this._def[name] === "undefined" ? null : this._def[name];
 		},
-		className: function(value/*==null*/, remove/*==false*/) { 
-			if(arguments.length > 0) {
-				this._dom.className = this._dom.className.replace(new RegExp("(^|\s)"+value+"(\s|$)"), " ") + (remove ? "": (" " + value));
+		className: function() {
+			var args = this._sb.ext.slice(arguments, arguments[0]=="class" ? 1 : 0);
+			if(args.length) {
+				var dom = this.dom();
+				args[0].split(" ").forEach(function(el){
+					if(el === "") { return; }
+					var cn = dom.className.replace(el, " ");
+					dom.className = cn + (args[1] ? "": (" " + el));
+				});
+				return this;
 			}
-			return this._dom.className; 
+			return this.dom().className;
 		},
 		property: function(name, value /*==null*/) {
 			if(arguments.length > 1) {
 				this._dom.setAttribute(name, value);
+				return this;
 			}
-			return this._dom.getAttribute(name); 
+			return this._dom.getAttribute(name);
 		},
+
+		subscribe:function() {
+			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
+			var obj = args[0];
+			for(var eventName in obj) {
+				var def = obj[eventName];
+				if(!this._events[eventName]) {
+					throw new Error("SB_Light Widget (" + this._name + ") does not provide the event: " + eventName);
+				}
+				this._events[eventName] = this._events[eventName] || {};
+				this._events[eventName][def.id] = def.func;
+			}
+		},
+		unsubscribe: function(eventName, funcId) {
+			if(this._events && this._events[eventName]) {
+				delete this._events[eventName][funcId];
+			}
+		},
+		trigger:function(eventName, context ) {
+			var args=  this._sb.ext.slice(arguments, 2);
+			if(this._events && this._events[eventName]) {
+				for(var en in this._events[eventName]) {
+					this._sb.queue.add(this._events[eventName][en]);
+				}
+			}
+		},
+
 		dataProperty: function(name, value /*==null*/) {
 			this.property.call(this, "data-"+name, value);
 		},
 
-		style: function(name, value /*==null*/) {
-			if(arguments.length > 1) {
-				this._dom.style.cssText = value;
+		cssText: function() {
+			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
+			if(args.length) {
+				this._dom.style.cssText = args[0];
+				return this;
 			}
 			return this._dom.style.cssText;
 		},
 
-		text: function(name, value/*==null*/) { 
-			if(value != null) {
-				this._dom.textContent = value;
+		text: function() {
+			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
+			if(args.length) {
+				this._dom.textContent = args[0];
+				return this;
 			}
-			return this._dom.textContent; 
+			return this._dom.textContent;
 		},
 
 		sizeDefs:function(name, value) {
 			if(arguments.length > 1) {
 				this._sizeDefs[name] = value;
+				return this;
 			}
 
 			return this._sizeDefs[name];
@@ -3137,25 +3435,53 @@ sb_light.define('widgets/widget',['sb_light/utils/Class'], function( Class ) {
 		sizeFuncs:function(name, value) {
 			if(arguments.length > 1) {
 				this._sizeFuncs[name] = value;
+				return this;
 			}
 			return this._sizeFuncs[name];
 		},
 
 		applyLayout: function() {
 			var d = this.dom();
+			var dim = this.bind("dim");
 			var px = this._sb.ext.px;
-			var sz = this.sizeFuncs.bind(this);
+			var sz = this.bind("sizeFuncs");
 
 			["left","top","width","height"].forEach(function(s) {
-				d.style[s] = px( sz(s)() );
+				dim(s, sz(s)() );
 			});
 
-			this._sb.ext.debug(this.id(), this.style());
-			this._handleResize();
+			//this._sb.ext.debug("sb_light Widget: applyLayout: ", this.id(), this.style());
+			this._sb.queue.add(this.bind("handleResize"), "handleResize_"+this.id());
 		},
 
-		_handleResize: function() {
+		handleResize: function(e) {
+			//this._sb.ext.debug("Widget: ", this.id(), "handleResize")
+		},
 
+
+		_provideEvents: function(/*..args*/) {
+			var args = this._sb.ext.slice(arguments);
+			this._events = this._events || {};
+			for(var i = 0; i < arguments.length; ++i) {
+				this._events[args] = {};
+			}
+		},
+
+		dim: function(name, value) {
+			if(arguments.length > 1) {
+				this.dom().style[name] = this._sb.ext.px(value);
+				return this;
+			}
+			return this._sb.ext.to_i(this.dom().style[name]);
+		},
+
+		rect: function() {
+			return {
+				x:this.dim("left"),
+				y:this.dim("top"),
+				width: this.dim("width"),
+				height:this.dim("height")
+			};
 		}
 
 	});
@@ -3169,89 +3495,272 @@ sb_light.define('widgets/widget',['sb_light/utils/Class'], function( Class ) {
 
 
 
+sb_light.define('widgets/svg',['widgets/widget'], function( W ) {
 
-sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], function(sb,Widget) {
+	var SVG = W.extend({
+
+		_d3:null,
+		_pd3:null,
+		_svgDiv:null, // placeholder div for the SVG element so we can absolutely position it properly
+		_children:null,
+		_rootElement: null,
+
+		//d3 custom events
+		_dispatcher:null,
+
+		_width:null,
+		_height:null,
+		_left:null,
+		_top:null,
+
+		//do not override
+		init:function(sb, parent, def, rootElement) {
+			if(!d3) {
+				throw "You need to load the d3.js library to use SVG widgets";
+			}
+			this._rootElement = rootElement || (sb.ext.isStr(def.widget) ? def.widget : "svg");
+			this._super(sb, parent, def);
+		},
+
+		create:function() {
+			this._name = this._name || (this._rootElement + " " + this.id());
+			this._children = {};
+			this._dispatches = this._dispatches || {};
+
+			this._pd3 = d3.select(this.parentDom());
+			this._d3 = this.createDom(this._def);
+
+			this._dom = this._d3.node();
+
+			this.createChildren(this.childrenLayout());
+		},
+
+		postCreate:function() {
+
+			//create a dispatcher if we've got dispatches
+			var dk = this._sb.ext.keys(this._def.dispatches);
+			if(dk.length) {
+				this._dispatcher = d3.dispatch.apply(d3, dk);
+			}
+			this._super();
+		},
+
+
+		pd3: function() {	return this._pd3;	},
+		d3: function() {	return this._d3;	},
+
+		parentId:function() {	return this.pd3().attr("id");	},
+
+		_propertyOverrides: function() {
+			var po = this._super();
+			var self = this;
+			po["default"] = this.bind("attr");
+			delete po.class;
+			po.style = this.bind("css");
+			po.dispatches = this.bind("dispatches");
+
+			this._sb.ext.mixin(po, [
+				"stroke", "stroke-width", "stroke-linecap", "stroke-opacity", "stroke-linejoin", "stroke-dasharray",
+				"fill", "fill-opacity",	"text-anchor"
+			].reduce(function(prev,el) {
+				prev[el] = self.bind("style");
+				return prev;
+			}, {}));
+
+			this._sb.ext.mixin(po, ["left", "top", "width", "height"].reduce(function(prev,el) {
+				prev[el] = self.bind("prop");
+				return prev;
+			}, {}));
+
+			return po;
+		},
+
+		childrenLayout: function() {
+			return null;
+		},
+
+		createChildren: function(childrenDef) {
+			try {
+				var d;
+				childrenDef = this._sb.ext.isArr(childrenDef) ? childrenDef : (childrenDef ? [childrenDef] : []);
+				for(var i = 0; i < childrenDef.length; ++i) {
+					d = childrenDef[i];
+					d.id = this._sb.layout.uniqueId(d);
+					this._children[d.id] = this._sb.ext.isString(d.widget) ? (new SVG(this._sb, this.dom(), d)) : (new d.widget(this._sb, this.dom(), d));
+					if(d.children) {
+						this._children[d.id].createChildren(d.children);
+					}
+				}
+			} catch(e) {
+				throw ["SB_Light::SVG::create ", e.message, d.id].join(" -- ");
+			}
+		},
+		child: function(id) {
+			return this._children[id] || this._children[this.cid(id)] || null;
+		},
+
+		appendChild: function(c) {		},
+
+		createDom:function(opts) {
+			if(!opts.widget) { throw "The \'widget\' option must be specified, and be the name of a valid HTML element."; }
+			if(this._rootElement == "svg" && !this.parentDom().ownerSVGElement) {
+				this._svgDiv  = this.pd3().append("div").attr("class", "sb_light_widget");
+			}
+			return (this._svgDiv || this.pd3()).append(this._rootElement);
+		},
+
+
+
+		//d3 functions--------------------------------------------------
+		attr: function() {
+			return this.d3().attr.apply(this._d3, arguments);
+		},
+		style:function() {
+			return this.d3().style.apply(this._d3, arguments);
+		},
+		css:function() {
+			if(this._svgDiv){
+				return this.cssText.apply(this, arguments);
+			} else {
+				return this.style.apply(this, arguments);
+			}
+		},
+		text: function() {
+			var t = this._sb.ext.slice(arguments, arguments.length == 2 ? 1 : 0);
+			return this.d3().text.apply(this.d3(), t);
+		},
+
+
+		//add function handlers for d3 dispatching
+		dispatches:function(/*"dispatches", {name:func}*/) {
+			var args = this._sb.ext.slice(arguments, arguments.length == 2 ? 1 : 0);
+			if(args.length) {
+				var list = args[0];
+				for(var n in list) {
+					this._dispatcher.on(n, list[n]);
+				}
+				return this;
+			}
+			return this._dispatches;
+		},
+
+
+		dispatch: function(name, context, data, index) {
+			if(this._dispatcher && this._dispatcher[name]) {
+				//call d3 style where "this" is normally the dom element from the original event,
+				this._dispatcher[name].apply(context, [data,index]);
+			}
+		},
+
+		dispatcher: function() {
+			return this._dispatcher;
+		},
+		////-----------------------------------------------------------
+
+
+		//this gets called by the sb_light layout.js engine.
+		applyLayout: function() {
+			var d = (this._svgDiv || this._d3).node();
+			var dim = this.bind("dim");
+			var px = this._sb.ext.px;
+			var sz = this.bind("sizeFuncs");
+
+			["left","top","width","height"].forEach(function(s) {
+				var f = sz(s);
+				if(f) {
+					dim(s, f() );
+				}
+			});
+
+			//this._sb.ext.debug("sb_light Widget: applyLayout: ", this.id(), this.style());
+			this.redraw();
+		},
+
+		handleResize: function() {
+			this.redraw();
+		},
+
+
+		redraw: function() {
+			//update the children of this SVG. This should be managed by D3 functions.
+		},
+
+		dim: function(name, value) {
+			if(name.match(/left|top|width|height/)) {
+				this.prop.apply(this, this._sb.ext.slice(arguments));
+			}
+			if(this._svgDiv) {
+				//for root svg which sits under a layout parsed DOM
+				if(arguments.length > 1) {
+					this._svgDiv.style(name,  this._sb.ext.px(value));
+					if(name.match(/width|height/)) {
+						this.d3().attr(name,  value);
+					}
+					return this;
+				}
+			} else {
+				//use the d3 methods instead
+				if(arguments.length > 1) {
+					this.d3().attr(name, value);
+					return this;
+				}
+			}
+			return this.prop(name);
+		},
+
+
+		rect:function() {
+			return this._super();
+		}
+
+	});
+
+	return SVG;
+
+});
+
+ exports.svg = sb_light.require('widgets/svg');
+
+
+
+
+
+sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget, SvgWidget) {
 	var lo =  {};
 
 	lo.init = function() {
-	}
+	};
 
 
 	lo.create = function(parent, def) {
-		var el;
-		if(sb.ext.isStr(def.widget)) {
-			el = (new Widget(sb, parent, def));
-		} else {
-			//widget -- needs to inherit from layout/widget.js
-			var W = def.widget;
-			el = new W(sb, parent, def);
+		try {
+			var el;
+			if(sb.ext.isStr(def.widget)) {
+				if(def.widget == "svg") {
+					el = (new SvgWidget(sb,parent,def));
+				} else {
+					el = (new Widget(sb, parent, def));
+				}
+			} else {
+				//widget -- needs to inherit from layout/widget.js
+				var W = def.widget;
+				el = new W(sb, parent, def);
+			}
+			return el;
+		} catch(e) {
+			console.log(["SB_Light::Layout::create ", JSON.stringify(e), def.id].join(" -- "));
+			throw new Error(["SB_Light::Layout::create ", JSON.stringify(e), def.id].join(" -- "));
 		}
-		return el;
-	};
-
-	var handlers = {
-		"noop": 		function() {},
-		"text": 		function(domEl, name, value/*==null*/) { 
-							if(value != null) {
-								console.log("Setting Text:", domEl.id,value);
-								domEl.textContent = value;
-							}
-							return domEl.textContent; 
-						},
-		"class": 		function(domEl, name, value/*==null*/) { 
-							if(value != null) {
-								console.log("Setting Class:", domEl.id,value);
-								domEl.className = domEl.className.replace(new RegExp("(^|\s)"+value+"(\s|$)"), " ") + " " + value;
-							}
-							return domEl.className; 
-						},
-		"property": 	function(domEl, name, value /*==null*/) {
-							if(value != null) {
-								console.log("Setting property:", domEl.id, name,value);
-								domEl.setAttribute(name, value);
-							}
-							return domEl.getAttribute(name); 
-						},
-		"style": 		function(domEl, name, value /*==null*/) {
-							if(value != null) {
-								domEl.style.cssText = value;
-							}
-							return domEl.style.cssText;
-						},
-		"position": 	function(domEl, name, value /*==null*/) {
-							if(value != null) {
-								domEl.setAttribute("data-position-"+name, value);
-							}
-							return domEl.getAttribute("data-position-"+name, value);
-						}
-
 	};
 
 
-	lo.propertyOverrides = {
-		"default": handlers.property,
-		"style": handlers.style,
-		"id": handlers.noop,
-		"type": handlers.noop,
-		"children":handlers.noop,
-		"text": handlers.text,
 
-		"left": handlers.noop,
-		"right": handlers.noop,	
-		"top": handlers.noop,
-		"bottom": handlers.noop,
-		"x": handlers.noop,
-		"y": handlers.noop,
-		"height": handlers.noop,
-		"width": handlers.noop,
-		"fringe": handlers.noop
-	};
 
 
 
 	//parse the def(inition) of the layout and inject the widgets into root.
 	lo.parse = function(root, def, preventResize/*==false*/) {
-		var rect = root.getBoundingClientRect();
+		var rect = root.ownerDocument ?  root.getBoundingClientRect() : root.rect();
 		var layout = {root: root, widgets:{}, rootWidth:rect.width, rootHeight:rect.height};
 		_createWidgets(null, def, layout);
 		if(!preventResize) {
@@ -3270,28 +3779,40 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 	//specify "true" if you want to prevent the re-layout -- this is useful when applying a bunch of changes (e.g., in a loop) and you 
 	//		want to call resize manually. 
 	lo.change = function(layout, key, dim, value, wait/*==false*/) {
-		layout.widgets[key].source[dim] = value;
+		layout.widgets[key].source(dim, value);
 		if(!wait) {
 			lo.resize(layout);
 		}
+	}
+	lo.uniqueId = function(def) {
+		if(!def.id) { 
+			def.id = "unknown_" + sb.ext.unique();;
+		}	
+		return def.id;
 	}
 
 	var _createWidgets = function(parentId,def, layout) {
 		var p = parentId ? layout.widgets[parentId] : layout.root
 		if(!p) { 
-			throw "Warning: missing parent id", parentId;
+			throw new Error("Warning: missing parent id", parentId);
 		}
 		def = sb.ext.isArray(def) ? def : [def];
 		def.forEach(function(d,i) {
-			if(!d.id) { 
-				var id = "unknown_" + sb.ext.unique();
-				d.id = id;
-			}
+			d.id = lo.uniqueId(d);
+			d.style = d.style || "";
+			d.style = d.style + (d.style.match("/z-index/") ? "" : ";z-index:"+i);	
+
 			var widget = lo.create(p, d);
 			layout.widgets[d.id] = widget; //{id:d.id, source:d, dom:obj, parentId:parentId};
-
+			
 			if(d.children && d.children.length) {
-				_createWidgets(d.id, d.children, layout);
+				if(d.widget == "svg") {
+					//skip the layout engine and let the SVG widgets manage themselves. They don't have gimpy
+					//positioning like HTML DOM / CSS (even before using d3 )
+					widget.createChildren(d.children);
+				} else {
+					_createWidgets(d.id, d.children, layout);
+				}
 			}
 
 		});
@@ -3320,12 +3841,12 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 
 			//remove conflicting "right"
 			if(v(sz("left")) && v(sz("width")) && v(sz("right"))) {
-				console.log("sb_light::utils::layout Warning: ", wid, " has left/width/right all specified. Removing 'right'");
+				//console.log("sb_light::utils::layout Warning: ", wid, " has left/width/right all specified. Removing 'right'");
 				sz("right", null);
 			}
 			//remove conflicting "bottom"
 			if(v(sz("top")) && v(sz("bottom")) && v(sz("height"))) {
-				console.log("sb_light::utils::layout Warning: ", wid, " has top/height/bottom all specified. Removing 'bottom'")		
+				// //console.log("sb_light::utils::layout Warning: ", wid, " has top/height/bottom all specified. Removing 'bottom'")		
 				sz("bottom", null);
 			}
 
@@ -3336,9 +3857,9 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 			if(!v(sz("top")) 		&& (!v(sz("height")) 	|| !v(sz("bottom")))) 		{ sz("top", fringe);}
 			if(!v(sz("bottom")) 	&& (!v(sz("height")) 	|| !v(sz("top")))) 			{ sz("bottom", fringe);}
 		}
-	}
+	};
 
-	var _isV = function(dim) { return _vDimList.indexOf(dim) > -1; }
+	var _isV = function(dim) { return _vDimList.indexOf(dim) > -1; };
 
 	var _evalLayout = function( layout) {
 		for(var wid in layout.widgets) {
@@ -3375,7 +3896,7 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 					 	mn = sb.ext.to_f(mn[1]);
 						sz(s, _sizeFunc(wid, s, sb.ext.sum, mn));
 					} else {
-						console.log("sb_light::utils::layout Warning: ", "Number is not a valid dimension", w.id, s, dim);
+						// console.log("sb_light::utils::layout Warning: ", "Number is not a valid dimension", w.id, s, dim);
 					}
 				} else if (dim == "auto") {
 					sz(s, _autoFunc(wid, s, w, layout));
@@ -3397,9 +3918,6 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 					var linkAmt = v(m[5]) ? sb.ext.to_f(m[5],0) : 0;
 
 					var lw = layout.widgets[linkKey];
-					if(!lw) {
-						sb.ext.debug("Doo");
-					}
 					var lz = lw.sizeFuncs.bind(lw);
 					if(linkDim == "right" && s == "left") { 
 						sz(s, _sizeFunc(wid, s, sb.ext.sum, [lz,"left", (linkKey+"@left")], [lz,"width", (linkKey+"@width")],  linkAmt));
@@ -3419,7 +3937,7 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 
 		}
 
-	}
+	};
 
 	var _sizeFunc = function(id, dim, op /*, list */ ) {
 		var dimId = id + ":" + dim;
@@ -3429,7 +3947,7 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 		return function(chain) {
 			chain = chain ||"Chain: ";
 			if(chain.match(dimId)) { 
-				throw "sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId;
+				throw new Error("sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId);
 			}
 			var nl = list.map(function(el) {	
 				return sb.ext.isArr(el) ? [el[0](el[1]), (chain+"_"+dimId + ( el[2] ? ("("+el[2]+")") :"" ))] : el;
@@ -3442,14 +3960,14 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 			
 			return res;
 		}
-	}
+	};
 
 	var _autoFunc = function(id, dim, w, layout) {
 		var dimId = id + ":" + dim;
 		return function(chain) { 
 			chain = chain || "Chain: ";
 			if(chain.match(dimId)) { 
-				throw "sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId;
+				throw new Error("sb_light::utils::layout Error -- Circular dependancy (" + chain + ") " + dimId);
 			}
 
 			var list = [];
@@ -3496,7 +4014,7 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 				}
 			}
 		}
-	}
+	};
 
 	var _applyLayout = function(layout) {
 		for (var wid in layout.widgets) {
@@ -3516,7 +4034,7 @@ sb_light.define('sb_light/layout',['sb_light/globals', 'widgets/widget'], functi
 
 		}
 
-	}
+	};
 
 
 
@@ -4393,7 +4911,6 @@ sb_light.define('sb_light/api/state',['sb_light/globals'], function(sb) {
 		
 		session: state.session_startup,
 		url:"",
-
 		
 		childBlock:null,		
 		
@@ -5694,6 +6211,7 @@ sb_light.define('sb_light/main',[
 	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
 	'sb_light/utils/svg',	
+	'sb_light/utils/queue',	
 	'sb_light/utils/events',	
 	'sb_light/layout',	
 	'sb_light/utils/consts',
@@ -5710,6 +6228,7 @@ sb_light.define('sb_light/main',[
 	moment,
 	ext,	
 	svg,
+	queue,
 	events,
 	layout,
 	consts,	 
@@ -5728,6 +6247,7 @@ sb_light.define('sb_light/main',[
 	globals.moment = moment;
 	globals.ext = ext;
 	globals.svg = svg;
+	globals.queue = queue;
 	globals.events = events;
 	globals.layout = layout;
 	globals.consts = consts;
