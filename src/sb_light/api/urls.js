@@ -179,22 +179,20 @@ define(['sb_light/globals'], function(sb) {
 	};
 	
 	//convers a sub-url pattern into an object
-	// e.g., blockSettings=blockA!bs_blockB!bp
+	// e.g., blockSettings=blockA!bs-blockB!bp
 	// into:
 	//	{ blockA: bs, blockB:bp }
 	urls.s_to_o = function(s) {
-		return s.split("-").reduce(function(prev, el) { 
-			if(el != "") {
-				var parts = el.split("!");
-				return sb.ext.set.apply(Object, parts);
-			}
+		return !s ? {} : s.split("-").reduce(function(prev, el) { 
+			//shorthand way of setting a property and returning it on one line
+			return !el ? prev : sb.ext.set.apply(Object, ([prev]).concat(el.split("!")));
 		}, 	{});
 	};
 
 	//The reverse of s_to_o
 	urls.o_to_s = function(o) {
 		return sb.ext.map(o, function(v,k) {
-			return [v,k].join("!");
+			return [k,v].join("!");
 		}).join("-");
 	};
 	

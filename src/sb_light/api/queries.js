@@ -442,13 +442,17 @@ define(['sb_light/globals'], function(sb) {
 				var path = ppath.concat([el]).join("_");
 				var defaultType = sb.state.value(sb.consts.STATE.BLOCKS_TREE_VIEW);
 				var localType = sb.state.getValueKey(sb.consts.STATE.BLOCK_SETTINGS_VIEW, path);
+				if(!localType || localType == sb.consts.BLOCK_SETTINGS.VIEW.DEFAULT.key) {
+					localType = defaultType;
+				} 	
+
 				
 				return {
 					path:path,
 					dy:dy,
 					dx:(idx - cidx),
 					data: blocks[el],
-					viewType: (localType || defaultType)
+					viewType: localType
 				};
 			});
 			
