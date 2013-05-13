@@ -2,11 +2,11 @@
 
 
 define([
-	'sb_light/widgets/widget',
-	'sb_light/widgets/layoutWidget',
-	'sb_light/widgets/formInput',
-	'sb_light/widgets/resizer',
-	'sb_light/widgets/svg',
+	'widgets/widget',
+	'widgets/layoutWidget',
+	'widgets/formInput',
+	'widgets/resizer',
+	'widgets/svg',
 ], function(
 	widget,
 	layoutWidget,
