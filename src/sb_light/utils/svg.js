@@ -3,13 +3,17 @@ define(['sb_light/globals'], function(sb) {
 
 	var svg =  {};
 
+	var _d3 = typeof d3 !== "undefined" && d3 || {"__missing" : true};
+
 	svg.ZERO = 1e-6;
 
 	svg.extendD3 = function(name, func) {
+		//protection for the compiled files. d3 is not necessarily required for this library to work. 
+		if(_d3.__missing) { return; }
 		//prototypes to extend
-		d3.selection.prototype[name] = 
-		d3.transition.prototype[name] = 
-		d3.selection.enter.prototype[name] = 
+		_d3.selection.prototype[name] = 
+		_d3.transition.prototype[name] = 
+		_d3.selection.enter.prototype[name] = 
 		//the function
 		func;
 	}

@@ -32,6 +32,31 @@ var config = {
 	}
 };
 
+
+var config_rjs = {
+	name:('build/almond'),
+   	baseUrl:(base),
+   	include: "sb_light/main",
+   	optimize:"none",
+   	namespace:"sb_light",
+	paths: {
+		sb_light: "src/sb_light",
+		widgets:"src/widgets"
+	},
+   	wrap:{
+   		startFile: "build/start_rjs.frag",
+   		endFile:"build/end_rjs.frag"
+   	},
+	onBuildWrite: function(moduleName,path, contents) {
+		if(moduleName == "sb_light/main") {
+			contents = contents += '\n\n define("sb_light", ["sb_light/main"], function(sb) {    return sb; })';
+		} else if (moduleName == "sb_light/lib/moment" ) {
+			contents = contents.replace('define("moment",', 'define("sb_light/lib/moment",');
+		}
+		return contents;
+	},
+};
+
 var config_commonjs = {
    	name:('build/almond'),
    	baseUrl:(base),
@@ -72,6 +97,8 @@ var types = [
 	[config, "sb_light.%VERSION%.%COMPRESS%", "uglify2"],
 	[config_commonjs, "sb_light_commonjs.%VERSION%.%COMPRESS%", "none"],
 	[config_commonjs, "sb_light_commonjs.%VERSION%.%COMPRESS%", "uglify2"],
+	[config_rjs, "sb_light_rjs.%VERSION%.%COMPRESS%", "none"],
+	[config_rjs, "sb_light_rjs.%VERSION%.%COMPRESS%", "uglify2"],
 ];
 
 
