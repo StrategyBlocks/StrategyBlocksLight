@@ -18,7 +18,7 @@ define([
 	'sb_light/api/urls',	
 	'sb_light/api/api',
 	'sb_light/api/ajax',
-	'sb_light/widgets/main'
+	'widgets/main'
 ], function(
 	globals,
 	moment,
