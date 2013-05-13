@@ -17,7 +17,8 @@ define([
 	'sb_light/api/queries',	
 	'sb_light/api/urls',	
 	'sb_light/api/api',
-	'sb_light/api/ajax'
+	'sb_light/api/ajax',
+	'sb_light/widgets/main'
 ], function(
 	globals,
 	moment,
@@ -34,7 +35,8 @@ define([
 	queries,	
 	urls,	
 	api,
-	ajax
+	ajax,
+	widgets
 ) {
 	//globals.version = "0.0.1";
 	globals.debug = true;
@@ -54,6 +56,7 @@ define([
 	globals.api = api;	 
 	globals.ajax = ajax; 
 	globals.Class = Class;
+	globals.widgets = widgets;
 	
 
 	state.host = "https://app.strategyblocks.com";
