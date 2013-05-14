@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
     <head>
         <title>StrategyBlocks Light Client Web Demo</title>
         
-        <script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
+        <script src="http://code.jquery.com/jquery-1.9.1.min.js" charset="utf-8"></script>
         <script src="/bin/sb_light_rjs.uncompressed.js"></script>
 
         <style>
@@ -18,17 +18,19 @@
         </style>
     </head>
     <body>
+    	<div id="console_output">
+    	</div>
 
     	<script>
-    		sb.state.host = window.location.host;
-			sb.api.ajax = sb.ajax.d3(d3);
+    		sb.state.host = "http://localhost:3000";
+			sb.api.ajax = sb.ajax.jquery($);
 
-    		var body = d3.select("body");
-    		var w = body.node().clientWidth;
-    		var h = body.node().clientHeight;
+    		var body = $("body").get(0);
+    		var w = body.clientWidth;
+    		var h = body.clientHeight;
 
 			function showLoginPrompt() {
-				var layout = sb.layout.parse(body.node(), {
+				var layout = sb.layout.parse(body, {
 					id:"popup", widget:"div", width:500, height:450, left:(w/2-250), top:(h/2-225), 
 					style:"position:absolute;border:solid 2px #9AF",
 					children: [
@@ -42,30 +44,34 @@
 				layout.rootHeight = h;
 				sb.queue.high(sb.layout.resize.bind(sb.layout, layout), "loginPageResize");
 			}
+			function consoleDump(str) {
+				var c = $("#console_output");
+				c.append(sb.ext.slice(arguments).join(" | "));
+			}
 
 			function refreshData() {
-				d3.select("#popup").remove();
+				$("#popup").remove();
 				var blocks = sb.models.rawArray("blocks");
-				if(!blocks.length) { return ; }
-
-				alert("root: ", sb.queries.rootBlock().title);
-
+				if(!blocks || !blocks.length) { return ; }
+					
+				consoleDump("root", sb.queries.rootBlock().title, blocks.length);
 			}
 
 			function handleSession() {
+				consoleDump("sb.state.host", sb.state.host);
 				if(sb.state.unknown() || sb.state.startup()) {
+					consoleDump("try login");
 					sb.state.login();
 				} else if (sb.state.unauthorized()) {
+					consoleDump("login Prompt");
 					showLoginPrompt();
-				} else {
-					refreshData();
-				}
-			} 
+				} 			} 
 
 			sb.models.subscribe("blocks", refreshData);
 			sb.state.subscribe("session", handleSession);
 
 			handleSession();
+
 
     	</script>
     </body>
