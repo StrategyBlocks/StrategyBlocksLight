@@ -217,6 +217,11 @@ define(['sb_light/globals'], function(sb) {
 		return o;
 	};
 	
+	urls.o_to_url = function(obj) {
+		return sb.ext.map(obj, function(v,k){
+			return k + "=" + v;
+		}).join(";")
+	}
 	
 	return urls;
 });

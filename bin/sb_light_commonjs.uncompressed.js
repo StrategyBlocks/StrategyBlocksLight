@@ -1998,6 +1998,7 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 			return keyName ? el[keyName] : el;
 		});
 	}
+
 	//alias for Object.keys
 	ext.keys = function ext_keys(map) {
 		return map ? Object.keys(map) : [];
@@ -2224,6 +2225,8 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	ext.range = function ext_range(min,max,num) {
 		return ext.max(min, ext.min(max,num));
 	};
+
+	//given a list of numbers, returns the one closest to "num"
 	ext.snapto = function ext_snapto(list, num) {
 		var diff = Math.abs(list[0]-num);
 		var n = list[0];
@@ -6067,6 +6070,11 @@ sb_light.define('sb_light/api/urls',['sb_light/globals'], function(sb) {
 		return o;
 	};
 	
+	urls.o_to_url = function(obj) {
+		return sb.ext.map(obj, function(v,k){
+			return k + "=" + v;
+		}).join(";")
+	}
 	
 	return urls;
 });
@@ -6196,6 +6204,22 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 	var ajax = {};
 
 
+	ajax.d3 = function(d3) { return function(opts) {
+		var url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
+		var xhr;
+		if(opts.type != "POST") {
+			url += "?" + sb.urls.o_to_url(opts.params);
+		}
+		xhr = d3.xhr(url);
+
+		xhr.on("load", opts.success);
+		xhr.on("error", opts.error);
+		if(opts.type != "POST") {
+			xhr.get();
+		} else {
+			xhr.post(JSON.stringify(opts.params));
+		}
+	};};
 
 	ajax.dojo = function(dojoRequest) { return function(opts) {
 		opts.url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
@@ -6556,6 +6580,76 @@ sb_light.define('widgets/resizer',['widgets/layoutWidget'], function( LW ) {
  exports.resizer = sb_light.require('widgets/resizer');
 
 
+sb_light.define('widgets/pages/loginPage',[
+	'widgets/layoutWidget', 
+	'widgets/formInput', 
+	
+], function( W, FormInput) {
+
+	var Login = W.extend({
+
+
+
+		create:function() {
+			this._name = "widget::loginPage";
+			this._super();
+		},
+
+		postCreate: function() {
+			this._super();
+			this.dom().addEventListener("submit", this.bind("_handleSubmit"));
+		},
+
+		childrenLayout:function() {
+
+			return [
+				{id:this.cid("center_hack"), widget:"div", fringe:"49%" , style:"display:none;"},
+				{id:this.cid("form"), widget:"form", left:this.cidDim("center_hack", -300), right:this.cidDim("center_hack", -300), 
+					top:50, bottom:50, 
+					children: [
+						{id:this.cid("title"), widget:"h3", text:"Welcome to StrategyBlocks", left:20, right:20, top:40, height:30, style:"text-align:center"},
+						{id:this.cid("error"), widget:"p", left:20, right:20, top:this.cidDim("title", "b", 20), height:30},
+						{id:this.cid("username"), widget:FormInput, left:20, right:20, top:this.cidDim("error", "b", 20), height:30, value:"glenn.murphy@strategyblocks.com", label:"Email", error:""},
+						{id:this.cid("password"), widget:FormInput, left:20, right:20,  top:this.cidDim("username", "b", 20), type:"password", value:"", height:30, label:"Password", error:""},
+						{id:this.cid("submit"), widget:"button", type:"submit", width:80, left:"28%", height:25,  top:this.cidDim("password", "b", 50), text:"Sign-In"}
+					]
+				}
+			];
+		},
+
+		_handleSubmit: function(e) {
+			this._sb.events.stop(e);
+
+			var uname = this.child("username").value();
+			var pw = this.child("password").value();
+
+
+			this._sb.state.login(uname,pw, this.bind("_handleSubmitResponse"),this.bind("_handleSubmitResponse"));
+		},
+
+		_handleSubmitResponse: function(res) {
+			var rm = this._sb.ext.getResultMessages(res);
+			if(rm.errors) {
+				if(res && res.result && res.result.errors && result.errors.form) {
+					this.cid("username").error(res.result.errors.form.username);
+					this.cid("password").error(res.result.errors.form.password);
+				}
+			}
+			this.child("error").text(rm.errors ? rm.errors.message : (rm.warnings || rm.notices || ""));
+			this.child("error").className("error", !rm.errors );
+			this.child("error").className("warning", rm.errors || !rm.warnings );
+			this.child("error").className("notice", rm.errors || !rm.notices );
+		}
+
+
+	});
+
+	return Login;
+});
+
+ exports.loginPage = sb_light.require('widgets/pages/loginPage');
+
+
 
 
 
@@ -6565,12 +6659,14 @@ sb_light.define('widgets/main',[
 	'widgets/formInput',
 	'widgets/resizer',
 	'widgets/svg',
+	'widgets/pages/loginPage'
 ], function(
 	widget,
 	layoutWidget,
 	formInput,
 	resizer,
-	svg
+	svg,
+	login
 ) {
 
 
@@ -6579,7 +6675,8 @@ sb_light.define('widgets/main',[
 		layoutWidget:layoutWidget,
 		formInput:formInput,
 		resizer:resizer,
-		svg:svg
+		svg:svg,
+		login:login
 	};
 });
 

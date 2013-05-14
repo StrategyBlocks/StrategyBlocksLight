@@ -7,12 +7,14 @@ define([
 	'widgets/formInput',
 	'widgets/resizer',
 	'widgets/svg',
+	'widgets/pages/loginPage'
 ], function(
 	widget,
 	layoutWidget,
 	formInput,
 	resizer,
-	svg
+	svg,
+	login
 ) {
 
 
@@ -21,7 +23,8 @@ define([
 		layoutWidget:layoutWidget,
 		formInput:formInput,
 		resizer:resizer,
-		svg:svg
+		svg:svg,
+		login:login
 	};
 });
 

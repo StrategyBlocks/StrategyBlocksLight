@@ -92,6 +92,7 @@ define(['sb_light/globals'], function(sb) {
 			return keyName ? el[keyName] : el;
 		});
 	}
+
 	//alias for Object.keys
 	ext.keys = function ext_keys(map) {
 		return map ? Object.keys(map) : [];
@@ -318,6 +319,8 @@ define(['sb_light/globals'], function(sb) {
 	ext.range = function ext_range(min,max,num) {
 		return ext.max(min, ext.min(max,num));
 	};
+
+	//given a list of numbers, returns the one closest to "num"
 	ext.snapto = function ext_snapto(list, num) {
 		var diff = Math.abs(list[0]-num);
 		var n = list[0];

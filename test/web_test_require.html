@@ -5,12 +5,56 @@
         
         <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
         <script src="/bin/sb_light_rjs.uncompressed.js"></script>
+
+        <style>
+
+        	html,body {
+        		width:100%;height:100%;margin:0;padding:0;overflow: none;
+        		font-family: Verdana, Arial, sans-serif;
+        	}
+        	.sb_light_widget {
+        		position:absolute;
+        	}
+        </style>
     </head>
     <body>
 
     	<script>
-    		console.log("d3", d3, "sb", sb);
+    		sb.state.host = window.location.host;
+			sb.api.ajax = sb.ajax.d3(d3);
+			
+    		var body = d3.select("body");
+    		var w = body.node().clientWidth;
+    		var h = body.node().clientHeight;
 
+			function showLoginPrompt() {
+				var layout = sb.layout.parse(body.node(), {
+					id:"popup", widget:"div", width:500, height:450, left:(w/2-250), top:(h/2-225), 
+					style:"position:absolute;border:solid 2px #9AF",
+					children: [
+						{id:"loginHeader", widget:"div", fringe:0, width:"100%", height:25, text:"Login to SB", 
+						style:"background:#9AF;text-align:center;font-size:14px;color:#333;font-weight:bold; "},
+						{id:"loginPage", widget:sb.widgets.login, fringe:0, top:25}
+					]
+				});
+
+				layout.rootWidth =w;
+				layout.rootHeight = h;
+				sb.queue.high(sb.layout.resize.bind(sb.layout, layout), "loginPageResize");
+			}
+
+			function handleSession() {
+				if(sb.state.unknown()) {
+					sb.state.login();
+				} else if (sb.state.unauthorized()) {
+					showLoginPrompt();
+				} else {
+					refreshData();
+				}
+			} 
+
+			sb.state.subscribe("session", handleSession);
+			handleSession();
 
     	</script>
     </body>

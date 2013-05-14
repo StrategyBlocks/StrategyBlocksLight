@@ -6,6 +6,22 @@ define(['sb_light/globals'], function(sb) {
 	var ajax = {};
 
 
+	ajax.d3 = function(d3) { return function(opts) {
+		var url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
+		var xhr;
+		if(opts.type != "POST") {
+			url += "?" + sb.urls.o_to_url(opts.params);
+		}
+		xhr = d3.xhr(url);
+
+		xhr.on("load", opts.success);
+		xhr.on("error", opts.error);
+		if(opts.type != "POST") {
+			xhr.get();
+		} else {
+			xhr.post(JSON.stringify(opts.params));
+		}
+	};};
 
 	ajax.dojo = function(dojoRequest) { return function(opts) {
 		opts.url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
