@@ -8,18 +8,26 @@ define(['sb_light/globals'], function(sb) {
 
 	ajax.d3 = function(d3) { return function(opts) {
 		var url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
-		var xhr;
-		if(opts.type != "POST") {
-			url += "?" + sb.urls.o_to_url(opts.params);
+		var data =  sb.urls.o_to_params(opts.data);
+		if(opts.type != "POST" && data) {
+			url += "?" + data;
 		}
-		xhr = d3.xhr(url);
+		var xhr = d3.json(url)
+			.on("load", function(res) {
+				//var resp = JSON.parse(res.responseText);
+				opts.success(res);
+			})
+			.on("error", function(res) {
+				//var resp = JSON.parse(res.responseText);
+				opts.error(res);
+			})
+		;
 
-		xhr.on("load", opts.success);
-		xhr.on("error", opts.error);
 		if(opts.type != "POST") {
 			xhr.get();
 		} else {
-			xhr.post(JSON.stringify(opts.params));
+			xhr.header("Content-type", "application/x-www-form-urlencoded")
+			xhr.post(data);
 		}
 	};};
 

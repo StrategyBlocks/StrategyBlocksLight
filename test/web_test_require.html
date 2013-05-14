@@ -3,7 +3,7 @@
     <head>
         <title>StrategyBlocks Light Client Web Demo</title>
         
-        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>
         <script src="/bin/sb_light_rjs.uncompressed.js"></script>
 
         <style>
@@ -22,7 +22,7 @@
     	<script>
     		sb.state.host = window.location.host;
 			sb.api.ajax = sb.ajax.d3(d3);
-			
+
     		var body = d3.select("body");
     		var w = body.node().clientWidth;
     		var h = body.node().clientHeight;
@@ -43,8 +43,17 @@
 				sb.queue.high(sb.layout.resize.bind(sb.layout, layout), "loginPageResize");
 			}
 
+			function refreshData() {
+				d3.select("#popup").remove();
+				var blocks = sb.models.rawArray("blocks");
+				if(!blocks.length) { return ; }
+
+				alert("root: ", sb.queries.rootBlock().title);
+
+			}
+
 			function handleSession() {
-				if(sb.state.unknown()) {
+				if(sb.state.unknown() || sb.state.startup()) {
 					sb.state.login();
 				} else if (sb.state.unauthorized()) {
 					showLoginPrompt();
@@ -53,7 +62,9 @@
 				}
 			} 
 
+			sb.models.subscribe("blocks", refreshData);
 			sb.state.subscribe("session", handleSession);
+
 			handleSession();
 
     	</script>
