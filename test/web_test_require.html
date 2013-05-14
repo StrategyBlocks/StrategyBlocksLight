@@ -20,7 +20,7 @@
     <body>
 
     	<script>
-    		sb.state.host = window.location.host;
+    		sb.state.host = "http://localhost:3000";
 			sb.api.ajax = sb.ajax.d3(d3);
 
     		var body = d3.select("body");
@@ -46,10 +46,8 @@
 			function refreshData() {
 				d3.select("#popup").remove();
 				var blocks = sb.models.rawArray("blocks");
-				if(!blocks.length) { return ; }
-
-				alert("root: ", sb.queries.rootBlock().title);
-
+				if(!blocks || !blocks.length) { return ; }
+				console.log("Blocks", blocks, blocks.length, sb.queries.rootBlock().title);
 			}
 
 			function handleSession() {
@@ -58,7 +56,7 @@
 				} else if (sb.state.unauthorized()) {
 					showLoginPrompt();
 				} else {
-					refreshData();
+					//refreshData();
 				}
 			} 
 

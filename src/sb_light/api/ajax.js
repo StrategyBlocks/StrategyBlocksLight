@@ -7,7 +7,7 @@ define(['sb_light/globals'], function(sb) {
 
 
 	ajax.d3 = function(d3) { return function(opts) {
-		var url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
+		var url = opts.url.replace(/^(https?:\/\/)/, "//");
 		var data =  sb.urls.o_to_params(opts.data);
 		if(opts.type != "POST" && data) {
 			url += "?" + data;
@@ -22,6 +22,10 @@ define(['sb_light/globals'], function(sb) {
 				opts.error(res);
 			})
 		;
+		if(sb.state.host != window.location.host) {
+			xhr.header("Access-Control-Request-Method", opts.type);
+		}
+
 
 		if(opts.type != "POST") {
 			xhr.get();
@@ -32,7 +36,7 @@ define(['sb_light/globals'], function(sb) {
 	};};
 
 	ajax.dojo = function(dojoRequest) { return function(opts) {
-		opts.url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
+		opts.url = opts.url.replace(/^(https?:\/\/)/, "//");
 		sb.ext.debug("dojo ajax", opts.type, opts.url);
 		dojoRequest(opts.url, {
 			method:opts.type,
@@ -42,8 +46,7 @@ define(['sb_light/globals'], function(sb) {
 	};};
 
 	ajax.jquery = function(jquery) { return function(opts) {
-		//strip the host part of the url. Make this request server relative.  
-		opts.url = opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
+		opts.url = opts.url.replace(/^(https?:\/\/)/, "//");
 		sb.ext.debug("jquery ajax", opts.type, opts.url);
 		
 
@@ -51,7 +54,8 @@ define(['sb_light/globals'], function(sb) {
 			type: 		opts.type,
 			url: 		opts.url,
 			data:		opts.data,
-			dataType: 	opts.dataType
+			dataType: 	opts.dataType,
+			crossDomain: (sb.state.host != window.location.host)
 		})
 		.done(opts.success)
 		.fail(opts.error);
