@@ -46,7 +46,9 @@ define(['sb_light/globals'], function(sb) {
 	};};
 
 	ajax.jquery = function(jquery) { return function(opts) {
-		opts.url = opts.url.replace(/^(https?:\/\/)/, "//");
+		var cd = (sb.state.host != window.location.host);
+
+		opts.url = cd ? opts.url.replace(/^(https?:\/\/)/, "//") : opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
 		sb.ext.debug("jquery ajax", opts.type, opts.url);
 		
 
@@ -55,7 +57,7 @@ define(['sb_light/globals'], function(sb) {
 			url: 		opts.url,
 			data:		opts.data,
 			dataType: 	opts.dataType,
-			crossDomain: (sb.state.host !== window.location.host)
+			crossDomain: cd
 		})
 		.done(opts.success)
 		.fail(opts.error);
