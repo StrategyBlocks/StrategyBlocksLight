@@ -6152,7 +6152,9 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 	};};
 
 	ajax.jquery = function(jquery) { return function(opts) {
-		opts.url = opts.url.replace(/^(https?:\/\/)/, "//");
+		var cd = (sb.state.host != window.location.host);
+
+		opts.url = cd ? opts.url.replace(/^(https?:\/\/)/, "//") : opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
 		sb.ext.debug("jquery ajax", opts.type, opts.url);
 		
 
@@ -6161,7 +6163,7 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 			url: 		opts.url,
 			data:		opts.data,
 			dataType: 	opts.dataType,
-			crossDomain: (sb.state.host !== window.location.host)
+			crossDomain: cd
 		})
 		.done(opts.success)
 		.fail(opts.error);
@@ -6459,7 +6461,7 @@ sb_light.define('widgets/resizer',['widgets/layoutWidget'], function( LW ) {
 			this.dom().ownerDocument.body.addEventListener("mouseup", this.bind("_stopDrag"));
 		},
 		_drag: function(e) {
-			var prect = this._parent.getBoundingClientRect();
+			var prect = this.parentDom().getBoundingClientRect();
 			var pos = (this._dragDim == "left" ? e.clientX : e.clientY) - prect[this._dragDim];
 
 
