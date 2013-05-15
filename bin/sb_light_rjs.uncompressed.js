@@ -6105,7 +6105,7 @@ sb_light.define('sb_light/api/api',['sb_light/globals'], function(sb) {
 
 
 
-
+/*globals define, Ti */
 
 sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 	
@@ -6115,7 +6115,7 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 	ajax.d3 = function(d3) { return function(opts) {
 		var url = opts.url.replace(/^(https?:\/\/)/, "//");
 		var data =  sb.urls.o_to_params(opts.data);
-		if(opts.type != "POST" && data) {
+		if(opts.type !== "POST" && data) {
 			url += "?" + data;
 		}
 		var xhr = d3.json(url)
@@ -6128,15 +6128,15 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 				opts.error(res);
 			})
 		;
-		if(sb.state.host != window.location.host) {
+		if(sb.state.host !== window.location.host) {
 			xhr.header("Access-Control-Request-Method", opts.type);
 		}
 
 
-		if(opts.type != "POST") {
+		if(opts.type !== "POST") {
 			xhr.get();
 		} else {
-			xhr.header("Content-type", "application/x-www-form-urlencoded")
+			xhr.header("Content-type", "application/x-www-form-urlencoded");
 			xhr.post(data);
 		}
 	};};
@@ -6146,7 +6146,7 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 		sb.ext.debug("dojo ajax", opts.type, opts.url);
 		dojoRequest(opts.url, {
 			method:opts.type,
-			data:opts.data,
+			data:opts.data
 
 		}).then(opts.success,opts.error);
 	};};
@@ -6161,7 +6161,7 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 			url: 		opts.url,
 			data:		opts.data,
 			dataType: 	opts.dataType,
-			crossDomain: (sb.state.host != window.location.host)
+			crossDomain: (sb.state.host !== window.location.host)
 		})
 		.done(opts.success)
 		.fail(opts.error);
@@ -6170,7 +6170,7 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 
 	ajax.node = function(requestAgent) {  return function(opts) {
 		sb.ext.debug("Request Agent: ", requestAgent);
-		var _req = opts.type == "POST" ? requestAgent.post(opts.url).send(opts.data) :
+		var _req = opts.type === "POST" ? requestAgent.post(opts.url).send(opts.data) :
 										requestAgent.get(opts.url).query(opts.data);
 		
 		_req.set("Accept", "application/json")
@@ -6192,6 +6192,7 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 	
 
 	ajax.titanium = function() {	return function(opts) {
+		var p, str;
 		if(!sb.ext.ti()) { return; }
 		
 	    // Merge with default props
@@ -6213,9 +6214,9 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 	 
        // Ti.API.info("XHR " + o.type + ": \n'" + o.url + "'...");
         var xhr = Ti.Network.createHTTPClient({ autoEncodeUrl: o.autoEncodeUrl,   async: o.async   });
- 		if(o.type == "GET" && o.data) {
- 			var str = [];
- 			for(var p in o.data) {
+ 		if(o.type === "GET" && o.data) {
+ 			str = [];
+ 			for(p in o.data) {
  				str.put( p + "=" + encodeURIComponent(o.data[p]) );
  			}
  			o.url += "?" + str.join("&");
@@ -6252,7 +6253,7 @@ sb_light.define('sb_light/api/ajax',['sb_light/globals'], function(sb) {
 	                    return o.success(json);
 	                }
 	            } catch(e) {
-	                Ti.API.error('XHR success function threw Exception: ' + e + '');
+	                Ti.API.error('XHR success function threw Exception: ' + e);
 	                return;
 	            }
 	        // Error = 4xx or 5xx
