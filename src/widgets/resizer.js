@@ -55,7 +55,7 @@ define(['widgets/layoutWidget'], function( LW ) {
 			this.dom().ownerDocument.body.addEventListener("mouseup", this.bind("_stopDrag"));
 		},
 		_drag: function(e) {
-			var prect = this._parent.getBoundingClientRect();
+			var prect = this.parentDom().getBoundingClientRect();
 			var pos = (this._dragDim == "left" ? e.clientX : e.clientY) - prect[this._dragDim];
 
 
