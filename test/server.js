@@ -60,8 +60,8 @@ var local_proxy = new httpProxy.HttpProxy({
 	}
 });
 
-
-var rm = "^\/(test|src|lib|bin|mobile|"+program.ignore_paths.replace(/\//, "\\/").split(",").join("|") + ")";
+var paths = program.ignore_paths.length ?("|" + program.ignore_paths.replace(/\//, "\\/").split(",").join("|") ) : "";
+var rm = "^\/(test|src|lib|bin|mobile"+ paths + ")";
 var match = new RegExp(rm);
 console.log("Ignore: ", rm);
 
