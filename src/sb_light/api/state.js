@@ -226,29 +226,39 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 		
 		//console.log(sb.version);
 		sb.ext.debug("subscribing to: ", type);
-		state.subscriptions[type] = state.subscriptions[type] || [];
+		state.subscriptions[type] = state.subscriptions[type] || {};
 		
-		state.subscriptions[type].push(cb);
+		var id = "Sub_state_" + type + "_" + sb.ext.unique();
+		state.subscriptions[type][id] = cb;
 	};
 
 	/**
-	*	This will not work unless the function definition
+	*	When "remove" is a func, it will not work unless the function definition
 	*	has not changed. E.g., if you create a temporary
 	*	function using func.bind, then you need to store
 	*	that instance and use it for unsubscribing
 	*/
-	state.unsubscribe = function(type, cb) {
-		var idx = state.subscriptions[type].indexOf(cb);
-		if (idx > -1) {
-			state.subscriptions[type].splice(idx, 1);
-		}  
+	state.unsubscribe = function(type, remove) {
+		var ext = this._sb.ext;
+		var del = [];
+		//collect matches
+		ext.each(state.subscriptions[type], function(v,k) {
+			//"remove" can be the key or the cb func
+			if(v == remove || k == remove) { 
+				del.push(k);
+			}
+		});
+		del.forEach(function(el) {
+			sb.ext.debug("unsubscribing from: ", type);
+			delete state.subscriptions[type][el];
+		})
 	};
 
 	state.publish = function(type) {
 		var list = state.subscriptions[type] || [];
 		var value = state.value(type);
 		var ext= sb.ext;
-		list.forEach(function(v) {
+		ext.each(state.subscriptions[type], function(v) {
 			if(type.indexOf("Zoom") > -1) {
 				ext.debug("Publish Zoom: ", type, value);
 				v.bindDelay(null, 0, value);

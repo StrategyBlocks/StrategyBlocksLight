@@ -45,16 +45,19 @@ define([
 	
 	//adds a callback watcher. 
 	//returns whether the model is valid or not. 
-	models.subscribe = function(modelName,  cb) {
+	models.subscribe = function(modelName,  cb, domNode/*==null*/) {
 		var m = _verifyModel(modelName);
-		m.model.subscribe(cb);
+		return m.model.subscribe(cb, domNode);
 	},
 	
-	models.unsubscribe = function(modelName, cb) {
+	//"remove" can be an actual cb function, or the id returned from the subscribe. 
+	models.unsubscribe = function(modelName, remove) {
 		var m = _verifyModel(modelName);
-		m.model.unsubscribe(cb);
+		return m.model.unsubscribe(remove);
 	},
 	
+
+
 	
 	models.rawArray = function(modelName) {
 		var m = _verifyModel(modelName);

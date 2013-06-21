@@ -50,6 +50,6 @@ define(['sb_light/globals'], function(sb) {
 		return (t >= 0) && (u >= 0) && (t <= 1) && (u <= 1);
 	};
 
-	return;
+	return math;
 });
 

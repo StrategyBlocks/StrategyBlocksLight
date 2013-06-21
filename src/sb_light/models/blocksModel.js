@@ -104,7 +104,7 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 			
 			if (!this[name]) {
 				if(this[name+"_queue"].length == 1) {
-					sb.controller.invoke(url, null, func);
+					this._sb.controller.invoke(url, null, func);
 				}
 			} else {
 				func();

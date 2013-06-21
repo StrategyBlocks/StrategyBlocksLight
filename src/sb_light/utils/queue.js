@@ -22,7 +22,7 @@ define(['sb_light/globals'], function(sb) {
 	//add a function with an optional unique name. 
 	//if the queue already contains an item with the same name, it's ignored. 
 	//delay will make sure the function isn't executed before the time has passed, but could take much longer...
-	queue.add = function(func, name, delay) {
+	queue.add = function queue_add(func, name, delay) {
 		delay = sb.ext.number(delay, 0)
 		name = name || "queued_" + sb.ext.unique();
 		var val = low_list.find("name", name).value;
@@ -32,7 +32,7 @@ define(['sb_light/globals'], function(sb) {
 			start();
 		}
 	};
-	queue.high = function(func,name, delay) {
+	queue.high = function queue_high(func,name, delay) {
 		delay = sb.ext.number(delay,0);
 		name = name || "queued_" + sb.ext.unique();
 		var val = high_list.find("name", name).value;
@@ -43,14 +43,14 @@ define(['sb_light/globals'], function(sb) {
 		}
 	};
 
-	queue.next = function() {
+	queue.next = function queue_next() {
 		if(!_next(high_list)) { 
 			_next(low_list);
-		}		
+		}
 		queue.next.bindDelay(queue, interval);
 	};
 
-	var _next = function(list) {
+	var _next = function queue_next_internal(list) {
 		var t = sb.ext.time();
 		var len = list.length;
 		var i = 0;
@@ -72,7 +72,7 @@ define(['sb_light/globals'], function(sb) {
 		return called;
 	};
 
-	queue.report = function() {
+	queue.report = function queue_report() {
 		var hi = high_list.map(function(el) {return el.name;}).join(" ");
 		var lo = low_list.map(function(el) {return el.name;}).join(" ");
 

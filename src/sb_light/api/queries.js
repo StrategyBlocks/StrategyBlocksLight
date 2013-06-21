@@ -31,7 +31,11 @@ define(['sb_light/globals'], function(sb) {
 	*********************************/
 	q.fullname = function(uid) {
 		var us = sb.models.raw("users");
-		return us && uid && us[uid] ? us[uid].name : null;
+		return us && uid && us[uid] ? us[uid].name : "<removed>";
+	};
+	q.firstname = function(uid) {
+		var us = sb.models.raw("users");
+		return us && uid && us[uid] ? us[uid].first_name : "<removed>";
 	};
 	q.currentUser = function() {
 		var us = sb.models.raw("users");

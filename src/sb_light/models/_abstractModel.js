@@ -19,7 +19,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this.name = name;
 			this._urlDef = urlDef;
 			this._selectQueue = [];
-			this._subscriptions = [];
+			this._subscriptions = {};
 			
 			this._sb.state.register(this, this._urlDef, this._handleUpdate.bind(this));
 		},
@@ -56,28 +56,38 @@ define(['sb_light/utils/Class'], function( Class ) {
 			return this._modelArray;
 		},
 	
-		subscribe: function(cb) {
-			this._subscriptions.put(cb);
+		subscribe: function(cb, domNode/*=null*/) {
+			var id = "Sub_" + this.name + "_" + this._sb.ext.unique();
+			this._subscriptions[id] = cb;
 			var m = this.get();
 			if(m) {
-				cb(m);	
+				this._sb.queue.add(cb, id, 0);
 			}
+			return id;
 		},
 	
-		//this only works when the function is the same instance as the subscription
-		//so if you use "func.bind" for you callback, you need to store the bound function 
-		//to use for the unsubscribe
-		unsubscribe:function(cb) {
-			var idx = this._subscriptions.indexOf(cb);
-			if(idx >= 0) {
-				this._subscriptions.splice(idx,1);
-			}		
+		//unsubnscribe unsing a callback or an id
+		unsubscribe:function(remove) {
+			var ext = this._sb.ext;
+			var del = [];
+			var subs= this._subscriptions;
+			//collect matches
+			ext.each(subs, function(v,k, subs) {
+				if(v == remove || k == remove) { 
+					del.push(k);
+				}
+			});
+			del.forEach(function(el) {
+				delete subs[el];
+			})
+
 		},
 		
 		_publish: function() {
 			var m = this.get();
-			this._subscriptions.forEach(function(cb) {
-				cb.bindDelay(null, 50, m);
+			var q = this._sb.queue;
+			this._sb.ext.each(this._subscriptions, function(cb,k) {
+				q.add(cb, k, 0);
 			});	
 		},
 		

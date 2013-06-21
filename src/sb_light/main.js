@@ -5,6 +5,7 @@ define([
 	'sb_light/globals',
 	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
+	'sb_light/utils/subman',	
 	'sb_light/utils/svg',	
 	'sb_light/utils/queue',	
 	'sb_light/utils/events',	
@@ -23,6 +24,7 @@ define([
 	globals,
 	moment,
 	ext,	
+	subman,	
 	svg,
 	queue,
 	events,
@@ -40,9 +42,13 @@ define([
 ) {
 	//globals.version = "0.0.1";
 	globals.debug = true;
-	
-	globals.moment = moment;
+
+	//sometimes the way moment.js gets loaded is different. If it's not loaded properly via AMD, check the global context (this, window).
+	globals.moment = moment || this.moment || window.moment;
+	if(!globals.moment && !globals.moment.version) { throw "Moment JS has not been loaded properly."; }
+
 	globals.ext = ext;
+	globals.subman = subman;
 	globals.svg = svg;
 	globals.queue = queue;
 	globals.events = events;

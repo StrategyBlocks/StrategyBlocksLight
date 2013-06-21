@@ -13,7 +13,7 @@ define(['sb_light/globals'], function(sb) {
 
 	//helps convert arguments into array
 	//a is an array or arguments.
-	//idx is the starting index of the slice
+	//idx is the starting index of the slice (e.g., number of items to skip)
 	ext.slice = function ext_slice(a, idx, end) {
 		idx = isNaN(idx) ? 0 : idx;
 		if(isNaN(end)) {
@@ -182,7 +182,15 @@ define(['sb_light/globals'], function(sb) {
 	};
 	
 		/************  DATES ***************************/
-	ext.time = function ext_time() { return (new Date()).getTime(); };	
+	ext.time = (function() { 
+			if(!Date.now) {
+				return function ext_time_old() { return new Date().getTime(); }
+			} else {
+				return function ext_time() { return Date.now(); }
+			}
+	}());	
+	
+
 	ext.parseDate = function ext_parseDate(d) { return sb.moment(d).toDate();	};
 	ext.daysDiff = function ext_daysDiff(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
 	ext.today = function ext_today() { return new Date(); };
@@ -192,7 +200,7 @@ define(['sb_light/globals'], function(sb) {
 	ext.userFormat = function ext_userFormat() { 
 		var u = sb.state && sb.state.value("user");
 		return u ? u.date_format : ext.serverFormat;
-	}
+	};
 	ext.serverDate = function ext_serverDate(d) { return sb.moment(d||new Date()).format(ext.serverFormat); };
 	ext.userDate = function ext_userDate(d) { return sb.moment(d||new Date()).format( ext.userFormat()); };
 	ext.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
@@ -316,6 +324,17 @@ define(['sb_light/globals'], function(sb) {
 		return min;
 	};
 
+	//return the first argument that is !NaN
+	ext.first = function ext_first(/*etc...*/) {
+		var args = ext.slice(arguments);
+		for(var i = 0; i < args.length; ++i) {
+			if(!isNaN(args[i])) {
+				return args[i];
+			}
+		}
+		return NaN;
+	}
+
 	ext.range = function ext_range(min,max,num) {
 		return ext.max(min, ext.min(max,num));
 	};
@@ -378,13 +397,12 @@ define(['sb_light/globals'], function(sb) {
 	ext.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	ext.blockProgressFill = function ext_blockProgressFill(block) {
 		switch(block.progress_color) {
-			case "green": 	return ["#176717", 		"url(#progressGood)" ];
-			case "yellow":	return ["#77771B", 	"url(#progressWarning)"];
-			case "red": 	return ["#641717", 		"url(#progressBad)" ];
-			default: 		return ["#999", 		"url(#progressNone)" ];
+			case "green": 	return ["#176717", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		];
+			case "yellow":	return ["#77771B", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	];
+			case "red": 	return ["#641717", 		"url(#progressBad)",		"url(#progressHatchBad)" 		];
+			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		];
 		}
 	};
-	
 			
 		
 	/************  MASSAGE SERVER DATA INTO BETTER OBJECTS FOR D3/presentation ***************************/
@@ -552,15 +570,10 @@ define(['sb_light/globals'], function(sb) {
 	//similar to Func.bind, but executes the function automatically after a delay.
 	if(!Function.prototype.bindDelay) {
 		Function.prototype.bindDelay = function ext_array_bindDelay(context, timeout /*, ...prefixArgs*/) {
-			var _method = this;
-			var _context = context;
-			var _args = Array.prototype.slice.call(arguments, 2);
-			return setTimeout( 
-				function ext_array_bindDelay_timeout(/*...suffixArgs*/) {
-					_method.apply(_context, _args);
-				},
-				timeout
-			);
+			var args = ext.slice(arguments);
+			args.splice(1,1); // remove timeout
+			var f = this.bind.apply(this,args);
+			return setTimeout(f, timeout);
 		};
 	}
 	
@@ -842,6 +855,57 @@ define(['sb_light/globals'], function(sb) {
 	  };        
 	}  
 	
+
+	if (!Array.prototype.every)	{
+		Array.prototype.every = function(fun /*, thisp */)	{
+			"use strict";
+
+			if (this == null) {
+				throw new TypeError();
+			}
+
+			var t = Object(this);
+			var len = t.length >>> 0;
+			if (typeof fun != "function") {
+				throw new TypeError();
+			}
+
+			var thisp = arguments[1];
+			for (var i = 0; i < len; i++)	{
+				if (i in t && !fun.call(thisp, t[i], i, t)) {
+					return false;
+				}
+			}
+			return true;
+		};
+	}
+	
+	if (!Array.prototype.some)	{
+		Array.prototype.some = function(fun /*, thisp */)  {
+			"use strict";
+
+			if (this == null){
+				throw new TypeError();
+			}
+				
+			var t = Object(this);
+			var len = t.length >>> 0;
+			if (typeof fun != "function"){
+				throw new TypeError();
+			}
+
+			var thisp = arguments[1];
+			for (var i = 0; i < len; i++) {
+				if (i in t && fun.call(thisp, t[i], i, t)) {
+					return true;
+				}
+			}
+
+			return false;
+		};
+	}
+
+
 	//made this up. does a push but always returns "this" array
 	if (!Array.prototype.put) {  
 		Array.prototype.put = function ext_array_put() {
