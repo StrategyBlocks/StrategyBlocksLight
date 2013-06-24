@@ -11,7 +11,7 @@ define([
 	'sb_light/models/focusModel',
 	'sb_light/models/risksModel',
 	'sb_light/models/kpisModel',
-	'sb_light/models/groupsModel',
+	//'sb_light/models/groupsModel',
 	'sb_light/models/companiesModel',
 	'sb_light/models/timezonesModel'
 ], function(sb, tags,news,users,blocks,levels,focus,risks,kpis,groups,companies,timezones) {
@@ -25,7 +25,7 @@ define([
 		focus:		{klass:focus},
 		risks:		{klass:risks},
 		kpis:		{klass:kpis},
-		groups:		{klass:groups},
+		//groups:		{klass:groups},
 		companies:	{klass:companies},
 		timezones:	{klass:timezones}
 	};

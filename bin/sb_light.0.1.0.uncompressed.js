@@ -1509,7 +1509,7 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 
 	//helps convert arguments into array
 	//a is an array or arguments.
-	//idx is the starting index of the slice
+	//idx is the starting index of the slice (e.g., number of items to skip)
 	ext.slice = function ext_slice(a, idx, end) {
 		idx = isNaN(idx) ? 0 : idx;
 		if(isNaN(end)) {
@@ -1582,7 +1582,7 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 			return prev;
 		}, {});
 	}	
-	//takes a hash map and returns an array of values. 
+	//takes a hash map / array and returns an array of values. 
 	ext.values = function ext_values(map, keyName) {
 		return ext.map(map, function ext_values_map(el,k) { 
 			return keyName ? el[keyName] : el;
@@ -1678,8 +1678,16 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	};
 	
 		/************  DATES ***************************/
-	ext.time = function ext_time() { return (new Date()).getTime(); };	
-	ext.parseDate = function ext_parseDate(d) { return sb.moment(d).toDate();	};
+	ext.time = (function() { 
+			if(!Date.now) {
+				return function ext_time_old() { return new Date().getTime(); }
+			} else {
+				return function ext_time() { return Date.now(); }
+			}
+	}());	
+	
+
+	ext.parseDate = function ext_parseDate(d) { return sb.moment(d);	};
 	ext.daysDiff = function ext_daysDiff(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
 	ext.today = function ext_today() { return new Date(); };
 	ext.minDate = function ext_minDate() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
@@ -1688,7 +1696,7 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	ext.userFormat = function ext_userFormat() { 
 		var u = sb.state && sb.state.value("user");
 		return u ? u.date_format : ext.serverFormat;
-	}
+	};
 	ext.serverDate = function ext_serverDate(d) { return sb.moment(d||new Date()).format(ext.serverFormat); };
 	ext.userDate = function ext_userDate(d) { return sb.moment(d||new Date()).format( ext.userFormat()); };
 	ext.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
@@ -1812,6 +1820,17 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 		return min;
 	};
 
+	//return the first argument that is !NaN
+	ext.first = function ext_first(/*etc...*/) {
+		var args = ext.slice(arguments);
+		for(var i = 0; i < args.length; ++i) {
+			if(!isNaN(args[i])) {
+				return args[i];
+			}
+		}
+		return NaN;
+	}
+
 	ext.range = function ext_range(min,max,num) {
 		return ext.max(min, ext.min(max,num));
 	};
@@ -1874,13 +1893,12 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	ext.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	ext.blockProgressFill = function ext_blockProgressFill(block) {
 		switch(block.progress_color) {
-			case "green": 	return ["#176717", 		"url(#progressGood)" ];
-			case "yellow":	return ["#77771B", 	"url(#progressWarning)"];
-			case "red": 	return ["#641717", 		"url(#progressBad)" ];
-			default: 		return ["#999", 		"url(#progressNone)" ];
+			case "green": 	return ["#176717", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		];
+			case "yellow":	return ["#77771B", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	];
+			case "red": 	return ["#641717", 		"url(#progressBad)",		"url(#progressHatchBad)" 		];
+			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		];
 		}
 	};
-	
 			
 		
 	/************  MASSAGE SERVER DATA INTO BETTER OBJECTS FOR D3/presentation ***************************/
@@ -1922,20 +1940,20 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 		//merge the target and actuals series into one array of objects. 
 		//parse the date into d3 format as well. "parseDate"
 	ext.massageTA = function ext_massageTA(data) {
-		var dates = [];
+		var dates = [ext.today()];
 		var td = [];
 		var vd = [];
 		var dataMap = {};
 		
 		data.values.forEach(function ext_massageTA_forEachVal(el) {
 			el.date = ext.parseDate(el.date);
-			dates.punique(el.date);
+			dates[dates.length] = (el.date);
 		});
 		data.values.sort(ext.sortDateValue);
 		
 		data.target.forEach(function ext_massageTA_forEachTar(el) {
 			el.date = ext.parseDate(el.date);
-			dates.punique(el.date);
+			dates[dates.length] = (el.date);
 			var rs = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_start : data.tolerance.range_end;
 			var re = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_end : data.tolerance.range_start;
 			
@@ -1945,13 +1963,6 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 		data.target.sort(ext.sortDateValue);
 		
 		data.dates = dates.sort(ext.sortDate);
-		var today = new Date();
-		if(data.dates[0].getTime() > today.getTime()) {
-			data.dates.unshift(today);
-		}
-		if(data.dates.last().getTime() < today.getTime()) {
-			data.dates.put(today);
-		}
 		
 		return data;
 	};
@@ -1963,11 +1974,11 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 			return {date: ext.parseDate(k), value:v};
 		});
 		
-		
+							//sort by the date number
 		data.series = series.sort(ext.sortDateValue);
 		
-		data.dates = data.series.map(function ext_massageHealth_mapSeries(el) { return el.date; });
-		data.dates.push(ext.parseDate(data.end_date));
+		data.dates = ext.values(data.series, "date");
+		data.dates.push(Date.parse(data.end_date));
 	
 		return data;
 	
@@ -2048,15 +2059,10 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	//similar to Func.bind, but executes the function automatically after a delay.
 	if(!Function.prototype.bindDelay) {
 		Function.prototype.bindDelay = function ext_array_bindDelay(context, timeout /*, ...prefixArgs*/) {
-			var _method = this;
-			var _context = context;
-			var _args = Array.prototype.slice.call(arguments, 2);
-			return setTimeout( 
-				function ext_array_bindDelay_timeout(/*...suffixArgs*/) {
-					_method.apply(_context, _args);
-				},
-				timeout
-			);
+			var args = ext.slice(arguments);
+			args.splice(1,1); // remove timeout
+			var f = this.bind.apply(this,args);
+			return setTimeout(f, timeout);
 		};
 	}
 	
@@ -2338,6 +2344,57 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	  };        
 	}  
 	
+
+	if (!Array.prototype.every)	{
+		Array.prototype.every = function(fun /*, thisp */)	{
+			
+
+			if (this == null) {
+				throw new TypeError();
+			}
+
+			var t = Object(this);
+			var len = t.length >>> 0;
+			if (typeof fun != "function") {
+				throw new TypeError();
+			}
+
+			var thisp = arguments[1];
+			for (var i = 0; i < len; i++)	{
+				if (i in t && !fun.call(thisp, t[i], i, t)) {
+					return false;
+				}
+			}
+			return true;
+		};
+	}
+	
+	if (!Array.prototype.some)	{
+		Array.prototype.some = function(fun /*, thisp */)  {
+			
+
+			if (this == null){
+				throw new TypeError();
+			}
+				
+			var t = Object(this);
+			var len = t.length >>> 0;
+			if (typeof fun != "function"){
+				throw new TypeError();
+			}
+
+			var thisp = arguments[1];
+			for (var i = 0; i < len; i++) {
+				if (i in t && fun.call(thisp, t[i], i, t)) {
+					return true;
+				}
+			}
+
+			return false;
+		};
+	}
+
+
 	//made this up. does a push but always returns "this" array
 	if (!Array.prototype.put) {  
 		Array.prototype.put = function ext_array_put() {
@@ -2399,6 +2456,60 @@ define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 	
 });
 
+//Subscription manager
+//Created to help with D3 exit().remove(). 
+//We need D3 element creation functions to be able to subscribe to SBLight events, but that
+//means we need to unsubscribe when the remove() function is called. 
+//sblight.svg now has subscribe() / cleanup() functions extended into d3 
+//cleanup() will automatically call the subman.unsubscribe to remove the subscriptions.
+//As long as the initial su
+
+define('sb_light/utils/subman',['sb_light/globals'], function(sb) {
+	var subs = {};
+
+	var _subsCache = [];
+
+	subs.subscribe = function(element, who, what, where) {
+		var match = _subsCache.find("element", element);
+		if(!match.value) {
+			_subsCache.push({element:element, subs:[]});
+		}
+		var elSubs = match.value || _subsCache.last();
+		var found = elSubs.subs.some(function(sub) {
+			return sub.who == who && sub.what == what;
+		});
+
+		if(!found) {
+			//sb.ext.debug("Subscribe", element, who, what)
+			try {
+			elSubs.subs.push({
+				who:who,
+				what:what,
+				key: who.subscribe(what, where)
+			})
+			} catch(e) {
+				sb.ext.debug("Capture error", e);
+			}
+			//sb.ext.debug("Done Subscribe");
+
+		}
+	};
+
+	subs.unsubscribe = function(element) {
+		var elSubs = _subsCache.find("element", element).value;
+		if(elSubs) {
+			elSubs.subs.forEach(function(sub) {
+				//sb.ext.debug("Unsubscribe", element, sub.who, sub.what)
+				sub.who.unsubscribe(sub.what, sub.key);
+			});
+		}
+	};
+
+
+	return subs;
+});
+
+
 
 define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 
@@ -2407,6 +2518,7 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 	var _d3 = typeof d3 !== "undefined" && d3 || {"__missing" : true};
 
 	svg.ZERO = 1e-6;
+
 
 	svg.extendD3 = function(name, func) {
 		//protection for the compiled files. d3 is not necessarily required for this library to work. 
@@ -2418,6 +2530,11 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		//the function
 		func;
 	}
+
+	svg.extendD3("isD3", function(el) {
+		return true;
+	})
+
 
 	//extensions to d3
 	//adds x,y,width,height to "rect" type SVG elements
@@ -2439,6 +2556,25 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		}, {});
 	});
 
+	//takes an object taking the subscribe call(who),
+		//a string describing what to subscribe to (what), and
+		//a cb function to handle the subscription (where)
+	svg.extendD3("subscribe", function(who,what,where) {
+		var sel = this;
+		sel.each(function(d,i) {
+			sb.subman.subscribe(this, who,what, where);
+		});
+		return sel;
+	})
+
+	svg.extendD3("cleanup", function() {
+		var sel = this;
+		sel.each(function(d,i) {
+			sb.subman.unsubscribe(this);
+		})
+		sel.remove();
+		return sel;
+	});
  	
 	//basically gets/sets any numeric attribute (dimension).
 	// on set:
@@ -2446,9 +2582,19 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 	// on get:
 	//		parse a  float from the string.
 	svg.extendD3("dim", function(name, value) {
-		return arguments.length ? 
-			this.attr(name, svg.isSvg(this.node() || sb.ext.isFunc(value)) ? value : sb.ext.px(value)) : 
-			sb.ext.to_f(this.attr(name));
+		if(arguments.length > 1) {
+			if( svg.isSvg(this.node()) )  {
+				this.attr(name, value);
+			} else {
+				if(name == "x") { name = "left"; }
+				if(name == "y") { name = "top"; }
+				this.style(name, (sb.ext.isFunc(value) || sb.ext.isString(value)) ? value : sb.ext.px(value));
+			}
+			this.attr(name, svg.isSvg(this.node() || sb.ext.isFunc(value)) ? value : sb.ext.px(value)) 
+
+			return this;
+		} 
+		return sb.ext.to_f( svg.isSvg(this.node()) ? this.attr(name) : this.style(name) );
 	});
 
 	//get/set the corners on a rect, for instance. (rx/ry)
@@ -2460,7 +2606,7 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		}
 		return {rx:this.dim("rx"), ry:this.dim("ry")};
 	});
-	//get/set the corners on a rect, for instance. (rx/ry)
+	//set multiple classes on an svg item directly. 
 	svg.extendD3("class", function(classA/*...*/) {
 		var args = sb.ext.slice(arguments);
 		if(args.length) {
@@ -2469,6 +2615,40 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		}
 		return this.attr("class");
 	});
+
+
+	//set the title on elements
+	svg.extendD3("title", function(s) {
+		var args = sb.ext.slice(arguments);
+		if(args.length) {
+			return this.attr("title", s);
+		}
+		return this.attr("title");
+	});
+
+	//set the rx/ry on elements. When "get" is done, returns only "rx" for the first selection item
+	svg.extendD3("radius", function(r) {
+		var args = sb.ext.slice(arguments);
+		if(args.length) {
+			return this.attr("rx", r).attr("ry", r);
+		}
+		return this.attr("rx");
+	});
+
+	//set the text anchor
+	svg._anchorMap = {
+		"left":"start", "start":"start", "l":"start", "s":"start",
+		"center":"middle", "middle":"middle", "c":"middle", "m":"middle",
+		"right":"end", "end":"end", "r":"end", "e":"end"
+	}	
+	svg.extendD3("align", function(a) {
+		var args = sb.ext.slice(arguments);
+		if(args.length) {
+			return this.attr("text-anchor", svg._anchorMap[a]);
+		}
+		return this.attr("text-anchor");
+	});
+
 
 	//get/sets the size and position of a circle
 	svg.extendD3("circle", function(r, cx,cy) {
@@ -2492,14 +2672,20 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		return {x1:this.dim("x1"), y1:this.dim("y1"),x2:this.dim("x2"), y2:this.dim("y2")};
 	});
 
+	svg.d3 = function(el) {
+		// console.log("Checking el", el);
+		var isD3 = el && el["isD3"] && el.isD3();
+
+		return isD3 ? el : d3.select(el);
+	}
 
 	svg.isSvg = function(el) {
-		return el.ownerSVGElement != null; 
+		return el && typeof el.ownerSVGElement != "undefined"; 
 	}
 
 	svg.multiline = function(el, text, dx,dy) {
 		if(!text) { return ; }
-		el = d3.select(el);
+		el = svg.d3(el);
 		var width= el.attr("width");
 		//var domEl = el.get(0);
 		var words = text.split(' ');                        
@@ -2586,7 +2772,7 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		if(o.r) { t.put(this.rotate.apply(this,o.r)); }
 		if(o.s) { t.put(this.scale.apply(this,o.s)); }
 		if(o.t) { t.put(this.translate.apply(this, o.t)); }
-		console.log("transform", t.join(" "));
+		// console.log("transform", t.join(" "));
 		return t.join(" "); 
 	};
 	var sep = ",";
@@ -2617,11 +2803,18 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		// "selector" needs to be a string
 		// "func" takes the element to be returned and applies custom creation logic to it. 
 	svg.append =  function(src, selector, func) {
+		// console.log("svg append pre d3");
+		src = svg.d3(src);
 		var res = src.select(selector);
+
+		// console.log("svg append");
+
 		if(res.empty()) {
 			res = src;
 			var nodes = selector.split(" ");
+			// console.log("svg append", nodes.length, nodes.forEach);
 			nodes.forEach(function(el) {
+				// console.log("here!");
 				//protect from extra spaces (or invalid elements)
 				if(el && el.length > 0 ) {
 					if( res.select(el).empty()) {
@@ -2642,6 +2835,7 @@ define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 		
 		//takes "x.foo y.bar.stuff" and removes only y.var.stuff
 	svg.remove = function(src, selector) {
+		src = svg.d3(el);
 		var el = src.select(selector);
 		if(!el.empty()) {
 			el.remove();
@@ -2715,7 +2909,7 @@ define('sb_light/utils/queue',['sb_light/globals'], function(sb) {
 	//add a function with an optional unique name. 
 	//if the queue already contains an item with the same name, it's ignored. 
 	//delay will make sure the function isn't executed before the time has passed, but could take much longer...
-	queue.add = function(func, name, delay) {
+	queue.add = function queue_add(func, name, delay) {
 		delay = sb.ext.number(delay, 0)
 		name = name || "queued_" + sb.ext.unique();
 		var val = low_list.find("name", name).value;
@@ -2725,7 +2919,7 @@ define('sb_light/utils/queue',['sb_light/globals'], function(sb) {
 			start();
 		}
 	};
-	queue.high = function(func,name, delay) {
+	queue.high = function queue_high(func,name, delay) {
 		delay = sb.ext.number(delay,0);
 		name = name || "queued_" + sb.ext.unique();
 		var val = high_list.find("name", name).value;
@@ -2736,14 +2930,14 @@ define('sb_light/utils/queue',['sb_light/globals'], function(sb) {
 		}
 	};
 
-	queue.next = function() {
+	queue.next = function queue_next() {
 		if(!_next(high_list)) { 
 			_next(low_list);
-		}		
+		}
 		queue.next.bindDelay(queue, interval);
 	};
 
-	var _next = function(list) {
+	var _next = function queue_next_internal(list) {
 		var t = sb.ext.time();
 		var len = list.length;
 		var i = 0;
@@ -2752,7 +2946,6 @@ define('sb_light/utils/queue',['sb_light/globals'], function(sb) {
 		while(i < len && !called) {
 			var n = list.shift();
 			if(t - n.time > n.delay) {
-				//sb.ext.debug("QUEUE: Calling: ", n.name);
 				n.func();
 				called = true;
 			} else {
@@ -2765,7 +2958,7 @@ define('sb_light/utils/queue',['sb_light/globals'], function(sb) {
 		return called;
 	};
 
-	queue.report = function() {
+	queue.report = function queue_report() {
 		var hi = high_list.map(function(el) {return el.name;}).join(" ");
 		var lo = low_list.map(function(el) {return el.name;}).join(" ");
 
@@ -3848,7 +4041,7 @@ define('sb_light/models/_abstractModel',['sb_light/utils/Class'], function( Clas
 			this.name = name;
 			this._urlDef = urlDef;
 			this._selectQueue = [];
-			this._subscriptions = [];
+			this._subscriptions = {};
 			
 			this._sb.state.register(this, this._urlDef, this._handleUpdate.bind(this));
 		},
@@ -3885,28 +4078,38 @@ define('sb_light/models/_abstractModel',['sb_light/utils/Class'], function( Clas
 			return this._modelArray;
 		},
 	
-		subscribe: function(cb) {
-			this._subscriptions.put(cb);
+		subscribe: function(cb, domNode/*=null*/) {
+			var id = "Sub_" + this.name + "_" + this._sb.ext.unique();
+			this._subscriptions[id] = cb;
 			var m = this.get();
 			if(m) {
-				cb(m);	
+				this._sb.queue.add(cb, id, 0);
 			}
+			return id;
 		},
 	
-		//this only works when the function is the same instance as the subscription
-		//so if you use "func.bind" for you callback, you need to store the bound function 
-		//to use for the unsubscribe
-		unsubscribe:function(cb) {
-			var idx = this._subscriptions.indexOf(cb);
-			if(idx >= 0) {
-				this._subscriptions.splice(idx,1);
-			}		
+		//unsubnscribe unsing a callback or an id
+		unsubscribe:function(remove) {
+			var ext = this._sb.ext;
+			var del = [];
+			var subs= this._subscriptions;
+			//collect matches
+			ext.each(subs, function(v,k, subs) {
+				if(v == remove || k == remove) { 
+					del.push(k);
+				}
+			});
+			del.forEach(function(el) {
+				delete subs[el];
+			})
+
 		},
 		
 		_publish: function() {
 			var m = this.get();
-			this._subscriptions.forEach(function(cb) {
-				cb.bindDelay(null, 50, m);
+			var q = this._sb.queue;
+			this._sb.ext.each(this._subscriptions, function(cb,k) {
+				q.add(cb, k, 0);
 			});	
 		},
 		
@@ -4086,6 +4289,12 @@ define('sb_light/models/blocksModel',['sb_light/models/_abstractModel'], functio
 			this._progress_queue = [];
 			this._health_queue = [];
 			this._properties = {};
+
+			this._dataHandlers = {
+				"_health": 	this._massageHealth,
+				"_progress": 	this._massageProgress,
+				"_npv": 	this._massageNpv
+			}
 			
 			this._super(sb, "blocks", sb.urls.MODEL_BLOCKS);
 		},
@@ -4172,7 +4381,7 @@ define('sb_light/models/blocksModel',['sb_light/models/_abstractModel'], functio
 			
 			if (!this[name]) {
 				if(this[name+"_queue"].length == 1) {
-					sb.controller.invoke(url, null, func);
+					this._sb.controller.invoke(url, null, func);
 				}
 			} else {
 				func();
@@ -4182,6 +4391,9 @@ define('sb_light/models/blocksModel',['sb_light/models/_abstractModel'], functio
 		//process the queue for the data.
 		_handleData: function(name, data) {
 			this[name] = data ? data.result : this[name];
+			if(this._dataHandlers[name] && data && data.result) {
+				this._dataHandlers[name].call(this, this[name]);
+			}
 			while(this[name+"_queue"].length) {
 				var cb = this[name+"_queue"].pop();
 				cb(this[name]);
@@ -4199,6 +4411,22 @@ define('sb_light/models/blocksModel',['sb_light/models/_abstractModel'], functio
 			}
 		},
 		
+		_massageHealth: function(d) {
+			var f = this._sb.ext.massageHealth;
+			this._sb.ext.each(d, function(dv,dk) {
+				f(dv);
+			});
+
+		},
+		_massageProgress: function(d) {
+			var f = this._sb.ext.massageTA;
+			this._sb.ext.each(d, function(dv,dk) {
+				f(dv);
+			});			
+		},
+		_massageNpv: function(d) {
+
+		},
 		
 		_massage: function(b, ppath, depth, schema) {
 			var cleanup = b._schema != schema;
@@ -4299,20 +4527,6 @@ define('sb_light/models/kpisModel',['sb_light/models/_abstractModel'], function(
 
 
 
-// define(['sb_light/models/_abstractModel'], function( _Model ) {
-
-// 	var Model = _Model.extend({
-
-// 		init: function(sb) {
-// 			this._super(sb, "levels", sb.urls.MODEL_GROUPS);
-// 		}
-// 	});
-	
-// 	return Model;	
-// });
-
-
-
 
 define('sb_light/models/companiesModel',['sb_light/models/_abstractModel'], function( _Model ) {
 
@@ -4365,7 +4579,7 @@ define('sb_light/models',[
 	'sb_light/models/focusModel',
 	'sb_light/models/risksModel',
 	'sb_light/models/kpisModel',
-	'sb_light/models/groupsModel',
+	//'sb_light/models/groupsModel',
 	'sb_light/models/companiesModel',
 	'sb_light/models/timezonesModel'
 ], function(sb, tags,news,users,blocks,levels,focus,risks,kpis,groups,companies,timezones) {
@@ -4379,7 +4593,7 @@ define('sb_light/models',[
 		focus:		{klass:focus},
 		risks:		{klass:risks},
 		kpis:		{klass:kpis},
-		groups:		{klass:groups},
+		//groups:		{klass:groups},
 		companies:	{klass:companies},
 		timezones:	{klass:timezones}
 	};
@@ -4399,16 +4613,19 @@ define('sb_light/models',[
 	
 	//adds a callback watcher. 
 	//returns whether the model is valid or not. 
-	models.subscribe = function(modelName,  cb) {
+	models.subscribe = function(modelName,  cb, domNode/*==null*/) {
 		var m = _verifyModel(modelName);
-		m.model.subscribe(cb);
+		return m.model.subscribe(cb, domNode);
 	},
 	
-	models.unsubscribe = function(modelName, cb) {
+	//"remove" can be an actual cb function, or the id returned from the subscribe. 
+	models.unsubscribe = function(modelName, remove) {
 		var m = _verifyModel(modelName);
-		m.model.unsubscribe(cb);
+		return m.model.unsubscribe(remove);
 	},
 	
+
+
 	
 	models.rawArray = function(modelName) {
 		var m = _verifyModel(modelName);
@@ -4746,29 +4963,39 @@ define('sb_light/api/state',['sb_light/globals', 'sb_light/utils/consts'], funct
 		
 		//console.log(sb.version);
 		sb.ext.debug("subscribing to: ", type);
-		state.subscriptions[type] = state.subscriptions[type] || [];
+		state.subscriptions[type] = state.subscriptions[type] || {};
 		
-		state.subscriptions[type].push(cb);
+		var id = "Sub_state_" + type + "_" + sb.ext.unique();
+		state.subscriptions[type][id] = cb;
 	};
 
 	/**
-	*	This will not work unless the function definition
+	*	When "remove" is a func, it will not work unless the function definition
 	*	has not changed. E.g., if you create a temporary
 	*	function using func.bind, then you need to store
 	*	that instance and use it for unsubscribing
 	*/
-	state.unsubscribe = function(type, cb) {
-		var idx = state.subscriptions[type].indexOf(cb);
-		if (idx > -1) {
-			state.subscriptions[type].splice(idx, 1);
-		}  
+	state.unsubscribe = function(type, remove) {
+		var ext = this._sb.ext;
+		var del = [];
+		//collect matches
+		ext.each(state.subscriptions[type], function(v,k) {
+			//"remove" can be the key or the cb func
+			if(v == remove || k == remove) { 
+				del.push(k);
+			}
+		});
+		del.forEach(function(el) {
+			sb.ext.debug("unsubscribing from: ", type);
+			delete state.subscriptions[type][el];
+		})
 	};
 
 	state.publish = function(type) {
 		var list = state.subscriptions[type] || [];
 		var value = state.value(type);
 		var ext= sb.ext;
-		list.forEach(function(v) {
+		ext.each(state.subscriptions[type], function(v) {
 			if(type.indexOf("Zoom") > -1) {
 				ext.debug("Publish Zoom: ", type, value);
 				v.bindDelay(null, 0, value);
@@ -4906,7 +5133,11 @@ define('sb_light/api/queries',['sb_light/globals'], function(sb) {
 	*********************************/
 	q.fullname = function(uid) {
 		var us = sb.models.raw("users");
-		return us && uid && us[uid] ? us[uid].name : null;
+		return us && uid && us[uid] ? us[uid].name : "<removed>";
+	};
+	q.firstname = function(uid) {
+		var us = sb.models.raw("users");
+		return us && uid && us[uid] ? us[uid].first_name : "<removed>";
 	};
 	q.currentUser = function() {
 		var us = sb.models.raw("users");
@@ -6168,6 +6399,7 @@ define('sb_light/main',[
 	'sb_light/globals',
 	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
+	'sb_light/utils/subman',	
 	'sb_light/utils/svg',	
 	'sb_light/utils/queue',	
 	'sb_light/utils/events',	
@@ -6186,6 +6418,7 @@ define('sb_light/main',[
 	globals,
 	moment,
 	ext,	
+	subman,	
 	svg,
 	queue,
 	events,
@@ -6203,9 +6436,13 @@ define('sb_light/main',[
 ) {
 	//globals.version = "0.0.1";
 	globals.debug = true;
-	
-	globals.moment = moment;
+
+	//sometimes the way moment.js gets loaded is different. If it's not loaded properly via AMD, check the global context (this, window).
+	globals.moment = moment || this.moment || window.moment;
+	if(!globals.moment && !globals.moment.version) { throw "Moment JS has not been loaded properly."; }
+
 	globals.ext = ext;
+	globals.subman = subman;
 	globals.svg = svg;
 	globals.queue = queue;
 	globals.events = events;
