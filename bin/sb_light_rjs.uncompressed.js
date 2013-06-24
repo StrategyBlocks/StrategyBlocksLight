@@ -2353,8 +2353,8 @@ sb_light.define('sb_light/utils/ext',['sb_light/globals'], function(sb) {
 				res.errors = {message: r.errors.error };
 			}
 		}
-		res.notices = r.flash.notice;
-		res.warnings = r.flash.warning;
+		res.notices = r.flash ? r.flash.notice : "";
+		res.warnings = r.flash ? r.flash.warning : "";
 		return res;
 	};
 	
@@ -2942,9 +2942,23 @@ sb_light.define('sb_light/utils/svg',['sb_light/globals'], function(sb) {
 	svg.ZERO = 1e-6;
 
 
+	svg.initD3 = function(d3) {		
+		var c = _d3.__cached || {};
+		_d3 = d3;	
+		//add the d3 extensions that were cached. 
+		sb.ext.each(c, function(v,k) {
+			svg.extendD3(k,v);
+		})
+	}
+
 	svg.extendD3 = function(name, func) {
 		//protection for the compiled files. d3 is not necessarily required for this library to work. 
-		if(_d3.__missing) { return; }
+		if(_d3.__missing) { 
+			//save the extensions in case D3 gets set  later. 
+			_d3.__cached = _d3.__cached || {};
+			_d3.__cached[name] = func;
+			return; 
+		}
 		//prototypes to extend
 		_d3.selection.prototype[name] = 
 		_d3.transition.prototype[name] = 
