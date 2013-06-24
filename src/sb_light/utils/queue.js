@@ -59,7 +59,6 @@ define(['sb_light/globals'], function(sb) {
 		while(i < len && !called) {
 			var n = list.shift();
 			if(t - n.time > n.delay) {
-				//sb.ext.debug("QUEUE: Calling: ", n.name);
 				n.func();
 				called = true;
 			} else {

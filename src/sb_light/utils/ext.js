@@ -86,7 +86,7 @@ define(['sb_light/globals'], function(sb) {
 			return prev;
 		}, {});
 	}	
-	//takes a hash map and returns an array of values. 
+	//takes a hash map / array and returns an array of values. 
 	ext.values = function ext_values(map, keyName) {
 		return ext.map(map, function ext_values_map(el,k) { 
 			return keyName ? el[keyName] : el;
@@ -191,7 +191,7 @@ define(['sb_light/globals'], function(sb) {
 	}());	
 	
 
-	ext.parseDate = function ext_parseDate(d) { return sb.moment(d).toDate();	};
+	ext.parseDate = function ext_parseDate(d) { return sb.moment(d);	};
 	ext.daysDiff = function ext_daysDiff(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
 	ext.today = function ext_today() { return new Date(); };
 	ext.minDate = function ext_minDate() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
@@ -444,20 +444,20 @@ define(['sb_light/globals'], function(sb) {
 		//merge the target and actuals series into one array of objects. 
 		//parse the date into d3 format as well. "parseDate"
 	ext.massageTA = function ext_massageTA(data) {
-		var dates = [];
+		var dates = [ext.today()];
 		var td = [];
 		var vd = [];
 		var dataMap = {};
 		
 		data.values.forEach(function ext_massageTA_forEachVal(el) {
 			el.date = ext.parseDate(el.date);
-			dates.punique(el.date);
+			dates[dates.length] = (el.date);
 		});
 		data.values.sort(ext.sortDateValue);
 		
 		data.target.forEach(function ext_massageTA_forEachTar(el) {
 			el.date = ext.parseDate(el.date);
-			dates.punique(el.date);
+			dates[dates.length] = (el.date);
 			var rs = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_start : data.tolerance.range_end;
 			var re = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_end : data.tolerance.range_start;
 			
@@ -467,13 +467,6 @@ define(['sb_light/globals'], function(sb) {
 		data.target.sort(ext.sortDateValue);
 		
 		data.dates = dates.sort(ext.sortDate);
-		var today = new Date();
-		if(data.dates[0].getTime() > today.getTime()) {
-			data.dates.unshift(today);
-		}
-		if(data.dates.last().getTime() < today.getTime()) {
-			data.dates.put(today);
-		}
 		
 		return data;
 	};
@@ -485,11 +478,11 @@ define(['sb_light/globals'], function(sb) {
 			return {date: ext.parseDate(k), value:v};
 		});
 		
-		
+							//sort by the date number
 		data.series = series.sort(ext.sortDateValue);
 		
-		data.dates = data.series.map(function ext_massageHealth_mapSeries(el) { return el.date; });
-		data.dates.push(ext.parseDate(data.end_date));
+		data.dates = ext.values(data.series, "date");
+		data.dates.push(Date.parse(data.end_date));
 	
 		return data;
 	

@@ -18,6 +18,12 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 			this._progress_queue = [];
 			this._health_queue = [];
 			this._properties = {};
+
+			this._dataHandlers = {
+				"_health": 	this._massageHealth,
+				"_progress": 	this._massageProgress,
+				"_npv": 	this._massageNpv
+			}
 			
 			this._super(sb, "blocks", sb.urls.MODEL_BLOCKS);
 		},
@@ -114,6 +120,9 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 		//process the queue for the data.
 		_handleData: function(name, data) {
 			this[name] = data ? data.result : this[name];
+			if(this._dataHandlers[name] && data && data.result) {
+				this._dataHandlers[name].call(this, this[name]);
+			}
 			while(this[name+"_queue"].length) {
 				var cb = this[name+"_queue"].pop();
 				cb(this[name]);
@@ -131,6 +140,22 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 			}
 		},
 		
+		_massageHealth: function(d) {
+			var f = this._sb.ext.massageHealth;
+			this._sb.ext.each(d, function(dv,dk) {
+				f(dv);
+			});
+
+		},
+		_massageProgress: function(d) {
+			var f = this._sb.ext.massageTA;
+			this._sb.ext.each(d, function(dv,dk) {
+				f(dv);
+			});			
+		},
+		_massageNpv: function(d) {
+
+		},
 		
 		_massage: function(b, ppath, depth, schema) {
 			var cleanup = b._schema != schema;
