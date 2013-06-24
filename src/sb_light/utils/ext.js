@@ -435,8 +435,8 @@ define(['sb_light/globals'], function(sb) {
 				res.errors = {message: r.errors.error };
 			}
 		}
-		res.notices = r.flash.notice;
-		res.warnings = r.flash.warning;
+		res.notices = r.flash ? r.flash.notice : "";
+		res.warnings = r.flash ? r.flash.warning : "";
 		return res;
 	};
 	
