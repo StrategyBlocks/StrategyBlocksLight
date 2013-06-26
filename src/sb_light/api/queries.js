@@ -294,10 +294,10 @@ define(['sb_light/globals'], function(sb) {
 	
 	
 	q.maxDate = function() {
-		return sb.ext.parseDate(q.rootBlock().end_date);
+		return sb.ext.moment(q.rootBlock().end_date);
 	};
 	q.minDate = function() {
-		return sb.ext.parseDate(q.rootBlock().start_date);
+		return sb.ext.moment(q.rootBlock().start_date);
 	};
 
 	//returns the available range of dates for the date picker on this block

@@ -11,6 +11,14 @@ define(['sb_light/globals'], function(sb) {
 		return (++ext._unique);
 	};
 
+
+	ext.deprecated = function(oldF, newF, message) {
+		console.log("Warning: ", oldF, " is deprecated. Please use ", newF, " instead.");
+		if(message) {
+			console.log("Warning(2): ", message);
+		}
+	}
+
 	//helps convert arguments into array
 	//a is an array or arguments.
 	//idx is the starting index of the slice (e.g., number of items to skip)
@@ -190,12 +198,16 @@ define(['sb_light/globals'], function(sb) {
 			}
 	}());	
 	
-
-	ext.parseDate = function ext_parseDate(d) { return sb.moment(d);	};
-	ext.daysDiff = function ext_daysDiff(da, db) {return sb.moment(db).diff(sb.moment(da),"days")};
+	ext.parseDate = function ext_moment(d) {
+		ext.deprecated("ext.parseDate", "ext.moment");
+	}
+	ext.moment = function ext_moment(d) { return sb.moment(d);	};
+	ext.dateNumber = function ext_dateNumber(d) { return ext.moment(d).valueOf();	};
+	ext.date = function ext_date(d) { return ext.moment(d).toDate();	};
+	ext.daysDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"days")};
 	ext.today = function ext_today() { return new Date(); };
-	ext.minDate = function ext_minDate() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate)[0]); };
-	ext.maxDate = function ext_maxDate() { return ext.parseDate(ext.slice(arguments).sort(ext.sortDate).last()); };
+	ext.minDate = function ext_minDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate)[0]); };
+	ext.maxDate = function ext_maxDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate).last()); };
 	ext.serverFormat = "YYYY/MM/DD";
 	ext.userFormat = function ext_userFormat() { 
 		var u = sb.state && sb.state.value("user");
@@ -229,7 +241,7 @@ define(['sb_light/globals'], function(sb) {
 	ext.sortTime = function ext_sortTime(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
 	ext.sortNumber = function ext_sortNumber(a,b){ return a-b; };
 	ext.sortNumbers = ext.sortNumber;
-	ext.sortDate = function ext_sortDate(a,b){ return ext.daysDiff(b,a); }; //reverse a,b because of daysDiff bias - this sorts descending by default
+	ext.sortDate = function ext_sortDate(a,b){ return ext.daysDiff(a,b); }; 
 	ext.sortDates = ext.sortDate;
 	ext.sortString = function ext_sortString(a,b){ return String(a).localeCompare(String(b)); };
 	ext.sortStrings = ext.sortString;
@@ -363,7 +375,7 @@ define(['sb_light/globals'], function(sb) {
 
 	};
 
-	//takes an array of literals or functions and subtracts them the first element in the list
+	//SUBTRACT: takes an array of literals or functions and subtracts them the first element in the list
 	ext.diff = function ext_diff() {
 		var base = ext.number(arguments[0]);
 		var args  = ext.slice(arguments,1).map(function ext_diff_map(el) {return ext.number(el);});
@@ -391,6 +403,10 @@ define(['sb_light/globals'], function(sb) {
 		return Math.abs(a-b) <= within;
 	};
 		
+	ext.absDiff = function(a,b) {
+		return Math.abs(a-b);
+	}
+
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
 	ext.healthColor = function ext_healthColor(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1]; };
@@ -442,21 +458,29 @@ define(['sb_light/globals'], function(sb) {
 	
 		
 		//merge the target and actuals series into one array of objects. 
-		//parse the date into d3 format as well. "parseDate"
 	ext.massageTA = function ext_massageTA(data) {
 		var dates = [ext.today()];
+
+		data.values = data.values && data.values.length ? data.values : [{date:dates[0], value:0, comment:"(today, interpolated)"}]; 
+		data.target = data.target && data.target.length ? data.target : [{date:dates[0], value:0, comment:"(today, interpolated)"}]; 
+
 		var td = [];
 		var vd = [];
 		var dataMap = {};
 		
 		data.values.forEach(function ext_massageTA_forEachVal(el) {
-			el.date = ext.parseDate(el.date);
+			el.date = ext.date(el.date);
 			dates[dates.length] = (el.date);
 		});
 		data.values.sort(ext.sortDateValue);
+		if(ext.daysDiff(data.values[0].date, dates[0]) > 0) {
+			data.values.push({date:dates[0], value:data.values[0].value, comment:"(today, interpolated)"});
+		} else if (ext.daysDiff(data.values.last().date, dates[0]) < 0) {
+			data.values.push({date:dates[0], value:data.values.last().value, comment:"(today,interpolated)"});
+		}
 		
 		data.target.forEach(function ext_massageTA_forEachTar(el) {
-			el.date = ext.parseDate(el.date);
+			el.date = ext.date(el.date);
 			dates[dates.length] = (el.date);
 			var rs = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_start : data.tolerance.range_end;
 			var re = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_end : data.tolerance.range_start;
@@ -465,17 +489,94 @@ define(['sb_light/globals'], function(sb) {
 			el.lower = el.value  + (data.tolerance.percentage ? (el.value *re/100) : re);
 		});
 		data.target.sort(ext.sortDateValue);
+		if(ext.daysDiff(data.target[0], dates[0]) > 0) {
+			data.target.push({date:dates[0], value:data.target[0], comment:"(today, interpolated)"});
+		} else if (ext.daysDiff(data.target.last(), dates[0]) > 0) {
+			data.target.push({date:dates[0], value:data.target.last(), comment:"(today,interpolated)"});
+		}
 		
 		data.dates = dates.sort(ext.sortDate);
 		
 		return data;
 	};
+
+	
+	ext.massageKpi = function ext_massageKpi(data) {
+		data = ext.massageTA(data);
+
+		var vd = data.values;
+		var td = data.target;
+		
+		var minY = Number.POSITIVE_INFINITY;
+		var maxY = Number.NEGATIVE_INFINITY;
+		
+		
+		if(vd.length && td.length) {
+			//push a target at the front to line up with values
+			if(ext.daysDiff(data.dates[0], td[0].date) < 0) {
+				td.unshift( { value:td[0].value, upper:td[0].upper, lower:td[0].lower,
+								date:data.dates[0], comment:"(First value, interpolated)" } );
+			} 
+			//push a target at the end to line up with values
+			if(ext.daysDiff(data.dates.last(), td.last().date) > 0) {
+				td.push({value:td.last().value, upper:td.last().upper, lower:td.last().lower,
+							date:data.dates.last(), comment:"(Last value, interpolated)"});
+			}
+		}
+
+		//fix the tolerance from the lame form
+		data.tolerance.percentage = data.tolerance.percentage || false;
+		data.tolerance.inverse = data.tolerance.inverse || false;
+		var pc = data.tolerance.percentage; 
+
+		
+		var minA = vd[0].value;
+		var maxA = vd[0].value;
+		ext.each(vd, function(el) {
+			minA = ext.min( el.value, minA );
+			maxA = ext.max( el.value, maxA );
+		});
+		var minT = td[0].value;
+		var maxT = td[0].value;
+		ext.each(td, function(el) {
+			minT = ext.min( el.value, minT );
+			maxT = ext.max( el.value, maxT );
+		});
+		
+		var upper = ext.max(data.tolerance.range_end, data.tolerance.range_start) / (pc ? 100 : 1);
+		var lower = ext.min(data.tolerance.range_end, data.tolerance.range_start) / (pc ? 100 : 1);
+
+		var ml;
+		var mu;
+		if (!pc) {
+			ml = minT + lower;
+			mu = maxT + upper;
+		} else {
+			ml = minT + (lower * minT);
+			mu  = maxT + (upper * maxT);
+		}
+		
+		ml = ext.min(ml, minT) - ext.absDiff(minT, ml)*0.02;
+		mu = ext.max(mu, maxT) + ext.absDiff(maxT, mu)*0.02;
+		
+
+		data.minY = ext.min(minA, minT, ml);
+		data.maxY = ext.max(maxA, maxT, mu);
+		
+		
+		var offset = (ext.absDiff(data.maxY, data.minY) * 0.05) || 10;
+		data.minY -= offset;
+		data.maxY += offset;
+
+		
+		return data;		
+	}
 		
 		//fix dates and sort history for health charts
 	ext.massageHealth = function ext_massageHealth(data) {
 		var dates = [];
 		var series = ext.map(data.historical_values, function ext_massageHealth_map(v, k) {
-			return {date: ext.parseDate(k), value:v};
+			return {date: ext.date(k), value:v};
 		});
 		
 							//sort by the date number

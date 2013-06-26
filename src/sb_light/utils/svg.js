@@ -143,12 +143,15 @@ define(['sb_light/globals'], function(sb) {
 		"center":"middle", "middle":"middle", "c":"middle", "m":"middle",
 		"right":"end", "end":"end", "r":"end", "e":"end"
 	}	
+
+	//d3 uses this property as a "style" rather than an attribute in their SVG helpers.
+	//keep this consistent. 
 	svg.extendD3("align", function(a) {
 		var args = sb.ext.slice(arguments);
 		if(args.length) {
-			return this.attr("text-anchor", svg._anchorMap[a]);
+			return this.style("text-anchor", svg._anchorMap[a]);
 		}
-		return this.attr("text-anchor");
+		return this.style("text-anchor");
 	});
 
 
