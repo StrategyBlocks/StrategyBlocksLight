@@ -217,9 +217,9 @@ define(['sb_light/globals'], function(sb) {
 	ext.userDate = function ext_userDate(d) { return sb.moment(d||new Date()).format( ext.userFormat()); };
 	ext.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
 		if(reverse) {
-			return "(" + sb.moment(d).fromNow() + ") " + sb.moment(d).format(format || ext.userFormat());
+			return "(" + sb.moment(d).fromNow() + ")&nbsp;" + sb.moment(d).format(format || ext.userFormat());
 		} else {
-			return sb.moment(d).format(format || ext.userFormat()) + " (" + sb.moment(d).fromNow() + ")";
+			return sb.moment(d).format(format || ext.userFormat()) + "&nbsp;(" + sb.moment(d).fromNow() + ")";
 		}
 	};
 		/************  REGEXPS ***************************/
@@ -461,8 +461,8 @@ define(['sb_light/globals'], function(sb) {
 	ext.massageTA = function ext_massageTA(data) {
 		var dates = [ext.today()];
 
-		data.values = data.values && data.values.length ? data.values : [{date:dates[0], value:0, comment:"(today, interpolated)"}]; 
-		data.target = data.target && data.target.length ? data.target : [{date:dates[0], value:0, comment:"(today, interpolated)"}]; 
+		data.values = data.values && data.values.length ? data.values : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
+		data.target = data.target && data.target.length ? data.target : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
 
 		var td = [];
 		var vd = [];
@@ -474,9 +474,9 @@ define(['sb_light/globals'], function(sb) {
 		});
 		data.values.sort(ext.sortDateValue);
 		if(ext.daysDiff(data.values[0].date, dates[0]) > 0) {
-			data.values.push({date:dates[0], value:data.values[0].value, comment:"(today, interpolated)"});
+			data.values.push({date:dates[0], value:data.values[0].value, comment:"(today, interpolated)", interpolated:true});
 		} else if (ext.daysDiff(data.values.last().date, dates[0]) < 0) {
-			data.values.push({date:dates[0], value:data.values.last().value, comment:"(today,interpolated)"});
+			data.values.push({date:dates[0], value:data.values.last().value, comment:"(today,interpolated)", interpolated:true});
 		}
 		
 		data.target.forEach(function ext_massageTA_forEachTar(el) {
@@ -490,9 +490,9 @@ define(['sb_light/globals'], function(sb) {
 		});
 		data.target.sort(ext.sortDateValue);
 		if(ext.daysDiff(data.target[0], dates[0]) > 0) {
-			data.target.push({date:dates[0], value:data.target[0], comment:"(today, interpolated)"});
+			data.target.push({date:dates[0], value:data.target[0], comment:"(today, interpolated)", interpolated:true});
 		} else if (ext.daysDiff(data.target.last(), dates[0]) > 0) {
-			data.target.push({date:dates[0], value:data.target.last(), comment:"(today,interpolated)"});
+			data.target.push({date:dates[0], value:data.target.last(), comment:"(today,interpolated)", interpolated:true});
 		}
 		
 		data.dates = dates.sort(ext.sortDate);

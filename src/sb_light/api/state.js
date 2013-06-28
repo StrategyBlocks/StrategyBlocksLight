@@ -20,6 +20,7 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 
 	var _state = {
 		page:"",
+
 		block:null,		//normally block path
 		news:null,		//news item id		
 		kpi:null,		//kpi  id		
@@ -103,23 +104,38 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 	};
 	
 	state.login = function(uname, pword, cb, errCb) {
-		var params = null;
+		var params = {};
 		if(uname && pword) {
-			params = { username:uname, password: pword };
+			params.username = uname;
+			params.password = pword;
+		}
+		if(_state.companyId) {
+			params.company_id = _state.companyId;
 		}
 		sb.api.post(sb.urls.url(sb.urls.LOGIN), params, cb, errCb, state.unauthorized);
 	};
 	
+	state.reset = function(cid) {
+		_state.session = state.session_unknown;
+		if(cid) {
+			_state.companyId = cid;
+		}
+		_state.block = null;
+		_state.news = null;
+		_state.kpi = null;
+		_state.risk = null;
+		_state.tag = null;
+		sb.queue.add(sb.models.reset.bind(sb.models), "sblight_models_reset");
+	}
+
 	state.logout = function() {
 		sb.api.post(sb.urls.url(sb.urls.LOGOUT));
-		state.session = state.session_unknown;
+		state.reset();
 	};
 	
 	state.changeCompany = function(cid) {
-		state.session = state.session_unknown;
-		sb.models.reset(false);
-
-		sb.api.post(sb.urls.url(sb.urls.LOGIN), {company_id:cid});
+		state.reset(cid);
+		sb.queue.add(state.publish.bind(state, "session"), "sblight_state_publish");
 	};
 	
 	state.forceModelUpdate = function(model) {
@@ -284,14 +300,14 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 			var cid = data.company ? data.company.id : null;
 			if(uid != _state.userId || cid != _state.companyId) {
 				_state.userId = data.user ? data.user.id : null;
-				_state.companyId = data.company ? data.company.id : null;
+				_state.companyId = data.company ? data.company.id : _state.companyId;
 			}
 			if(_state.block == null && data.block != null) {
 				//delay so notification happens after the session is valid
 				_state.block = String(data.block);
 			}
 		} else {
-			_state.userId = _state.companyId = null;
+			_state.userId = /*_state.companyId =*/ null;
 			_state.user = _state.company = null;
 		}
 		if(state.value("userId") == null) {

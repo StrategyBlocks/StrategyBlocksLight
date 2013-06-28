@@ -14,7 +14,7 @@ define([
 	//'sb_light/models/groupsModel',
 	'sb_light/models/companiesModel',
 	'sb_light/models/timezonesModel'
-], function(sb, tags,news,users,blocks,levels,focus,risks,kpis,groups,companies,timezones) {
+], function(sb, tags,news,users,blocks,levels,focus,risks,kpis,/*groups,*/companies,timezones) {
 	
 	var _models = {
 		tags:		{klass:tags},
@@ -55,9 +55,6 @@ define([
 		var m = _verifyModel(modelName);
 		return m.model.unsubscribe(remove);
 	},
-	
-
-
 	
 	models.rawArray = function(modelName) {
 		var m = _verifyModel(modelName);

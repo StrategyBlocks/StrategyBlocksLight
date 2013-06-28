@@ -193,6 +193,9 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 					var linkAmt = v(m[5]) ? sb.ext.to_f(m[5],0) : 0;
 
 					var lw = layout.widgets[linkKey];
+					if(!lw) {
+						throw new Error("SB_LIGHT::Layout: No element found matching the definition:" + dim + ". Please check your layout definition.");
+					}
 					var lz = lw.sizeFuncs.bind(lw);
 					if(linkDim == "right" && s == "left") { 
 						sz(s, _sizeFunc(wid, s, sb.ext.sum, [lz,"left", (linkKey+"@left")], [lz,"width", (linkKey+"@width")],  linkAmt));
@@ -239,6 +242,9 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 	var _autoFunc = function(id, dim, w, layout) {
 		var dimId = id + ":" + dim;
+
+		w.dim(dim, "auto");
+
 		return function(chain) { 
 			chain = chain || "Chain: ";
 			if(chain.match(dimId)) { 
@@ -273,9 +279,9 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 				var pid = w.parentId();
 				var p =  layout.widgets[pid] || null;
+				var pd = p ? p.dom() : (layout.root.dom() || layout.root || null) 
 				var rect = w.dom().getBoundingClientRect();
-				var prect = p ? p.dom().getBoundingClientRect() : layout.root.getBoundingClientRect();
-				
+				var prect = pd ? pd.getBoundingClientRect() : {left:0, top:0, bottom:0, right:0, width:0, height:0}; 
 				
 				var ph = p ? p.sizeFuncs("height")(chain+"_"+dimId) : layout.rootHeight;
 				var pw = p ? p.sizeFuncs("width")(chain+"_"+dimId) : layout.rootWidth;

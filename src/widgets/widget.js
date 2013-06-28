@@ -180,7 +180,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 			}
 			return typeof this._def[name] === "undefined" ? null : this._def[name];
 		},
-		className: function() {
+
+		//optional "class" string based on who calls it. does nothing,gets ignored. 
+		//name is the class name to apply
+		//remove is a boolean, which removes the class if true. 
+		className: function(/*class(?), name, remove*/) {
 			var args = this._sb.ext.slice(arguments, arguments[0]=="class" ? 1 : 0);
 			if(args.length) {
 				var dom = this.dom();
@@ -295,7 +299,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 		dim: function(name, value) {
 			if(arguments.length > 1) {
-				this.dom().style[name] = this._sb.ext.px(value);
+				if(this._sb.ext.isStr(value)) {
+					this.dom().style[name] = value;
+				} else {
+					this.dom().style[name] = this._sb.ext.px(value);
+				}
 				return this;
 			}
 			return this._sb.ext.to_i(this.dom().style[name]);

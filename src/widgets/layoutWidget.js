@@ -24,7 +24,7 @@ define(['widgets/widget'], function( Widget ) {
 
 
 		child: function(id) {
-			return this._layout.widgets[this.cid(id)];
+			return this._layout.widgets[id] || this._layout.widgets[this.cid(id)];
 		},
 
 		//called by a high-level layout, but we need to apply these sizes to the root of our DOM

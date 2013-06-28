@@ -43,6 +43,8 @@ define(['sb_light/utils/Class'], function( Class ) {
 				if(this._sb.state.authorized() ) {
 					this._sb.ext.debug("Forcing the update");
 					this._sb.state.forceModelUpdate(this);
+				} else {
+					//this._sb.queue.add(this.get.bind(this), this.name+"::model::get", 200);
 				}
 				return null;
 			} 
