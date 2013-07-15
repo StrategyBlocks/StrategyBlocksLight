@@ -7,6 +7,7 @@ define(['sb_light/globals'], function(sb) {
 	var ext = {};
 
 	ext._unique = 0;
+	//return a unique number /id
 	ext.unique = function ext_unique() {
 		return (++ext._unique);
 	};
