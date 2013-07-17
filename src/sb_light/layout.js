@@ -46,9 +46,11 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	};
 
 	lo.resize = function(layout) {
-		_buildLayout(layout);
-		_evalLayout(layout);
-		_applyLayout(layout);
+		if(layout) {
+			_buildLayout(layout);
+			_evalLayout(layout);
+			_applyLayout(layout);
+		}
 	};
 
 	//change the layout def for a single item and relayout.
@@ -102,6 +104,9 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	var _vDimList = ["top","bottom", "height"];
 
 	var _buildLayout = function( layout) {
+		if(!layout) { 
+			return;
+		}
 		for(var wid in layout.widgets) {
 			var w = layout.widgets[wid];
 			var p = layout.widgets[w.parentId()] || null; //parent might be root

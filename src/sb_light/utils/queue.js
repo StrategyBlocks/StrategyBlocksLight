@@ -22,7 +22,7 @@ define(['sb_light/globals'], function(sb) {
 	//add a function with an optional unique name. 
 	//if the queue already contains an item with the same name, it's ignored. 
 	//delay will make sure the function isn't executed before the time has passed, but could take much longer...
-	queue.add = function queue_add(func, name, delay) {
+	queue.add = function queue_add(func, name, delay, update) {
 		delay = sb.ext.number(delay, 0)
 		name = name || "queued_" + sb.ext.unique();
 		var val = low_list.find("name", name).value;
@@ -30,9 +30,12 @@ define(['sb_light/globals'], function(sb) {
 			//sb.ext.debug("QUEUE: Adding: ", name);
 			low_list.push({name:name, func:func, time:sb.ext.time(), delay:delay});
 			start();
+		} else if (update) {
+			val.time = sb.ext.time();
+			val.delay = delay;
 		}
 	};
-	queue.high = function queue_high(func,name, delay) {
+	queue.high = function queue_high(func,name, delay, update) {
 		delay = sb.ext.number(delay,0);
 		name = name || "queued_" + sb.ext.unique();
 		var val = high_list.find("name", name).value;
@@ -40,7 +43,11 @@ define(['sb_light/globals'], function(sb) {
 			//sb.ext.debug("QUEUE: Adding HIGH: ", name);
 			high_list.push({name:name, func:func,  time:sb.ext.time(), delay:delay});
 			start();
+		} else if (update) {
+			val.time = sb.ext.time();
+			val.delay = delay;
 		}
+
 	};
 
 	queue.next = function queue_next() {

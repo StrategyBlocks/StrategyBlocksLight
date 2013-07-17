@@ -15,6 +15,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_events:null,
 		_binds:null,
 		_props:null,
+		_created:false,
 
 
 		//do not override
@@ -46,6 +47,17 @@ define(['sb_light/utils/Class'], function( Class ) {
 			//this._provideEvents(); // not necessary if it doesn't provide anything... just for example
 		},
 
+		destroy: function() {
+			//null all private properties that begin with "_"
+			this._sb.dom.empty(this.dom());
+
+			for(var k in this) {
+				if(k.charAt(0) == "_") {
+					this[k] = null;
+				}
+			}
+		},
+
 		bind: function(name) {
 			if(!this._binds[name]) {
 				if(!this[name]) {
@@ -71,11 +83,13 @@ define(['sb_light/utils/Class'], function( Class ) {
 		create:function() {
 			this._dom = this.createDom(this._def);
 			this.parentDom().appendChild(this._dom);
+			this._created = true;
 		},
 
 		postCreate:function() {
 			//this._sb.ext.debug("Widget", this.id(), "postCreate / apply properties");
 			this.applyProperties();
+
 		},
 
 		dom:function() {	return this._dom;	},
@@ -271,17 +285,19 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		applyLayout: function() {
-			var d = this.dom();
-			var dim = this.bind("dim");
-			var px = this._sb.ext.px;
-			var sz = this.bind("sizeFuncs");
+			if(this._created) {
+				var d = this.dom();
+				var dim = this.bind("dim");
+				var px = this._sb.ext.px;
+				var sz = this.bind("sizeFuncs");
 
-			["left","top","width","height"].forEach(function(s) {
-				dim(s, sz(s)() );
-			});
+				["left","top","width","height"].forEach(function(s) {
+					dim(s, sz(s)() );
+				});
 
-			//this._sb.ext.debug("sb_light Widget: applyLayout: ", this.id(), this.style());
-			this._sb.queue.add(this.bind("handleResize"), "handleResize_"+this.id());
+				//this._sb.ext.debug("sb_light Widget: applyLayout: ", this.id(), this.style());
+				this._sb.queue.add(this.bind("handleResize"), "handleResize_"+this.id());
+			}
 		},
 
 		handleResize: function(e) {

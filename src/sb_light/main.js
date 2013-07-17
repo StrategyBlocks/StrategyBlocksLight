@@ -5,6 +5,7 @@ define([
 	'sb_light/globals',
 	'sb_light/lib/moment',	
 	'sb_light/utils/ext',	
+	'sb_light/utils/dom',	
 	'sb_light/utils/subman',	
 	'sb_light/utils/svg',	
 	'sb_light/utils/queue',	
@@ -23,7 +24,8 @@ define([
 ], function(
 	globals,
 	moment,
-	ext,	
+	ext,
+	dom,	
 	subman,	
 	svg,
 	queue,
@@ -48,6 +50,7 @@ define([
 	if(!globals.moment && !globals.moment.version) { throw "Moment JS has not been loaded properly."; }
 
 	globals.ext = ext;
+	globals.dom = dom;
 	globals.subman = subman;
 	globals.svg = svg;
 	globals.queue = queue;

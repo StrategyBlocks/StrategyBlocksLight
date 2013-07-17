@@ -255,7 +255,7 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 	*	that instance and use it for unsubscribing
 	*/
 	state.unsubscribe = function(type, remove) {
-		var ext = this._sb.ext;
+		var ext = sb.ext;
 		var del = [];
 		//collect matches
 		ext.each(state.subscriptions[type], function(v,k) {
