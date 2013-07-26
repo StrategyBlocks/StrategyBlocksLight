@@ -1,5 +1,5 @@
 
-
+/*global define, require, d3, console, $*/
 
 define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget, SvgWidget) {
 	var lo =  {};
@@ -50,6 +50,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			_buildLayout(layout);
 			_evalLayout(layout);
 			_applyLayout(layout);
+			layout.sized = true;
 		}
 	};
 
@@ -75,31 +76,34 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			throw new Error("Warning: missing parent id", parentId);
 		}
 		def = sb.ext.isArray(def) ? def : [def];
-		def.forEach(function(d,i) {
-			d.id = lo.uniqueId(d);
-			d.style = d.style || "";
-			d.style = d.style + (d.style.match("/z-index/") ? "" : ";z-index:"+i);	
-
-			var widget = lo.create(p, d);
-			layout.widgets[d.id] = widget; //{id:d.id, source:d, dom:obj, parentId:parentId};
-			
-			if(d.children && d.children.length) {
-				if(d.widget == "svg") {
-					//skip the layout engine and let the SVG widgets manage themselves. They don't have gimpy
-					//positioning like HTML DOM / CSS (even before using d3 )
-					widget.createChildren(d.children);
-				} else {
-					_createWidgets(d.id, d.children, layout);
-				}
-			}
-
-		});
+		var f = lo.createWidget.bind(lo, layout, p);
+		def.forEach(f);
 	};
 
+	lo.createWidget = function(layout, parent,def, i) {
+		def.id = lo.uniqueId(def);
+		def.style = def.style || "";
+		def.style = def.style + (def.style.match("/z-index/") ? "" : ";z-index:"+i);	
 
+		var widget = lo.create(parent, def);
+		layout.widgets[def.id] = widget; //{id:def.id, source:d, dom:obj, parentId:parentId};
+		if(parent.created && parent.created()) {
+			parent.addChild(def.id, widget);
+		}
+		
+		if(def.children && def.children.length) {
+			if(def.widget == "svg") {
+				//skip the layout engine and let the SVG widgets manage themselves. They don't have gimpy
+				//positioning like HTML DOM / CSS (even before using d3 )
+				widget.createChildren(def.children);
+			} else {
+				_createWidgets(def.id, def.children, layout);
+			}
+		}
+	};
 
 	var _matchLink = /^@(.+?)(#(left|right|top|bottom|height|width))?(#(-?\d+))?$/;
-	var _matchNum = /^(-?\d+)([^0-9]+)?$/;
+	var _matchNum = /^(-?[\d\.]+)([^0-9]+)?$/;
 	var _dimList = ["left","right", "top","bottom", "height","width"];
 	var _vDimList = ["top","bottom", "height"];
 
@@ -107,10 +111,8 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		if(!layout) { 
 			return;
 		}
-		for(var wid in layout.widgets) {
-			var w = layout.widgets[wid];
+		sb.ext.each(layout.widgets, function(w,wid) {
 			var p = layout.widgets[w.parentId()] || null; //parent might be root
-
 
 			var sz = w.sizeDefs.bind(w);//func
 			var v = sb.ext.valid;
@@ -136,15 +138,13 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			if(!v(sz("right")) 		&& (!v(sz("width")) 	|| !v(sz("left")))) 		{ sz("right", fringe);}
 			if(!v(sz("top")) 		&& (!v(sz("height")) 	|| !v(sz("bottom")))) 		{ sz("top", fringe);}
 			if(!v(sz("bottom")) 	&& (!v(sz("height")) 	|| !v(sz("top")))) 			{ sz("bottom", fringe);}
-		}
+		});
 	};
 
 	var _isV = function(dim) { return _vDimList.indexOf(dim) > -1; };
 
 	var _evalLayout = function( layout) {
-		for(var wid in layout.widgets) {
-
-			var w = layout.widgets[wid];
+		sb.ext.each(layout.widgets, function(w,wid) {
 			var sz = w.sizeFuncs.bind(w);
 			//all elements from here should have a parentId with sizes
 			var p = layout.widgets[w.parentId()] || null; //parent might be root
@@ -155,8 +155,8 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 			var v = sb.ext.valid;
 
-			// if(wid == "infoResize"){
-			// //	console.log("DivB");
+			// if(wid.indexOf("leftButton_icon") > 0) {
+			// 	console.log("icon");
 			// }
 
 			_dimList.forEach(function(s) {
@@ -218,7 +218,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 			});
 
-		}
+		});
 
 	};
 
@@ -242,7 +242,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			// }
 			
 			return res;
-		}
+		};
 	};
 
 	var _autoFunc = function(id, dim, w, layout) {
@@ -257,53 +257,57 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			}
 
 			var list = [];
-			for(var wid in layout.widgets)  {
-				var cw = layout.widgets[wid];
-				var cz = cw.sizeFuncs.bind(cw)
-				if(cw.parentId() == id) { 
-					list.push(
-						function() {
-							if(dim == "width") {
-								return  cz("left")(chain+"_"+dimId+"_"+ wid +"@"+dim) + cz("width")(chain+"_"+dimId+"_"+ wid +"@"+dim);
-							} else if (dim == "height") {
-								return cz("top")(chain+"_"+dimId+"_"+ wid +"@"+dim) + cz("height")(chain+"_"+dimId+"_"+ wid +"@"+dim);
-							} else 	if(dim == "left") {
-								return cz("left")(chain+"_"+dimId+"_"+ wid +"@"+dim);
-							} else if (dim == "top") {
-								return cz("top")(chain+"_"+dimId+"_"+ wid +"@"+dim);
-							}
-						}
-						
-					); 
+			var wid, cw,cz;
+			var wlayout = w.layout();
+
+			for(wid in wlayout.widgets)  {
+				if(!wlayout.sized) {
+					lo.resize(wlayout);
 				}
+				cw = wlayout.widgets[wid];
+				cz = cw.sizeFuncs.bind(cw);
+				list.push(
+					function() {
+						if(dim == "width") {
+							return  cz("left")(chain+"_"+dimId+"_"+ wid +"@"+dim) + cz("width")(chain+"_"+dimId+"_"+ wid +"@"+dim);
+						} else if (dim == "height") {
+							return cz("top")(chain+"_"+dimId+"_"+ wid +"@"+dim) + cz("height")(chain+"_"+dimId+"_"+ wid +"@"+dim);
+						} else 	if(dim == "left") {
+							return cz("left")(chain+"_"+dimId+"_"+ wid +"@"+dim);
+						} else if (dim == "top") {
+							return cz("top")(chain+"_"+dimId+"_"+ wid +"@"+dim);
+						} 
+						throw "Dim Unknown:" + dim;
+					}
+					
+				); 
 			}
 
 			if(list.length) {
 				return (dim == "width" || dim =="height") ? sb.ext.max.apply(null, list) : sb.ext.min.apply(null,list);
-			} else {
+			} 
 
-				var pid = w.parentId();
-				var p =  layout.widgets[pid] || null;
-				var pd = p ? p.dom() : (layout.root.dom() || layout.root || null) 
-				var rect = w.dom().getBoundingClientRect();
-				var prect = pd ? pd.getBoundingClientRect() : {left:0, top:0, bottom:0, right:0, width:0, height:0}; 
-				
-				var ph = p ? p.sizeFuncs("height")(chain+"_"+dimId) : layout.rootHeight;
-				var pw = p ? p.sizeFuncs("width")(chain+"_"+dimId) : layout.rootWidth;
+			var pid = w.parentId();
+			var p =  layout.widgets[pid] || null;
+			var pd = p ? p.dom() : (layout.root.dom() || layout.root || null);
+			var rect = w.dom().getBoundingClientRect();
+			var prect = pd ? pd.getBoundingClientRect() : {left:0, top:0, bottom:0, right:0, width:0, height:0}; 
+			
+			var ph = p ? p.sizeFuncs("height")(chain+"_"+dimId) : layout.rootHeight;
+			var pw = p ? p.sizeFuncs("width")(chain+"_"+dimId) : layout.rootWidth;
 
-				if(dim !== "bottom" && dim != "right") {
-					return rect[dim];
-				} else if(dim == "bottom"){
-					return ph - rect.height - (rect.top- prect.top);
-				} else {
-					return pw - rect.width  - (rect.left - prect.left);
-				}
+			if(dim !== "bottom" && dim != "right") {
+				return rect[dim];
+			} else if(dim == "bottom"){
+				return ph - rect.height - (rect.top- prect.top);
 			}
+			return pw - rect.width  - (rect.left - prect.left);
 		}
 	};
 
 	var _applyLayout = function(layout) {
 		for (var wid in layout.widgets) {
+			console.log("apply layout to ", wid);
 			var w = layout.widgets[wid];
 			var sz = w.sizeFuncs.bind(w);
 			var r = sb.ext.roundTo;

@@ -1,5 +1,5 @@
 define([
-	'widgets/layoutWidget', 
+	'widgets/widget', 
 	'widgets/formInput', 
 	
 ], function( W, FormInput) {
@@ -18,9 +18,8 @@ define([
 			this.dom().addEventListener("submit", this.bind("_handleSubmit"));
 		},
 
-		childrenLayout:function() {
-
-			return [
+		createLayout:function() {
+			this._defaultLayout = [
 				{id:this.cid("center_hack"), widget:"div", fringe:"49%" , style:"display:none;"},
 				{id:this.cid("form"), widget:"form", left:this.cidDim("center_hack", -300), right:this.cidDim("center_hack", -300), 
 					top:50, bottom:50, 
@@ -33,6 +32,7 @@ define([
 					]
 				}
 			];
+			this._super();
 		},
 
 		_handleSubmit: function(e) {

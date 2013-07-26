@@ -92,7 +92,7 @@ define(['sb_light/globals'], function(sb) {
 				if(name == "y") { name = "top"; }
 				this.style(name, (sb.ext.isFunc(value) || sb.ext.isString(value)) ? value : sb.ext.px(value));
 			}
-			this.attr(name, svg.isSvg(this.node() || sb.ext.isFunc(value)) ? value : sb.ext.px(value)) 
+			//this.attr(name, svg.isSvg(this.node() || sb.ext.isFunc(value)) ? value : sb.ext.px(value)) 
 
 			return this;
 		} 

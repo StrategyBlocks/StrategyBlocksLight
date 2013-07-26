@@ -1,12 +1,12 @@
 
 
-define(['widgets/layoutWidget'], function( LW ) {
+define(['widgets/widget'], function( W ) {
 
-	var FormInput = LW.extend({
+	var FormInput = W.extend({
 
 
 		create:function() {
-			this._name = "layoutWidget::formInput";
+			this._name = "widget::formInput";
 			this._super();
 		},
 
@@ -52,12 +52,13 @@ define(['widgets/layoutWidget'], function( LW ) {
 			return this._layout.widgets[this.cid("error")].text();
 		},
 
-		childrenLayout:function() {
-			return [
+		createLayout:function() {
+			this._defaultLayout = [
 				{id:this.cid("label"), widget:"label", left:10, width:"24%", height:20, top:0, text:"Test Form Widget", style:"text-align:right"},
 				{id:this.cid("input"), widget:"input", left:this.cidDim("label","r",20), width:"40%", height:20, top:0, value:"Test Input Widget"},
 				{id:this.cid("error"), widget:"div", left:this.cidDim("input","r",20), width:"36%", height:20, top:0, text:"Error Widget"}
 			];
+			this._super();
 		}
 	});
 

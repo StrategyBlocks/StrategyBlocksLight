@@ -40,6 +40,16 @@ define(['sb_light/globals'], function(sb) {
 			console.log(str);	
 		}
 	};
+
+	ext.warn = function ext_warn() {
+		var str = ([(new Date()).toTimeString(), "WARNING:"]).concat(ext.slice(arguments)).join(" ");
+		if(ext.ti()) {
+			Ti.API.warn(str);
+		} else if(typeof console !== "undefined") {
+			console.log(str);	
+		}
+	};
+	ext.warning = ext.warn;
 	
 	//check is Titanium framework exists. probably shouldn't be needed any longer
 	//TODO: investigate removal
@@ -105,6 +115,13 @@ define(['sb_light/globals'], function(sb) {
 	//alias for Object.keys
 	ext.keys = function ext_keys(map) {
 		return map ? Object.keys(map) : [];
+	}	
+	//return the first key from doing a for-in on the map
+	//WARNING: this may not be consisten. The order is arbitrary. 
+	//			this is only useful if you just want a valid key, and it doesn't matter which one (e.g., a default setting)
+	ext.firstKey = function ext_keys(map) {
+		if(!map) { return null; }
+		for(var k in map) { return k; }
 	}	
 	
 	//this only works with objects that contain only native JS object (e.g., Object-derived)
@@ -223,6 +240,9 @@ define(['sb_light/globals'], function(sb) {
 			return sb.moment(d).format(format || ext.userFormat()) + "&nbsp;(" + sb.moment(d).fromNow() + ")";
 		}
 	};
+	ext.fromNow = function ext_fromNow(d) {		return sb.moment(d).fromNow();	};
+
+
 		/************  REGEXPS ***************************/
 	ext.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");
 	ext.regUrl = new RegExp("^https?:\/\/");
@@ -1033,6 +1053,18 @@ define(['sb_light/globals'], function(sb) {
 			return this.reduce(function ext_array_cloneExcept_reduce(a,el) {
 				return items.indexOf(el) < 0 ? a.put(el) : a;
 			}, []);
+		}
+	}
+	if (!Array.prototype.remove) { 
+		Array.prototype.remove = function ext_array_remove(/*items*/) {
+			var args = ext.slice(arguments);
+			while(args.length) {
+				var idx = this.indexOf(args.pop());
+				if(idx >= 0) {
+					this.splice(idx,1);
+				}
+			}
+			return this; 
 		}
 	}
 	

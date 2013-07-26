@@ -1,8 +1,8 @@
 
 
-define(['widgets/layoutWidget'], function( LW ) {
+define(['widgets/widget'], function( W ) {
 
-	var R = LW.extend({
+	var R = W.extend({
 		_dragPos: null,
 		_dragDim:"left",
 		_min: 0,
@@ -10,7 +10,7 @@ define(['widgets/layoutWidget'], function( LW ) {
 		
 
 		create: function() {
-			this._name = "layoutWidget::resizer";
+			this._name = "widget::resizer";
 			this._provideEvents("resize");
 			this._super();
 		},
@@ -28,11 +28,12 @@ define(['widgets/layoutWidget'], function( LW ) {
 		},
 
 
-		childrenLayout:function() {
-			return [
+		createLayout:function() {
+			this._defaultLayout = [
 				{id:this.cid("mainBar"), widget:"div", fringe:2,  style:"background-color:#FFF;border:solid 1px black;"},
 				{id:this.cid("ghostBar"), widget:"div", fringe:3,  left:4, style:"background-color:#000"}
 			];
+			this._super();
 		},
 
 

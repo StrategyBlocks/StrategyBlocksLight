@@ -13,21 +13,23 @@ define([
 	'sb_light/models/kpisModel',
 	//'sb_light/models/groupsModel',
 	'sb_light/models/companiesModel',
-	'sb_light/models/timezonesModel'
-], function(sb, tags,news,users,blocks,levels,focus,risks,kpis,/*groups,*/companies,timezones) {
+	'sb_light/models/timezonesModel',
+	'sb_light/models/capabilities'
+], function(sb, tags,news,users,blocks,levels,focus,risks,kpis,/*groups,*/companies,timezones,capabilities) {
 	
 	var _models = {
-		tags:		{klass:tags},
-		news:		{klass:news},
-		users:		{klass:users},
-		blocks:		{klass:blocks},
-		levels:		{klass:levels},
-		focus:		{klass:focus},
-		risks:		{klass:risks},
-		kpis:		{klass:kpis},
+		tags:			{klass:tags},
+		news:			{klass:news},
+		users:			{klass:users},
+		blocks:			{klass:blocks},
+		levels:			{klass:levels},
+		focus:			{klass:focus},
+		risks:			{klass:risks},
+		kpis:			{klass:kpis},
 		//groups:		{klass:groups},
-		companies:	{klass:companies},
-		timezones:	{klass:timezones}
+		companies:		{klass:companies},
+		timezones:		{klass:timezones},
+		capabilities:	{klass:capabilities}
 	};
 	
 	var models = {};

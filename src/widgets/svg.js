@@ -85,9 +85,9 @@ define(['widgets/widget'], function( W ) {
 
 		createChildren: function(childrenDef) {
 			try {
-				var d;
+				var d,i;
 				childrenDef = this._sb.ext.isArr(childrenDef) ? childrenDef : (childrenDef ? [childrenDef] : []);
-				for(var i = 0; i < childrenDef.length; ++i) {
+				for( i = 0; i < childrenDef.length; ++i) {
 					d = childrenDef[i];
 					d.id = this._sb.layout.uniqueId(d);
 					this._children[d.id] = this._sb.ext.isString(d.widget) ? (new SVG(this._sb, this.dom(), d)) : (new d.widget(this._sb, this.dom(), d));
@@ -152,8 +152,8 @@ define(['widgets/widget'], function( W ) {
 		dispatches:function(/*"dispatches", {name:func}*/) {
 			var args = this._sb.ext.slice(arguments, arguments.length == 2 ? 1 : 0);
 			if(args.length) {
-				var list = args[0];
-				for(var n in list) {
+				var n, list = args[0];
+				for(n in list) {
 					this._dispatcher.on(n, list[n]);
 				}
 				return this;
