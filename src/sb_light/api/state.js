@@ -18,8 +18,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		return prev;
 	}, state);
 
-
-
+	//storage of application data. The properties can be extended simply by "watch"ing them.
 	var storage = {
 		//current application state (e.g., which page, block, tag, user....) -- stuff that can go into a url for bookmarking
 		state: {
