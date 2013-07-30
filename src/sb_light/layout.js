@@ -307,10 +307,10 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 	var _applyLayout = function(layout) {
 		for (var wid in layout.widgets) {
-			console.log("apply layout to ", wid);
 			var w = layout.widgets[wid];
 			var sz = w.sizeFuncs.bind(w);
 			var r = sb.ext.roundTo;
+			//console.log("apply layout to ", wid);
 			// console.log(wid, 
 			// 		"left",		r(sz("left")(wid),1),
 			// 		"right",	r(sz("right")(wid),1),

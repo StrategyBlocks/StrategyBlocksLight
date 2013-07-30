@@ -12,6 +12,8 @@ define(['sb_light/globals'], function(sb) {
 		return (++ext._unique);
 	};
 
+	ext.noop = function(){};
+
 
 	ext.deprecated = function(oldF, newF, message) {
 		console.log("Warning: ", oldF, " is deprecated. Please use ", newF, " instead.");
@@ -228,7 +230,7 @@ define(['sb_light/globals'], function(sb) {
 	ext.maxDate = function ext_maxDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate).last()); };
 	ext.serverFormat = "YYYY/MM/DD";
 	ext.userFormat = function ext_userFormat() { 
-		var u = sb.state && sb.state.value("user");
+		var u = sb.queries.user();
 		return u ? u.date_format : ext.serverFormat;
 	};
 	ext.serverDate = function ext_serverDate(d) { return sb.moment(d||new Date()).format(ext.serverFormat); };
@@ -644,9 +646,22 @@ define(['sb_light/globals'], function(sb) {
 	//same as combine but only takes two properties.
 	ext.merge = function ext_merge(a, b, ignore) {
 		return ext.combine([a,b], ignore);	
+	};
+
+	//cherry pick the key/values of an object and clone them into a new one
+	ext.cherryPick = function ext_clone(o, props) {
+		if(!props) { return ext.mixin(null, o); }
+		if(ext.isStr(props)) {
+			props = props.split(",");
+		}
+		var res = {};
+		props.forEach(function(prop){
+			res[prop] = o[prop];
+		});
+		return res; 
+
 	}
 
-	
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach
 	if ( !Array.prototype.forEach ) {  

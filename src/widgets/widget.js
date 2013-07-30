@@ -106,7 +106,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this.createLayout();
 			this.parentDom().appendChild(this._dom);
 			this._created = true;
-			this._sb.ext.debug("created", this._name);
+			//this._sb.ext.debug("created", this._name);
 		},
 
 

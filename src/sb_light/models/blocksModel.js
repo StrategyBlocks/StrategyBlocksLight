@@ -25,6 +25,10 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 				"_npv": 	this._massageNpv
 			}
 			
+			//requires companies and users to exist for certain features
+			sb.models.subscribe("companies", sb.ext.noop);
+			sb.models.subscribe("users", sb.ext.noop);
+
 			this._super(sb, "blocks", sb.urls.MODEL_BLOCKS);
 		},
 		
@@ -40,7 +44,12 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 		//by a view
 		_massageUpdatedModel: function() {
 			this._super();
-			var root = this._model[this._sb.state.value("company").root_block.id];
+			var root = this._model[this._sb.queries.rootBlockId()];
+			if(!root) {
+				root = this._modelArray.filter(function(v,k){
+					return !v.parents || !v.parents.length;
+				})[0];
+			}
 			this._massage(root, null, 0, (new Date()).getTime());
 			this._sb.ext.debug("Finished massaging blocks");
 		},

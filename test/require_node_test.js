@@ -76,7 +76,7 @@ requirejs(['sb_light'], function(sb) {
 	sb.state.host = "https://app.strategyblocks.com";	
 	sb.api.ajax = sb.ajax.node(superAgent.agent());
 	
-	sb.state.subscribe("session", handleSession);
+	sb.state.watchConext("session", handleSession);
 	//sb.model.subscribe("blocks", handleBlocks);
 	sb.state.login();
 });

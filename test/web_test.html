@@ -70,7 +70,7 @@
 				sb.state.host = window.location.host;
 				sb.api.ajax = sb.ajax.jquery($);
 				
-				sb.state.subscribe("session", handleSession);
+				sb.state.watchContext("session", handleSession);
 				//sb.model.subscribe("blocks", handleBlocks);
 				sb.state.login();        		  		
         			

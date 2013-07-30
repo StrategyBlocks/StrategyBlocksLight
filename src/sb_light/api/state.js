@@ -1,5 +1,5 @@
 
-define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
+define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], function(sb,consts,ext) {
 	//console.log("State:",sb.version);
 	
 	var state = {};
@@ -18,88 +18,158 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 		return prev;
 	}, state);
 
-	var _state = {
-		page:"",
 
-		block:null,		//normally block path
-		news:null,		//news item id		
-		kpi:null,		//kpi  id		
-		risk:null,		//risk id		
-		tag:null,		//tag id		
 
-		userId:null,
-		companyId:null,
-		company: null,
-		user: null,
-		
-		session: state.session_startup,
-		url:"",
-		
-		childBlock:null,		
-		
-		blockTreeZoom:1,
-		blockMapZoom:1,
-		blockSettingsView: "",
-		blockSettingsCollapse: "",
-		blocksTreeView: consts.BLOCKS_TREE.VIEW.STATUS,
-		blocksMapView: consts.BLOCKS_MAP.VIEW.RADIAL,
-		blocksTimelineView: consts.BLOCKS_TIMELINE.VIEW.CHART,
-		//manageBlockView: "block",
-				
-				
-		previousBlock:null,
-		previousPage:null
+	var storage = {
+		//current application state (e.g., which page, block, tag, user....) -- stuff that can go into a url for bookmarking
+		state: {
+			block:null,		//normally block path
+			news:null,		//news item id		
+			kpi:null,		//kpi  id		
+			risk:null,		//risk id		
+			tag:null,		//tag id		
+
+			user_id:null,
+			company_id:null,
+		},
+
+		//"uncontrolled" event data, like authentication state, flash message, errors, etc...
+		//stuff that doesn't belong in a url, but reflects the current state of the app
+		context: {
+			flash:null,
+			session: state.session_startup,
+			errors:null,
+			prevBlocks: null,
+			prevPages: null,
+		},
+
+		// local cache of app data -- stuff that you might store in a cookie. or non-model data that unrelated
+		// objects might need access to
+		data: {
+
+		}
 	};
-	
-	
+
+
+
 	var _forceUpdateBuffer = {};
 	var _forceUpdateBusy = {};
 	var _stateFunctions = {};
 	
-	//the url definition. The order of the url parts will be consistent with this list.
-	var _urlParts = ["page", "block", "childBlock", "blocksTreeView","blocksMapView","blocksTimelineView","manageBlockView"]; 
-	
 	
 	state.host = "";
 	state.models = {};
-	state.subscriptions = {};
-	
-	
-		
-	//accepts several value types specified by: sb.urls.url_to_o
-	//RETURNS: The string form of the url.
-	state.url = function(value) {
-		//update the url
-		if(value !== undefined) { 
-			value = typeof value == "string" ? sb.urls.url_to_o(value) : value;
-			sb.ext.each(value, function(k, v) {
-				state.value(k,v, false);
-			});
-			state.publish("url");
-		}
-	
-		return "#"+_urlParts.reduce(function(prev, el) {
-			val = state.value(el);
-			if(val !== null && val !== undefined) {
-				return prev.put([el, state.value(el)].join("="));
-			} 
-			return prev;
-		}, []).join(";");
+
+	state.watch = {
+		state:{},
+		context: {},
+		data:{}
 	};
+
 	
-	state.register = function(model, urlDef, cb) {
-		if(!state.models[model.name]) {
-			state.models[model.name] = {timestamp:0, cb:cb, urlDef:urlDef};
+
+	state.registerModel = function(model, urlDef, cb) {
+		var m = state.models;
+		if(!m[model.name]) {
+			m[model.name] = {timestamp:0, cb:cb, urlDef:urlDef};
 			if(state.authorized() && !_forceUpdateBuffer && !_forceUpdateBuffer[model.name]) {
 				//if we do a bunch of these at the same time, only run the first. The others will get picked up.
 				_forceUpdateBuffer[model.name] = _forceModelUpdate.bindDelay(state, 200, model);
 			}
 		} 
 	};
+
+
+	//ACCESSS
+	state.state = function(type, val) 	{		return _accessStorage("state", type, val);			};
+	state.context = function(type, val) {		return _accessStorage("context", type, val);		};
+	state.data = function(type, val) 	{		return _accessStorage("data", type, val);			};
+
 	
+	//WATCH
+	//* for "type" means it will watch everything in the group
+	state.watchState = function(type, cb, _default) 	{		return _watch("state", type,cb, _default);		};
+	state.watchContext = function(type, cb, _default) 	{		return _watch("context", type,cb, _default);	};
+	state.watchData = function(type, cb, _default) 		{		return _watch("data", type,cb, _default);		};
+	
+
+	//REMOVE
+	// When "remove" is a func, it will not work unless the function definition
+	// has not changed. E.g., if you create a temporary
+	// function using func.bind, then you need to store
+	// that instance and use it for unsubscribing
+	state.unwatchState = function(type, remove) 		{		return _unwatch("state", type,remove);		};
+	state.unwatchContext = function(type, remove) 		{		return _unwatch("context", type,remove);	};
+	state.unwatchData = function(type, remove) 			{		return _unwatch("data", type,remove);		};
+
+	state.publish = function(group, type) {
+		var s = state.watch[group];
+		var list = s[type] || [];
+		var value = state[group](type);
+		var ext= sb.ext;
+		ext.each(s[type], function(v) {
+			ext.debug("Publish: ", type, value, v.urgent);
+			v.callback.bindDelay(null, (v.urgent?0:50), value, type);
+		});
+		//notify all the global subs
+		ext.each(s["*"], function(v) {
+			ext.debug("Publish(*): ", type, value, v.urgent);
+			v.callback.bindDelay(null, (v.urgent?0:50), value, type);
+		});
+	};
+
+
+	var _accessStorage = function(group, type,val) {
+		var sg = storage[group];
+		if(!sg.hasOwnProperty(type)) {
+			throw "SBLIGHT::State - Trying to access a state property that hasn't been initialized." + type;
+		};
+
+		if(typeof val !== "undefined" && sg[type] != val) {
+			sg[type] = val;
+			state.publish(group, type);
+			return this;
+		}
+		return sg[type];
+	};
+
+
+	var _watch = function(group, type, cb, _default, _urgent/*==false*/) {
+		var sg = storage[group];
+		if(type !== "*" && !sg.hasOwnProperty(type)) {
+			sg[type] = _default || null;
+		};
+
+		var w = state.watch[group];
+		w[type] = w[type] || {};
+		
+		var id = ["watch_state",group, type, sb.ext.unique()].join("_");
+		w[type][id] = {callback:cb, urgent:(_urgent||false)};
+
+		return id;
+	};
+
+	var _unwatch = function(group, type, remove) {
+		var del = [];
+		var w = state.watch[group];
+		//collect matches
+
+		ext.each(w[type], function(v,k) {
+			//"remove" can be the key or the cb func
+			if(v.callback == remove || k == remove) { 
+				del.push(k);
+			}
+		});
+		del.forEach(function(el) {
+			delete w[type][el];
+		})
+	};
+
+
 	state.resetTimestamp = function(name) {
-		if(state.models[name]) {
-			state.models[name].timestamp = 0;	
+		var m = state.models;
+		if(m[name]) {
+			m[name].timestamp = 0;	
 		}
 	};
 	
@@ -109,22 +179,25 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 			params.username = uname;
 			params.password = pword;
 		}
-		if(_state.companyId) {
-			params.company_id = _state.companyId;
+		if(storage.state.company_id) {
+			params.company_id = storage.state.company_id;
 		}
 		sb.api.post(sb.urls.url(sb.urls.LOGIN), params, cb, errCb, state.unauthorized);
 	};
 	
 	state.reset = function(cid) {
-		_state.session = state.session_unknown;
+		storage.context.session = state.session_unknown;
+		storage.context.flash = null;
+
 		if(cid) {
-			_state.companyId = cid;
+			storage.state.company_id = cid;
 		}
-		_state.block = null;
-		_state.news = null;
-		_state.kpi = null;
-		_state.risk = null;
-		_state.tag = null;
+		storage.state.block = null;
+		storage.state.news = null;
+		storage.state.kpi = null;
+		storage.state.risk = null;
+		storage.state.tag = null;
+
 		sb.queue.add(sb.models.reset.bind(sb.models), "sblight_models_reset");
 	}
 
@@ -162,129 +235,53 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 	//startup -- the first state of this system. This used to be "unknown", but in some cases it's useful to
 	//know that we're in the initialization phase. So we always start in the "startup" state, and then
 	//move into the "unknown" state.  
-	state.startup = function() {	return _state.session == state.session_startup;	};
+	state.startup = function() {	return storage.context.session == state.session_startup;	};
 	
 	//any state but unknown 
-	state.known = function() {	return _state.session != state.session_unknown;	};
+	state.known = function() {	return storage.context.session != state.session_unknown;	};
 	//not tried auth yet. 
-	state.unknown = function() {	return _state.session == state.session_unknown;	};
+	state.unknown = function() {	return storage.context.session == state.session_unknown;	};
 	//no auth
-	state.unauthorized = function() {	return  _state.session == state.session_unknown || _state.session == state.session_invalid || _state.session == state.session_startup;	};
+	state.unauthorized = function() {	return  storage.context.session == state.session_unknown || storage.context.session == state.session_invalid || storage.context.session == state.session_startup;	};
 	//invalid
-	state.invalid = function() {	return  _state.session == state.session_invalid;	};
+	state.invalid = function() {	return  storage.context.session == state.session_invalid;	};
 	//has user/company
-	state.authorized = function() {	return _state.session == state.session_normal || _state.session == state.session_payment; };	
+	state.authorized = function() {	return storage.context.session == state.session_normal || storage.context.session == state.session_payment; };	
 
 	//failed server response
-	state.disconnected = function() { return _state.session == state.session_disconnected; };
+	state.disconnected = function() { return storage.context.session == state.session_disconnected; };
 	
 	//returns true / false depending on whether the response session is valid
 	state.update = function(data) {
 		_updateSession(data);
 		_updateModels(data);
-		state.publish.bindDelay(state, 50, "session");
+		state.publish.bindDelay(state, 50, "context", "session");
 		return state.authorized();
 	};
 	
-	
-	//setter/getter
-	//supports "State.value()" to determine the current session state
-	// or normally: "sb.state.value("block") for fetching current block path. 
-	state.value = function(type, val, publishUrl) {
-		if(val !== undefined && _state[type] != val) {
-			var from = _state[type];
-			var func = _stateFunctions[type];
-			var newVal = func ? func(from||null,val) : val;
-			//$sblog("Setting Type: ", type, " To ", newVal, "Original:", from);
-			if(type == "url") { throw "Please use State.url to change the url object directly."; }
-			_state[type] = newVal;
-			
-			//publish is timeout delayed, so the state functions should execute before any notifications
-			state.publish(type);
-			
-			if(_urlParts.indexOf(type) > -1) {
-				_state.url = state.url();
-				if(publishUrl !== false) {
-					state.publish("url");
-				}
-			}
-		}
-		return _state[type];
-	};
-	
-	state.clone = function() {
-		return sb.ext.mixin({}, _state);
-	};
+
+
 	
 	//only used for settings where we want to check the single value in a group of many
 	//e.g., State.value(type) = <key 1>!<value 1>-<key 2>!<value 2>-...
 	// 1223_232_222!bp-2232-223-233!bk-...
-	state.getValueKey = function(type, key) {
+	state.getStateKey = function(type, key) {
 		//$sblog("Get Value Key: ", type, key);
-		var val = sb.urls.s_to_o(state.value(type));
+		var val = sb.urls.s_to_o(state.state(type));
 		return val[key] || null;
 	};
 	
-	state.setValueKey = function(type, key, value) {
-		var val = sb.urls.s_to_o(state.value(type));
+	state.setStateKey = function(type, key, value) {
+		var val = sb.urls.s_to_o(state.state(type));
 		if(value == null) {
 			delete val[key];
 		} else {
 			val[key] = value;
 		}
-		state.value(type, sb.urls.o_to_s(val));
+		state.state(type, sb.urls.o_to_s(val));
 	};
 	
-	state.subscribe = function(type, cb) {
-		if(!sb.ext.isFunc(cb)) {
-			throw "SB_LIGHT:State -- subscribing to an event with an invalid function.";
-		}
-		
-		//console.log(sb.version);
-		sb.ext.debug("subscribing to: ", type);
-		state.subscriptions[type] = state.subscriptions[type] || {};
-		
-		var id = "Sub_state_" + type + "_" + sb.ext.unique();
-		state.subscriptions[type][id] = cb;
-	};
 
-	/**
-	*	When "remove" is a func, it will not work unless the function definition
-	*	has not changed. E.g., if you create a temporary
-	*	function using func.bind, then you need to store
-	*	that instance and use it for unsubscribing
-	*/
-	state.unsubscribe = function(type, remove) {
-		var ext = sb.ext;
-		var del = [];
-		//collect matches
-		ext.each(state.subscriptions[type], function(v,k) {
-			//"remove" can be the key or the cb func
-			if(v == remove || k == remove) { 
-				del.push(k);
-			}
-		});
-		del.forEach(function(el) {
-			sb.ext.debug("unsubscribing from: ", type);
-			delete state.subscriptions[type][el];
-		})
-	};
-
-	state.publish = function(type) {
-		var list = state.subscriptions[type] || [];
-		var value = state.value(type);
-		var ext= sb.ext;
-		ext.each(state.subscriptions[type], function(v) {
-			if(type.indexOf("Zoom") > -1) {
-				ext.debug("Publish Zoom: ", type, value);
-				v.bindDelay(null, 0, value);
-			} else {
-				ext.debug("Publish: ", type, value);
-				v.bindDelay(null, 50, value);
-			}
-			
-		});
-	};
 	
 	state.addTimestamps = function(params) {
 		sb.ext.debug("Adding timestamp for ", Object.keys(state.models).join(","));
@@ -298,41 +295,38 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 		if(data) {
 			var uid = data.user ? data.user.id : null;
 			var cid = data.company ? data.company.id : null;
-			if(uid != _state.userId || cid != _state.companyId) {
-				_state.userId = data.user ? data.user.id : null;
-				_state.companyId = data.company ? data.company.id : _state.companyId;
+			if(uid != storage.state.user_id || cid != storage.state.company_id) {
+				storage.state.user_id = data.user ? data.user.id : null;
+				storage.state.company_id = data.company ? data.company.id : storage.state.company_id;
 			}
-			if(_state.block == null && data.block != null) {
+			if(storage.state.block == null && data.block != null) {
 				//delay so notification happens after the session is valid
-				_state.block = String(data.block);
+				storage.state.block = String(data.block);
 			}
 		} else {
-			_state.userId = /*_state.companyId =*/ null;
-			_state.user = _state.company = null;
+			storage.state.user_id = null;
 		}
-		if(state.value("userId") == null) {
+		if(storage.state.user_id == null) {
 			sb.ext.debug("setting session to unauthorized");
 			if(state.unknown() || state.startup()) {
 				data.flash = {notice:"Please enter your login credentials."};
 			}
-			_state.session =  state.session_invalid;
+			storage.context.session =  state.session_invalid;
 		} else {
-			_state.company = data.company;
-			_state.user = data.user; 
 			if (data.company && data.company.license && data.company.license.status =="expired") {
 				sb.ext.debug("setting session to payment");
-				_state.session =  state.session_payment;
+				storage.context.session =  state.session_payment;
 			} else {
 				sb.ext.debug("setting session to normal");
-				_state.session =  state.session_normal;
+				storage.context.session =  state.session_normal;
 			}
 		}
 		
 		if(!state.authorized()) {
 			sb.models.reset();
 		}
-		state.value("flash", data.flash);
-		state.value("errors", data.errors);
+		state.context("flash", data.flash);
+		state.context("errors", data.errors);
 	}
 	
 	function _updateModels (data) {
@@ -364,12 +358,12 @@ define(['sb_light/globals', 'sb_light/utils/consts'], function(sb,consts) {
 	}
 		
 	function _handleBlockChange (oldVal, newVal) {
-		state.value.bindDelay(state, 0, "previousBlock", oldVal);
+		state.context.bindDelay(state, 0, "previousBlock", oldVal);
 		return sb.queries.blockPath(newVal).join("_");
 	}
 	function _handlePageChange (oldVal, newVal) {
 		oldVal = oldVal || "home";
-		state.value.bindDelay(state, 0, "previousPage", oldVal);
+		state.context.bindDelay(state, 0, "previousPage", oldVal);
 		sb.ext.debug("HandlePageChange: ", oldVal, " to ", newVal);
 		return newVal;
 	}

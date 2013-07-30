@@ -68,7 +68,7 @@
 			} 
 			
 			sb.models.subscribe("blocks", refreshData);
-			sb.state.subscribe("session", handleSession);
+			sb.state.watchContext("session", handleSession);
 
 			handleSession();
 

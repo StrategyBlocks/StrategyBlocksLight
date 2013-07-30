@@ -47,7 +47,7 @@ define(['sb_light/globals'], function(sb) {
 		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, children:children}, cb,cb);
 	};
 	controller.changeDefaultCompany = function(id,cb, errCb) {
-		controller.invoke(sb.urls.USERS_CHANGE_DEFAULT_COMPANY, {id:sb.state.value("userId"),default_company_id:id}, cb,errCb);
+		controller.invoke(sb.urls.USERS_CHANGE_DEFAULT_COMPANY, {id:sb.state.state("user_id"),default_company_id:id}, cb,errCb);
 	};
 	
 	

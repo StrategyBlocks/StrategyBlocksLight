@@ -74,7 +74,7 @@ define(['sb_light/globals'], function(sb) {
 	
 	function _failure (reqArray, data) {
 		sb.ext.debug("FAILURE SB_Api", JSON.stringify(data));
-		sb.state.value("session", sb.state.session_disconnected);
+		sb.state.context("session", sb.state.session_disconnected);
 	}
 	
 	function _pushQueue (data) {

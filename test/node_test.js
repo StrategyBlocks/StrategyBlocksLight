@@ -63,7 +63,7 @@ var base  = __dirname + "/..";
 
 	
 	sb.api.ajax = sb.ajax.node(superAgent.agent());
-	sb.state.subscribe("session", handleSession);
+	sb.state.watchContext("session", handleSession);
 	//sb.model.subscribe("blocks", handleBlocks);
 	sb.state.login();
 

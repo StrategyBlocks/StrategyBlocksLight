@@ -21,7 +21,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this._selectQueue = [];
 			this._subscriptions = {};
 			
-			this._sb.state.register(this, this._urlDef, this._handleUpdate.bind(this));
+			this._sb.state.registerModel(this, this._urlDef, this._handleUpdate.bind(this));
 		},
 	
 		reset: function(publish) {
@@ -147,9 +147,10 @@ define(['sb_light/utils/Class'], function( Class ) {
 			
 			this._deleteItems(data.deleted);
 			
+			this._resetArrayCache();
+			
 			this._massageUpdatedModel();
 			
-			this._resetArrayCache();
 		},
 	
 		

@@ -19,9 +19,9 @@ define(['sb_light/globals'], function(sb) {
 	/********************************
 		COMPANIES
 	*********************************/
-	q.company = function(cid) {
+	q.company = function(cid /*optional*/) {
 		var cs = sb.models.raw("companies");
-		cid = cid || sb.state.value("companyId");
+		cid = cid || sb.state.state("company_id");
 		return (cs && cid && cs[cid] ) || null; 
 	};
 	
@@ -30,23 +30,20 @@ define(['sb_light/globals'], function(sb) {
 		USERS
 	*********************************/
 	q.fullname = function(uid) {
-		var us = sb.models.raw("users");
-		return us && uid && us[uid] ? us[uid].name : "<removed>";
+		var u = q.user(uid);
+		return u ? u.name : "<removed>";
 	};
 	q.firstname = function(uid) {
-		var us = sb.models.raw("users");
-		return us && uid && us[uid] ? us[uid].first_name : "<removed>";
+		var u = q.user(uid);
+		return u ? u.first_name : "<removed>";
 	};
-	q.currentUser = function() {
+	q.user = function(uid /*optional*/) {
 		var us = sb.models.raw("users");
-		return (us && us[sb.state.value("userId")] ) || null;
-	};
-	q.user = function(uid) {
-		var us = sb.models.raw("users");
+		uid = uid || sb.state.state("user_id");
 		return us[uid];	
 	};
 	q.companyMembership = function() {
-		var u = q.currentUser();
+		var u = q.user();
 		if(u.company_membership) {
 			return u.company_membership;
 		} else {
@@ -56,19 +53,19 @@ define(['sb_light/globals'], function(sb) {
 		}
 	}; 
 	q.userDate = function(date, opts) {
-		var u = q.currentUser();
+		var u = q.user();
 		return sb.moment(date, opts).format(u.date_format);	
 	
 	};
 	var _serverDateFormat =  "YYYY/MM/DD";
 	q.userToServerDate = function(date, opts) {
-		var u = q.currentUser();
+		var u = q.user();
 		var m = sb.moment(date, u.date_format);
 		return m.format(_serverDateFormat);
 	};
 	
 	q.authors  = function() {
-		var cid = sb.state.value("companyId");
+		var cid = sb.state.state("company_id");
 		return sb.models.rawArray("users").filter(function(el) {
 			
 												//TODO: Remove legacy API support
@@ -113,7 +110,7 @@ define(['sb_light/globals'], function(sb) {
 	*********************************/
 	
 	q.currentNewsItem = function() {
-		var id = sb.state.value("news");
+		var id = sb.state.state("news");
 		var model = sb.models.raw("news");
 		
 		return model && id ? model[id] : null;	
@@ -171,8 +168,12 @@ define(['sb_light/globals'], function(sb) {
 		return q.block(q.previousBlockId()); 
 	};
 	q.rootBlock = function() {
-		var c= sb.state.value("company");
-		return c ? q.block(c.root_block.id) : null; 
+		var rbid = q.rootBlockId();
+		return rbid ? q.block(rbid) : null; 
+	};
+	q.rootBlockId = function() {
+		var c = q.company();
+		return c ? c.root_block.id : null; 
 	};
 	q.currentBlockId = function() {
 		var p = q.currentBlockPath(); 
@@ -183,14 +184,16 @@ define(['sb_light/globals'], function(sb) {
 		return (p && p.length) ? p.last() : null;
 	};
 	q.currentBlockPath = function(str/*==false*/) {
-		return q.blockPath(sb.state.value("block"), str);
+		return q.blockPath(sb.state.state("block"), str);
 	};
 	q.currentBlockLevel = function() {
 		return q.blockLevel(q.currentBlockPath());		
 	};
 	q.previousBlockPath = function(str/*==false*/) {
-		var pp = sb.state.value("previousBlock") || sb.state.value("company").root_block.id;
-		return q.blockPath(pp, str);
+		var pbs =sb.state.context("previousBlocks"); 
+		var rb = q.rootBlock();
+		var pp = (pbs && pbs.length && pbs[0]) || (rb && rb.id) || null;
+		return pp ? q.blockPath(pp, str) : null;
 	};
 	q.previousBlockLevel = function() {
 		return q.blockLevel(q.previousBlockPath());		
@@ -444,7 +447,7 @@ define(['sb_light/globals'], function(sb) {
 			
 			pnode.children = siblings.map(function(el, idx) {
 				var path = ppath.concat([el]).join("_");
-				var defaultType = sb.state.value(sb.consts.STATE.BLOCKS_TREE_VIEW);
+				var defaultType = sb.state.state(sb.consts.STATE.BLOCKS_TREE_VIEW);
 				var localType = sb.state.getValueKey(sb.consts.STATE.BLOCK_SETTINGS_VIEW, path);
 				if(!localType || localType == sb.consts.BLOCK_SETTINGS.VIEW.DEFAULT.key) {
 					localType = defaultType;
