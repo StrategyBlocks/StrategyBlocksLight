@@ -10,6 +10,11 @@ define(['widgets/widget'], function( W ) {
 			this._super();
 		},
 
+		postCreate: function() {
+			this.className("formInput");
+			this._super();
+		},
+
 		_propertyOverrides: function() { 
 			var po = this._super();
 			po.type = this.bind("type");
@@ -54,9 +59,13 @@ define(['widgets/widget'], function( W ) {
 
 		createLayout:function() {
 			this._defaultLayout = [
-				{id:this.cid("label"), widget:"label", left:10, width:"24%", height:20, top:0, text:"Test Form Widget", style:"text-align:right"},
-				{id:this.cid("input"), widget:"input", left:this.cidDim("label","r",20), width:"40%", height:20, top:0, value:"Test Input Widget"},
-				{id:this.cid("error"), widget:"div", left:this.cidDim("input","r",20), width:"36%", height:20, top:0, text:"Error Widget"}
+				{id:this.cid("center_hack"), widget:"div", fringe:"49%" , style:"display:none;"},
+				{id:this.cid("label"), widget:"label", left:0, right:this.cidDim("input","l"), height:40, top:0,
+					text:"Test Form Widget", style:"text-align:right;padding:10px 8px;"},
+				{id:this.cid("input"), widget:"input", left:this.cidDim("center_hack","l", -150), width:300, height:40, top:0, 
+					value:"Test Input Widget", size:40, style:"padding:10px 8px"},
+				{id:this.cid("error"), widget:"div", left:this.cidDim("input","r"), height:40, top:0, right:0,
+					text:""}
 			];
 			this._super();
 		}

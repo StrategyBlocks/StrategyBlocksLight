@@ -83,7 +83,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	lo.createWidget = function(layout, parent,def, i) {
 		def.id = lo.uniqueId(def);
 		def.style = def.style || "";
-		def.style = def.style + (def.style.match("/z-index/") ? "" : ";z-index:"+i);	
+		def.style = (def.style.match("/z-index/") ? "" : "z-index:"+i+";") + def.style;
 
 		var widget = lo.create(parent, def);
 		layout.widgets[def.id] = widget; //{id:def.id, source:d, dom:obj, parentId:parentId};

@@ -635,6 +635,8 @@ define(['sb_light/globals'], function(sb) {
 	 
 	// Create a new object, combining the properties of the passed objects with the last arguments having
 	// priority over the first ones
+	//WARNING: Multiple objects to be combined should be passed in as an array. The second argument is a list of
+	//properties to ignore. 
 	ext.combine = function ext_combine( /*Object or array*/ props, /*object or array*/ ignore) {
 		props = ext.isArray(props) ? props.concat(ext.slice(arguments,1)) : ext.slice(arguments);
 		var res = props.reduce(function ext_combine_reduce(newObj, v) {

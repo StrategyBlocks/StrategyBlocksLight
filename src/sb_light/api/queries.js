@@ -448,7 +448,7 @@ define(['sb_light/globals'], function(sb) {
 			pnode.children = siblings.map(function(el, idx) {
 				var path = ppath.concat([el]).join("_");
 				var defaultType = sb.state.state(sb.consts.STATE.BLOCKS_TREE_VIEW);
-				var localType = sb.state.getValueKey(sb.consts.STATE.BLOCK_SETTINGS_VIEW, path);
+				var localType = sb.state.getStateKey(sb.consts.STATE.BLOCK_SETTINGS_VIEW, path);
 				if(!localType || localType == sb.consts.BLOCK_SETTINGS.VIEW.DEFAULT.key) {
 					localType = defaultType;
 				} 	
