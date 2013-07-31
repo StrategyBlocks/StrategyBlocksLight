@@ -22,6 +22,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this._subscriptions = {};
 			
 			this._sb.state.registerModel(this, this._urlDef, this._handleUpdate.bind(this));
+			this._sb.state.watchContext("session", this._handleSession.bind(this));
 		},
 	
 		reset: function(publish) {
@@ -98,6 +99,16 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this._selectQueue.push({type:type, cb:cb, func:func});
 			this._processQueue();
 		},	
+
+		_handleSession: function() {
+			if(this._sb.state.authorized()) {
+				//force model to fetch itself
+				this.get();
+			} else {
+				//clear the model
+				this.reset();
+			}
+		},
 		
 		/*************************************************************
 			This is expecting the response to be a map with the following keys: {

@@ -64,7 +64,6 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		context: {},
 		data:{}
 	};
-
 	
 
 	state.registerModel = function(model, urlDef, cb) {

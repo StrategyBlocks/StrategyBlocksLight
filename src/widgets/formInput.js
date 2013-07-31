@@ -62,7 +62,7 @@ define(['widgets/widget'], function( W ) {
 				{id:this.cid("center_hack"), widget:"div", fringe:"49%" , style:"display:none;"},
 				{id:this.cid("label"), widget:"label", left:0, right:this.cidDim("input","l"), height:40, top:0,
 					text:"Test Form Widget", style:"text-align:right;padding:10px 8px;"},
-				{id:this.cid("input"), widget:"input", left:this.cidDim("center_hack","l", -150), width:300, height:40, top:0, 
+				{id:this.cid("input"), widget:"input", left:this.cidDim("center_hack","l", -150), width:300, height:40, top:0, tabindex:1,
 					value:"Test Input Widget", size:40, style:"padding:10px 8px"},
 				{id:this.cid("error"), widget:"div", left:this.cidDim("input","r"), height:40, top:0, right:0,
 					text:""}
