@@ -436,13 +436,15 @@ define(['sb_light/globals'], function(sb) {
 	ext.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	ext.blockProgressFill = function ext_blockProgressFill(block) {
 		switch(block.progress_color) {
-			case "green": 	return ["#176717", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		];
-			case "yellow":	return ["#77771B", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	];
-			case "red": 	return ["#641717", 		"url(#progressBad)",		"url(#progressHatchBad)" 		];
-			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		];
+			case "green": 	return ["#176717", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"] ];
+			case "yellow":	return ["#77771B", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"] ];
+			case "red": 	return ["#641717", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"] ];
+			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		, ];
 		}
 	};
-			
+
+
+
 		
 	/************  MASSAGE SERVER DATA INTO BETTER OBJECTS FOR D3/presentation ***************************/
 	ext.getResultMessages = function ext_getResultMessages(r) {

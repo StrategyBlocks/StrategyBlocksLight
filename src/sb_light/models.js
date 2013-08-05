@@ -73,6 +73,10 @@ define([
 	},
 	
 	//one-off selection that will wait until the model is ready
+	//types:
+	//  all: raw map
+	//  array unsorted
+	//	filter -- run array through a filter function
 	models.select = function(modelName, type, cb, func) {
 		var m = _verifyModel(modelName);
 		if(m.model) {

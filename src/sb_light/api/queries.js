@@ -79,11 +79,16 @@ define(['sb_light/globals'], function(sb) {
 	*********************************/
 	q.focusArea = function(fid) {
 		var fs = sb.models.raw("focus");
-		return fs && fs[fid] ? fs[fid].title : null;
+		return (fs && fs[fid]) || null;
 	};
-	q.focusAreaDesc = function(fid) {
-		var fs = sb.models.raw("focus");
-		return fs && fs[fid] ? fs[fid].description : null;
+
+	q.focusTitle = function(fid) {
+		var f = q.focusArea(fid);
+		return f ? f.title : null;
+	};
+	q.focusDesc = function(fid) {
+		var fs = q.focusArea(fid);
+		return f ? f.description : null;
 	};
 	
 	/********************************

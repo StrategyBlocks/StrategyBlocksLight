@@ -24,7 +24,7 @@ define(['sb_light/globals'], function(sb) {
 	//delay will make sure the function isn't executed before the time has passed, but could take much longer...
 	queue.add = function queue_add(func, name, delay, update) {
 		delay = sb.ext.number(delay, 0)
-		name = name || "queued_" + sb.ext.unique();
+		name = name || ("queued_" + sb.ext.unique());
 		var val = low_list.find("name", name).value;
 		if(!val) {
 			//sb.ext.debug("QUEUE: Adding: ", name);
@@ -46,6 +46,20 @@ define(['sb_light/globals'], function(sb) {
 		} else if (update) {
 			val.time = sb.ext.time();
 			val.delay = delay;
+		}
+
+	};
+
+	queue.cancel = function(name) {
+		var lidx = low_list.find("name", name).index;
+		if(lidx >= 0) {
+			low_list.splice(lidx,1);
+			return;
+		}
+		var hidx = high_list.find("name", name).index;
+		if(hidx >= 0) {
+			high_list.splice(hidx,1);
+			return;
 		}
 
 	};

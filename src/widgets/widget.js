@@ -14,6 +14,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_domFuncs:null,
 		_sizeFuncs:null,
 		_sizeDefs:null,
+		_classList:null,
 		_parent: null,
 		_name:null,
 		_events:null,
@@ -41,6 +42,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this._sizeDefs = {};
 			this._parent = parent;
 			this._def = def;
+			this._classList = {"sb_light_widget":true};
 
 			this._domFuncs = this._propertyOverrides();
 
@@ -147,8 +149,10 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		replaceClass: function(match, replacement) {
-			var re = new RegExp(match.replace("*", "\w+"));
-			this._dom.className = this._dom.className.replace(match, replacement||"");
+			delete this._classList[match];
+			if(replacement) {
+				this.className(replacement);
+			}
 			return this;
 		},
 
@@ -240,7 +244,6 @@ define(['sb_light/utils/Class'], function( Class ) {
 		applyProperties: function() {
 			// this._sb.ext.debug("Apply Properties to ", this.id());
 
-			this._def["klass"]  = (this._def["klass"] || "") + " sb_light_widget";
 			this._def["widget-name"]  = this.name();
 
 
@@ -248,8 +251,6 @@ define(['sb_light/utils/Class'], function( Class ) {
 				var f = this._domFuncs[k] || this._domFuncs["default"];
 				f(k, this._def[k]);
 			}
-			//this._domFuncs("className",  "sb_light_widget");
-			//this._domFuncs("widget-name", this.name());
 		},
 
 		//widget property, not dom property
@@ -292,11 +293,14 @@ define(['sb_light/utils/Class'], function( Class ) {
 			var args = this._sb.ext.slice(arguments, arguments[0]=="klass" ? 1 : 0);
 			if(args.length) {
 				var dom = this.dom();
-				args[0].split(" ").forEach(function(el){
-					if(el === "") { return; }
-					var cn = dom.className.replace(el, " ");
-					dom.className = cn + (args[1] ? "": (" " + el));
-				});
+				var name = args[0];
+				var remove = args[1]  || false;
+				if(remove) {
+					delete this._classList[name];
+				} else {
+					this._classList[name] = true;
+				}
+				this.dom().className = this._sb.ext.keys(this._classList).join(" ");
 				return this;
 			}
 			return this.dom().className;

@@ -245,6 +245,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		};
 	};
 
+
 	var _autoFunc = function(id, dim, w, layout) {
 		var dimId = id + ":" + dim;
 
