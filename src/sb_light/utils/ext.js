@@ -13,14 +13,16 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 	ext.noop = function(){};
-
+	ext.global = function(str) {
+		return window[str] !== undefined;
+	};
 
 	ext.deprecated = function(oldF, newF, message) {
 		console.log("Warning: ", oldF, " is deprecated. Please use ", newF, " instead.");
 		if(message) {
 			console.log("Warning(2): ", message);
 		}
-	}
+	};
 
 	//helps convert arguments into array
 	//a is an array or arguments.
@@ -36,38 +38,33 @@ define(['sb_light/globals'], function(sb) {
 	ext.debug = function ext_debug() {
 		if(!sb.debug) { return; }
 		var str = ([(new Date()).toTimeString()]).concat(ext.slice(arguments)).join(" ");
-		if(ext.ti()) {
+		if(ext.global("Ti")) {
 			Ti.API.debug(str);
-		} else if(typeof console !== "undefined") {
+		} else if(ext.global("console")) {
 			console.log(str);	
 		}
 	};
 
 	ext.warn = function ext_warn() {
 		var str = ([(new Date()).toTimeString(), "WARNING:"]).concat(ext.slice(arguments)).join(" ");
-		if(ext.ti()) {
+		if(ext.global("Ti")) {
 			Ti.API.warn(str);
-		} else if(typeof console !== "undefined") {
+		} else if(ext.global("console")) {
 			console.log(str);	
 		}
 	};
 	ext.warning = ext.warn;
 	
-	//check is Titanium framework exists. probably shouldn't be needed any longer
-	//TODO: investigate removal
-	ext.ti = function ext_ti() {
-		return typeof Ti !== "undefined";	
-	};
 	
 	ext.map = function ext_map(list, fn, scope) {
 		var res = [];
-		var i, len;
+		var i, len,k;
 		if (ext.isArray(list)) {
-		    for(i = 0, len = list.length; i < len; ++i) {  
-	    	  res.push( fn.call(scope || this, list[i], i, list));  
-	    	}  
+			for(i = 0, len = list.length; i < len; ++i) {  
+				res.push( fn.call(scope || this, list[i], i, list));  
+			}  
 		} else { //Object
-			for (var k in list) {
+			for (k in list) {
 				//func(value,key,list)
 				res.push(fn.call(scope || this, list[k],k, list));
 			}
@@ -76,10 +73,11 @@ define(['sb_light/globals'], function(sb) {
 	};
 	
 	ext.each = function ext_each(list, fn, scope) {
+		var el;
 		if(ext.isArray(list)) {
 			list.forEach(fn,scope);	
 		} else {
-			for(var el in list) {
+			for(el in list) {
 				//func(value,key,list)
 				fn.call(scope || list, list[el], el, list);
 			}	
@@ -90,15 +88,16 @@ define(['sb_light/globals'], function(sb) {
 	ext.set = function ext_set(obj, key, value) {
 		obj[key] = value;
 		return obj;
-	}
+	};
 	
 	ext.length = function ext_length(list) {
+		var len = 0;
 		if(ext.isArray(list)) {
-			return list.length;
+			len = list.length;
 		} else if(list) {
-			return Object.keys(list).length;	
+			len = Object.keys(list).length;	
 		}
-		return 0;
+		return len;
 	};
 	//takes a list of objects and a key property and converts the array to a hash map
 	ext.toObject = function ext_toObject(list, key) {
@@ -106,53 +105,50 @@ define(['sb_light/globals'], function(sb) {
 			prev[el[key]] = el;
 			return prev;
 		}, {});
-	}	
+	};
+
 	//takes a hash map / array and returns an array of values. 
 	ext.values = function ext_values(map, keyName) {
 		return ext.map(map, function ext_values_map(el,k) { 
 			return keyName ? el[keyName] : el;
 		});
-	}
+	};
 
 	//alias for Object.keys
 	ext.keys = function ext_keys(map) {
 		return map ? Object.keys(map) : [];
-	}	
+	};	
 	//return the first key from doing a for-in on the map
 	//WARNING: this may not be consisten. The order is arbitrary. 
 	//			this is only useful if you just want a valid key, and it doesn't matter which one (e.g., a default setting)
 	ext.firstKey = function ext_keys(map) {
 		if(!map) { return null; }
-		for(var k in map) { return k; }
-	}	
+		var k;
+		for(k in map) { return k; }
+	};	
 	
 	//this only works with objects that contain only native JS object (e.g., Object-derived)
 	//probably won't work very well for system,proprietary, etc.. objects.
 	//converts the entire things to a string, so might have performance issues.
 	ext.deepClone = function ext_deepClone(obj) {
 		return JSON.parse(JSON.stringify(obj));
-	}
+	};
 	
 		/************  TYPES ***************************/
 	ext.valid = function ext_valid(obj, type) {
 		switch(type || "object") {
-			case "object": return obj !== null && typeof obj !== "undefined"; break;
-
+			case "object": return obj !== null && obj !== undefined;
 			case "arr":
-			case "array": return ext.isArr(obj); break;
-
+			case "array": return ext.isArr(obj);
 			case "func": 
-			case "function": return ext.isFunc(obj); break;
-
-			case "str": 	
-			case "string": 	return ext.isStr(obj) && obj !== ""; break;
-
-
+			case "function": return ext.isFunc(obj);
+			case "str":
+			case "string": return ext.isStr(obj) && obj !== "";
 			case "num": 
-			case "number": return ext.isNum(obj) && !isNaN(obj); break;
+			case "number": return ext.isNum(obj) && !isNaN(obj);
 
 		}
-	}
+	};
 
 
 	ext.isArr = function ext_isArr(obj) {
@@ -172,17 +168,17 @@ define(['sb_light/globals'], function(sb) {
 	
 	ext.isBool = function ext_isBool(obj) {
 		return Object.prototype.toString.call(obj) == "[object Boolean]";
-	}
+	};
 	ext.isBoolean = ext.isBool;
 	
 	ext.isNum = function ext_isNum(obj) {
 		return Object.prototype.toString.call(obj) == "[object Number]";
-	}
+	};
 	ext.isNumber = ext.isNum;
 	
 	ext.isDate = function ext_isDate(obj) {
 		return Object.prototype.toString.call(obj) == "[object Date]";
-	}
+	};
 	
 	
 	//helper function that gets executed in the context of the callee.
@@ -202,7 +198,7 @@ define(['sb_light/globals'], function(sb) {
 	ext.replace = function ext_replace(src, obj) {
 		var s = src;
 		ext.each(obj, function  ext_replace_each(v,k) {
-			var r = new RegExp("%"+k.toUpperCase()+"%")
+			var r = new RegExp("%"+k.toUpperCase()+"%");
 			s = s.replace(r, v);
 		});
 		return s;
@@ -212,19 +208,18 @@ define(['sb_light/globals'], function(sb) {
 		/************  DATES ***************************/
 	ext.time = (function() { 
 			if(!Date.now) {
-				return function ext_time_old() { return new Date().getTime(); }
-			} else {
-				return function ext_time() { return Date.now(); }
-			}
+				return function ext_time_old() { return new Date().getTime(); };
+			} 
+			return function ext_time() { return Date.now(); };
 	}());	
 	
 	ext.parseDate = function ext_moment(d) {
 		ext.deprecated("ext.parseDate", "ext.moment");
-	}
+	};
 	ext.moment = function ext_moment(d) { return sb.moment(d);	};
 	ext.dateNumber = function ext_dateNumber(d) { return ext.moment(d).valueOf();	};
 	ext.date = function ext_date(d) { return ext.moment(d).toDate();	};
-	ext.daysDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"days")};
+	ext.daysDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"days");};
 	ext.today = function ext_today() { return new Date(); };
 	ext.minDate = function ext_minDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate)[0]); };
 	ext.maxDate = function ext_maxDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate).last()); };
@@ -238,9 +233,8 @@ define(['sb_light/globals'], function(sb) {
 	ext.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
 		if(reverse) {
 			return "(" + sb.moment(d).fromNow() + ")&nbsp;" + sb.moment(d).format(format || ext.userFormat());
-		} else {
-			return sb.moment(d).format(format || ext.userFormat()) + "&nbsp;(" + sb.moment(d).fromNow() + ")";
-		}
+		} 
+		return sb.moment(d).format(format || ext.userFormat()) + "&nbsp;(" + sb.moment(d).fromNow() + ")";
 	};
 	ext.fromNow = function ext_fromNow(d) {		return sb.moment(d).fromNow();	};
 
@@ -260,7 +254,7 @@ define(['sb_light/globals'], function(sb) {
 			var bprop = b ? b[prop] : null;
 			return func(aprop, bprop) * (reverse ? -1 : 1);		
 		};
-	},
+	};
 	ext.sortTime = function ext_sortTime(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
 	ext.sortNumber = function ext_sortNumber(a,b){ return a-b; };
 	ext.sortNumbers = ext.sortNumber;
@@ -268,13 +262,13 @@ define(['sb_light/globals'], function(sb) {
 	ext.sortDates = ext.sortDate;
 	ext.sortString = function ext_sortString(a,b){ return String(a).localeCompare(String(b)); };
 	ext.sortStrings = ext.sortString;
-	ext.sortBool = function ext_sortBool(a,b) { return ext.sortNumber(a?1:0, b?1:0); }
+	ext.sortBool = function ext_sortBool(a,b) { return ext.sortNumber(a?1:0, b?1:0); };
 	ext.sortBoolean = ext.sortBool;
 	 
 	ext.sortDateValue = function ext_sortDateValue(a,b) { return ext.sortDate(a.date,b.date); };
-	ext.sortUsers = function ext_sortUsers(a,b) {  return ext.sortFunc("last_name", ext.sortString); }
-	ext.sortFocus = function ext_sortFocus(a,b) {  return ext.sortFunc("title", ext.sortString); }
-	ext.sortName = function ext_sortName(a,b) {  return ext.sortFunc("name", ext.sortString);; }
+	ext.sortUsers = function ext_sortUsers(a,b) {  return (ext.sortFactory("last_name", ext.sortString))(a,b); };
+	ext.sortFocus = function ext_sortFocus(a,b) {  return (ext.sortFactory("title", ext.sortString))(a,b); };
+	ext.sortName = function ext_sortName(a,b) {  return (ext.sortFactory("name", ext.sortString))(a,b); };
 	ext.sortBlocksByProgress = function ext_sortBlocksByProgress(a,b) {
 		//closed blocks 
 		var ac = a.closed, bc = b.closed;
@@ -330,7 +324,7 @@ define(['sb_light/globals'], function(sb) {
 		return ext.floorTo( (Math.random() * (max - min + 1)), dec) + min;
 	};
 	ext.to_color = function ext_to_color(num) {
-	    return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
+		return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
 	};
 	
 	// The argument [n] can be:
@@ -361,14 +355,14 @@ define(['sb_light/globals'], function(sb) {
 
 	//return the first argument that is !NaN
 	ext.first = function ext_first(/*etc...*/) {
-		var args = ext.slice(arguments);
-		for(var i = 0; i < args.length; ++i) {
+		var i, args = ext.slice(arguments);
+		for(i = 0; i < args.length; ++i) {
 			if(!isNaN(args[i])) {
 				return args[i];
 			}
 		}
 		return NaN;
-	}
+	};
 
 	ext.range = function ext_range(min,max,num) {
 		return ext.max(min, ext.min(max,num));
@@ -377,8 +371,8 @@ define(['sb_light/globals'], function(sb) {
 	//given a list of numbers, returns the one closest to "num"
 	ext.snapto = function ext_snapto(list, num) {
 		var diff = Math.abs(list[0]-num);
-		var n = list[0];
-		for(var i =1; i < list.length; ++i) {
+		var i, n = list[0];
+		for(i =1; i < list.length; ++i) {
 			if(Math.abs(list[i] - num) < diff) {
 				diff = Math.abs(list[i] - num);
 				n = list[i];
@@ -428,7 +422,7 @@ define(['sb_light/globals'], function(sb) {
 		
 	ext.absDiff = function(a,b) {
 		return Math.abs(a-b);
-	}
+	};
 
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
@@ -595,7 +589,7 @@ define(['sb_light/globals'], function(sb) {
 
 		
 		return data;		
-	}
+	};
 		
 		//fix dates and sort history for health charts
 	ext.massageHealth = function ext_massageHealth(data) {
@@ -625,12 +619,12 @@ define(['sb_light/globals'], function(sb) {
 		target = target || {};
 		source = source || {};
 		
-		var name, s, i;
+		var name, s;
 		for(name in source){
-		    s = source[name];
-			var skip =  ext.isArray(empty) ? (empty.indexOf(name) >= 0) : (name in empty);
+			s = source[name];
+			var skip =  ext.isArray(empty) ? (empty.indexOf(name) >= 0) : (empty.hasOwnProperty(name));
 			if(skip) { continue; }
-	        target[name] = s;
+			target[name] = s;
 		}
 		return target; // Object
 	};
@@ -664,40 +658,39 @@ define(['sb_light/globals'], function(sb) {
 		});
 		return res; 
 
-	}
+	};
 
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach
 	if ( !Array.prototype.forEach ) {  
-	  Array.prototype.forEach = function ext_array_forEach(fn, scope) {  
-	    for(var i = 0, len = this.length; i < len; ++i) {  
-	      fn.call(scope || this, this[i], i, this);  
-	    }  
-	  }  
+		Array.prototype.forEach = function ext_array_forEach(fn, scope) {  
+			for(var i = 0, len = this.length; i < len; ++i) {  
+				fn.call(scope || this, this[i], i, this);  
+			}
+		};
 	}  
 	
 	
 	if (!Function.prototype.bind) {
 	  Function.prototype.bind = function ext_array_bind(oThis) {
-	    if (typeof this !== "function") {
-	      // closest thing possible to the ECMAScript 5 internal IsCallable function
-	      throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
-	    }
+		if (typeof this !== "function") {
+		  // closest thing possible to the ECMAScript 5 internal IsCallable function
+		  throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+		}
 	
-	    var aArgs = ext.slice(arguments, 1), 
-	        fToBind = this, 
-	        fNOP = function () {},
-	        fBound = function () {
-	          return fToBind.apply(this instanceof fNOP
-	                                 ? this
-	                                 : oThis,
-	                               aArgs.concat(ext.slice(arguments)));
-	        };
+		var aArgs = ext.slice(arguments, 1), 
+			fToBind = this, 
+			fNOP = function () {},
+			fBound = function () {
+			  return fToBind.apply(	(this instanceof fNOP ? this : oThis), 
+			  						aArgs.concat(ext.slice(arguments))
+			  					  );
+			};
 	
-	    fNOP.prototype = this.prototype;
-	    fBound.prototype = new fNOP();
+		fNOP.prototype = this.prototype;
+		fBound.prototype = new fNOP();
 	
-	    return fBound;
+		return fBound;
 	  };
 	}
 	
@@ -716,23 +709,19 @@ define(['sb_light/globals'], function(sb) {
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach
 	if ( !Array.prototype.forEach ) {  
-	  Array.prototype.forEach = function ext_array_forEach(fn, scope) {  
-	    for(var i = 0, len = this.length; i < len; ++i) {  
-	      fn.call(scope || this, this[i], i, this);  
-	    }  
-	  }  
+		Array.prototype.forEach = function ext_array_forEach(fn, scope) {  
+			for(var i = 0, len = this.length; i < len; ++i) {  
+				fn.call(scope || this, this[i], i, this);  
+			}
+		};
 	}  
 	
 	//shallow clone. 
 	if ( !Array.prototype.clone ) {  
-	  Array.prototype.clone = function ext_array_clone() {  
-		return ([]).concat(this);
-	  }  
+		Array.prototype.clone = function ext_array_clone() {  
+			return ([]).concat(this);
+		};
 	}  
-	
-
-	
-	
 	
 	
 	//returns the last element in the array
@@ -740,10 +729,10 @@ define(['sb_light/globals'], function(sb) {
 	// e.g., foo.last(0) is the same as foo.last()
 	// and foo.last(1) returns the 2nd last item.
 	if ( !Array.prototype.last ) {  
-	  Array.prototype.last = function ext_array_last(idx) {
-	  	idx = (this.length-1) - (idx || 0);
-		return (this.length > idx && idx >= 0) ? this[idx] : null;
-	  }  
+		Array.prototype.last = function ext_array_last(idx) {
+			idx = (this.length-1) - (idx || 0);
+			return (this.length > idx && idx >= 0) ? this[idx] : null;
+		};  
 	}  
 	
 	
@@ -801,7 +790,7 @@ define(['sb_light/globals'], function(sb) {
 	if (!Array.prototype.filter) {
 		Array.prototype.filter = function ext_array_filter(fun /*, thisp */) {
 			"use strict";
-			if (this == null) {
+			if (this === null) {
 				throw new TypeError();
 			}
 			var t = Object(this);
@@ -834,83 +823,86 @@ define(['sb_light/globals'], function(sb) {
 	
 	if (!Object.keys) {
 	  Object.keys = (function ext_object_keys() {
-	    var hasOwnProperty = Object.prototype.hasOwnProperty,
-	        hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
-	        dontEnums = [
-	          'toString',
-	          'toLocaleString',
-	          'valueOf',
-	          'hasOwnProperty',
-	          'isPrototypeOf',
-	          'propertyIsEnumerable',
-	          'constructor'
-	        ],
-	        dontEnumsLength = dontEnums.length
+		var hasOwnProperty = Object.prototype.hasOwnProperty,
+			hasDontEnumBug = !({toString: null}).propertyIsEnumerable('toString'),
+			dontEnums = [
+			  'toString',
+			  'toLocaleString',
+			  'valueOf',
+			  'hasOwnProperty',
+			  'isPrototypeOf',
+			  'propertyIsEnumerable',
+			  'constructor'
+			],
+			dontEnumsLength = dontEnums.length;
 	
-	    return function (obj) {
-	      if (typeof obj !== 'object' && typeof obj !== 'function' || obj === null) throw new TypeError('Object.keys called on non-object')
+		return (function (obj) {
+			if (typeof obj !== 'object' && typeof obj !== 'function' || obj === null) {
+				throw new TypeError('Object.keys called on non-object');	
+			}
+			var result = [];
 	
-	      var result = []
+			for (var prop in obj) {
+				if (hasOwnProperty.call(obj, prop)) {
+					result.push(prop);
+				}
+			}
 	
-	      for (var prop in obj) {
-	        if (hasOwnProperty.call(obj, prop)) result.push(prop)
-	      }
-	
-	      if (hasDontEnumBug) {
-	        for (var i=0; i < dontEnumsLength; i++) {
-	          if (hasOwnProperty.call(obj, dontEnums[i])) result.push(dontEnums[i])
-	        }
-	      }
-	      return result
-	    }
-	  })()
-	};
+			if (hasDontEnumBug) {
+				for (var i=0; i < dontEnumsLength; i++) {
+					if (hasOwnProperty.call(obj, dontEnums[i])) {
+						result.push(dontEnums[i]);
+					}
+				}
+			}
+			return result;
+		});
+	  })();
+	}
 	
 	
 	if (!Array.prototype.find) {  
-	    Array.prototype.find = function ext_array_find(key, value) {  
+		Array.prototype.find = function ext_array_find(key, value) {  
 			for(var i = 0; i < this.length; ++i) {
 				if(this[i][key] == value) { return {index:i, value:this[i]} ; }
 			}
 			return {index:NaN, value:null};
-		}
+		};
 	}
-	
-	
-	
+
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/indexOf
 	if (!Array.prototype.indexOf) {  
-	    Array.prototype.indexOf = function ext_array_indexOf(searchElement /*, fromIndex */ ) {  
-	        "use strict";  
-	        if (this == null) {  
-	            throw new TypeError();  
-	        }  
-	        var t = Object(this);  
-	        var len = t.length >>> 0;  
-	        if (len === 0) {  
-	            return -1;  
-	        }  
-	        var n = 0;  
-	        if (arguments.length > 0) {  
-	            n = Number(arguments[1]);  
-	            if (n != n) { // shortcut for verifying if it's NaN  
-	                n = 0;  
-	            } else if (n != 0 && n != Infinity && n != -Infinity) {  
-	                n = (n > 0 || -1) * Math.floor(Math.abs(n));  
-	            }  
-	        }  
-	        if (n >= len) {  
-	            return -1;  
-	        }  
-	        var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);  
-	        for (; k < len; k++) {  
-	            if (k in t && t[k] === searchElement) {  
-	                return k;  
-	            }  
-	        }  
-	        return -1;  
-	    }  
+		Array.prototype.indexOf = function ext_array_indexOf(searchElement /*, fromIndex */ ) {  
+			"use strict";  
+			if (this === null) {  
+				throw new TypeError();  
+			}  
+			var t = Object(this);  
+			var len = t.length >>> 0;  
+			if (len === 0) {  
+				return -1;  
+			}  
+			var n = 0;  
+			if (arguments.length > 0) {  
+				n = Number(arguments[1]);  
+				if (n != n) { // shortcut for verifying if it's NaN  
+					n = 0;  
+				} else if (n !== 0 && n !== Infinity && n !== -Infinity) {  
+					n = (n > 0 || -1) * Math.floor(Math.abs(n));  
+				}  
+			}  
+			if (n >= len) {  
+				return -1;  
+			}  
+			var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);  
+			for (; k < len; k++) {  
+				if (k in t && t[k] === searchElement) {  
+					return k;  
+				}  
+			}  
+			return -1;  
+		};  
 	}  
 	
 	
@@ -920,72 +912,71 @@ define(['sb_light/globals'], function(sb) {
 	if (!Array.prototype.map) {  
 	  Array.prototype.map = function ext_array_map(callback, thisArg) {  
 	  
-	    var T, A, k;  
+		var T, A, k;  
 	  
-	    if (this == null) {  
-	      throw new TypeError(" this is null or not defined");  
-	    }  
+		if (this === null) {  
+			throw new TypeError(" this is null or not defined");  
+		}  
 	  
-	    // 1. Let O be the result of calling ToObject passing the |this| value as the argument.  
-	    var O = Object(this);  
+		// 1. Let O be the result of calling ToObject passing the |this| value as the argument.  
+		var O = Object(this);  
 	  
-	    // 2. Let lenValue be the result of calling the Get internal method of O with the argument "length".  
-	    // 3. Let len be ToUint32(lenValue).  
-	    var len = O.length >>> 0;  
+		// 2. Let lenValue be the result of calling the Get internal method of O with the argument "length".  
+		// 3. Let len be ToUint32(lenValue).  
+		var len = O.length >>> 0;  
 	  
-	    // 4. If IsCallable(callback) is false, throw a TypeError exception.  
-	    // See: http://es5.github.com/#x9.11  
-	    if ({}.toString.call(callback) != "[object Function]") {  
-	      throw new TypeError(callback + " is not a function");  
-	    }  
+		// 4. If IsCallable(callback) is false, throw a TypeError exception.  
+		// See: http://es5.github.com/#x9.11  
+		if ({}.toString.call(callback) != "[object Function]") {  
+			throw new TypeError(callback + " is not a function");  
+		}  
 	  
-	    // 5. If thisArg was supplied, let T be thisArg; else let T be undefined.  
-	    if (thisArg) {  
-	      T = thisArg;  
-	    }  
+		// 5. If thisArg was supplied, let T be thisArg; else let T be undefined.  
+		if (thisArg) {  
+			T = thisArg;  
+		}  
 	  
-	    // 6. Let A be a new array created as if by the expression new Array(len) where Array is  
-	    // the standard built-in constructor with that name and len is the value of len.  
-	    A = new Array(len);  
+		// 6. Let A be a new array created as if by the expression new Array(len) where Array is  
+		// the standard built-in constructor with that name and len is the value of len.  
+		A = new Array(len);  
 	  
-	    // 7. Let k be 0  
-	    k = 0;  
+		// 7. Let k be 0  
+		k = 0;  
 	  
-	    // 8. Repeat, while k < len  
-	    while(k < len) {  
+		// 8. Repeat, while k < len  
+		while(k < len) {  
 	  
-	      var kValue, mappedValue;  
-	  
-	      // a. Let Pk be ToString(k).  
-	      //   This is implicit for LHS operands of the in operator  
-	      // b. Let kPresent be the result of calling the HasProperty internal method of O with argument Pk.  
-	      //   This step can be combined with c  
-	      // c. If kPresent is true, then  
-	      if (k in O) {  
-	  
-	        // i. Let kValue be the result of calling the Get internal method of O with argument Pk.  
-	        kValue = O[ k ];  
-	  
-	        // ii. Let mappedValue be the result of calling the Call internal method of callback  
-	        // with T as the this value and argument list containing kValue, k, and O.  
-	        mappedValue = callback.call(T, kValue, k, O);  
-	  
-	        // iii. Call the DefineOwnProperty internal method of A with arguments  
-	        // Pk, Property Descriptor {Value: mappedValue, Writable: true, Enumerable: true, Configurable: true},  
-	        // and false.  
-	  
-	        // In browsers that support Object.defineProperty, use the following:  
-	        // Object.defineProperty(A, Pk, { value: mappedValue, writable: true, enumerable: true, configurable: true });  
-	  
-	        // For best browser support, use the following:  
-	        A[ k ] = mappedValue;  
-	      }  
-	      // d. Increase k by 1.  
-	      k++;  
-	    }  
-	  
-	    // 9. return A  
-	    return A;  
+			var kValue, mappedValue;  
+
+			// a. Let Pk be ToString(k).  
+			//   This is implicit for LHS operands of the in operator  
+			// b. Let kPresent be the result of calling the HasProperty internal method of O with argument Pk.  
+			//   This step can be combined with c  
+			// c. If kPresent is true, then  
+			if (k in O) {  
+				// i. Let kValue be the result of calling the Get internal method of O with argument Pk.  
+				kValue = O[ k ];  
+
+				// ii. Let mappedValue be the result of calling the Call internal method of callback  
+				// with T as the this value and argument list containing kValue, k, and O.  
+				mappedValue = callback.call(T, kValue, k, O);  
+
+				// iii. Call the DefineOwnProperty internal method of A with arguments  
+				// Pk, Property Descriptor {Value: mappedValue, Writable: true, Enumerable: true, Configurable: true},  
+				// and false.  
+
+				// In browsers that support Object.defineProperty, use the following:  
+				// Object.defineProperty(A, Pk, { value: mappedValue, writable: true, enumerable: true, configurable: true });  
+
+				// For best browser support, use the following:  
+				A[ k ] = mappedValue;  
+			}  
+			// d. Increase k by 1.  
+			k++;
+		}
+
+		// 9. return A  
+		return A;  
 	  };        
 	}  
 	
@@ -994,7 +985,7 @@ define(['sb_light/globals'], function(sb) {
 		Array.prototype.every = function(fun /*, thisp */)	{
 			"use strict";
 
-			if (this == null) {
+			if (this === null) {
 				throw new TypeError();
 			}
 
@@ -1018,7 +1009,7 @@ define(['sb_light/globals'], function(sb) {
 		Array.prototype.some = function(fun /*, thisp */)  {
 			"use strict";
 
-			if (this == null){
+			if (this === null){
 				throw new TypeError();
 			}
 				
@@ -1072,8 +1063,9 @@ define(['sb_light/globals'], function(sb) {
 			return this.reduce(function ext_array_cloneExcept_reduce(a,el) {
 				return items.indexOf(el) < 0 ? a.put(el) : a;
 			}, []);
-		}
+		};
 	}
+
 	if (!Array.prototype.remove) { 
 		Array.prototype.remove = function ext_array_remove(/*items*/) {
 			var args = ext.slice(arguments);
@@ -1084,7 +1076,7 @@ define(['sb_light/globals'], function(sb) {
 				}
 			}
 			return this; 
-		}
+		};
 	}
 	
 	
@@ -1092,20 +1084,20 @@ define(['sb_light/globals'], function(sb) {
 	//DATE stuff from 
 	//http://stackoverflow.com/questions/1643320/get-month-name-from-date-using-javascript
 	Date.prototype.getMonthName = function  ext_date_getMonthName(lang) {
-	    lang = lang && (lang in Date.locale) ? lang : 'en';
-	    return Date.locale[lang].month_names[this.getMonth()];
+		lang = lang && (lang in Date.locale) ? lang : 'en';
+		return Date.locale[lang].month_names[this.getMonth()];
 	};
 	
 	Date.prototype.getMonthNameShort = function ext_date_getMonthNameShort(lang) {
-	    lang = lang && (lang in Date.locale) ? lang : 'en';
-	    return Date.locale[lang].month_names_short[this.getMonth()];
+		lang = lang && (lang in Date.locale) ? lang : 'en';
+		return Date.locale[lang].month_names_short[this.getMonth()];
 	};
 	
 	Date.locale = {
-	    en: {
-	       month_names: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-	       month_names_short: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-	    }
+		en: {
+		   month_names: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+		   month_names_short: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+		}
 	};
 
 

@@ -9,7 +9,7 @@
         //Browser globals case. Just assign the
         //result to a property on the global.
         root.sb_light = sb_light();
-        if(typeof root.sb === "undefined") {
+        if(root.sb === undefined) {
         	root.sb = root.sb_light;
         }
     }

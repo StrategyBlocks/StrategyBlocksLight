@@ -3,7 +3,7 @@ define(['sb_light/globals'], function(sb) {
 
 	var svg =  {};
 
-	var _d3 = typeof d3 !== "undefined" && d3 || {"__missing" : true};
+	var _d3 = d3 !== undefined && d3 || {"__missing" : true};
 
 	svg.ZERO = 1e-6;
 
@@ -185,7 +185,7 @@ define(['sb_light/globals'], function(sb) {
 	}
 
 	svg.isSvg = function(el) {
-		return el && typeof el.ownerSVGElement != "undefined"; 
+		return el && el.ownerSVGElement != undefined; 
 	}
 
 	svg.multiline = function(el, text, dx,dy) {

@@ -87,7 +87,7 @@ define(['sb_light/globals'], function(sb) {
 		return f ? f.title : null;
 	};
 	q.focusDesc = function(fid) {
-		var fs = q.focusArea(fid);
+		var f = q.focusArea(fid);
 		return f ? f.description : null;
 	};
 	
@@ -167,10 +167,12 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS
 	*********************************/
 	q.currentBlock = function() {
-		return q.block(q.currentBlockId()); 
+		var bid = q.currentBlockId();
+		return bid ? q.block(bid) : null; 
 	};
 	q.previousBlock = function() {
-		return q.block(q.previousBlockId()); 
+		var bid = q.previousBlockId();
+		return bid ? q.block(bid) : null; 
 	};
 	q.rootBlock = function() {
 		var rbid = q.rootBlockId();
@@ -213,11 +215,11 @@ define(['sb_light/globals'], function(sb) {
 	};
 	q.parentPath = function(bpath, str/*==false*/) {
 		bpath = q.blockPath(bpath);
-		return q.blockPath(bpath.slice(0,-1), str);
+		return bpath ? q.blockPath(bpath.slice(0,-1), str) : null;
 	};
 	q.blockParentInfo = function(bpath) {
 		bpath = q.blockPath(bpath);
-		var b = q.block(bpath);
+		var b = bpath ? q.block(bpath) : null;
 		if(b && b.parents && b.parents.length) {
 			return b.parents.find("parent_id", bpath.last(1)).value;
 		}
@@ -225,7 +227,8 @@ define(['sb_light/globals'], function(sb) {
 	};
 	
 	q.blockPath = function(bpath, str/*==false*/) {
-		bpath = _pathToArray(bpath);
+		if(!bpath)  {return null; }
+ 		bpath = _pathToArray(bpath);
 		var b = q.block(bpath);
 		if(b && bpath.length < 2 && b.parents.length > 0) {
 			bpath = b.default_path;
@@ -241,7 +244,7 @@ define(['sb_light/globals'], function(sb) {
 	};
 	
 	q.blockId = function(bpath) {
-		bpath = _pathToArray(bpath);
+		bpath = bpath ? _pathToArray(bpath) : null;
 		return (bpath && bpath.length) ? bpath.last() : null;
 	};
 	
@@ -417,6 +420,7 @@ define(['sb_light/globals'], function(sb) {
 	//		where we've come from. 
 	
 	q.buildStrategyTree = function(prevBlockId) {
+
 		var bpath = q.currentBlockPath();
 		var b = q.currentBlock();
 		var blocks = sb.models.raw("blocks"); 
@@ -452,11 +456,7 @@ define(['sb_light/globals'], function(sb) {
 			
 			pnode.children = siblings.map(function(el, idx) {
 				var path = ppath.concat([el]).join("_");
-				var defaultType = sb.state.state(sb.consts.STATE.BLOCKS_TREE_VIEW);
-				var localType = sb.state.getStateKey(sb.consts.STATE.BLOCK_SETTINGS_VIEW, path);
-				if(!localType || localType == sb.consts.BLOCK_SETTINGS.VIEW.DEFAULT.key) {
-					localType = defaultType;
-				} 	
+				var vt = q.blockViewType(path);
 
 				
 				return {
@@ -464,7 +464,7 @@ define(['sb_light/globals'], function(sb) {
 					dy:dy,
 					dx:(idx - cidx),
 					data: blocks[el],
-					viewType: localType
+					viewType: vt
 				};
 			});
 			
@@ -473,7 +473,21 @@ define(['sb_light/globals'], function(sb) {
 		});
 		return superRoot.children[0];
 	};
-	
+
+
+	q.blockViewType = function(path) {
+		//make sure this property exists before we use it. 
+		sb.state.initState(sb.consts.STATE.BLOCKS_TREE_VIEW, sb.consts.BLOCK_SETTINGS.VIEW.STATUS.key);
+		sb.state.initState(sb.consts.STATE.BLOCK_SETTINGS_VIEW, "");
+
+		var defaultType = sb.state.state(sb.consts.STATE.BLOCKS_TREE_VIEW) || sb.consts.BLOCK_SETTINGS.VIEW.STATUS.key;
+		var localType = sb.state.getStateKey(sb.consts.STATE.BLOCK_SETTINGS_VIEW, path);
+		if(!localType || localType == sb.consts.BLOCK_SETTINGS.VIEW.DEFAULT.key) {
+			localType = defaultType;
+		} 	
+		return localType;
+	}
+
 	return q;
 });
 

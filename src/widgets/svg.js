@@ -190,15 +190,15 @@ define(['widgets/widget'], function( W ) {
 			});
 
 			//this._sb.ext.debug("sb_light Widget: applyLayout: ", this.id(), this.style());
-			this.redraw();
+			this.draw();
 		},
 
-		handleResize: function() {
-			this.redraw();
+		_handleResize: function() {
+			this.draw();
 		},
 
 
-		redraw: function() {
+		draw: function() {
 			//update the children of this SVG. This should be managed by D3 functions.
 		},
 

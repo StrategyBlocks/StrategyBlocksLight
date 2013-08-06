@@ -26,7 +26,7 @@ define(['sb_light/globals'], function(sb) {
 				}
 			}
 		}
-		var post = typeof urlObj.post === "undefined" || urlObj.post || false;
+		var post = urlObj.post === undefined || urlObj.post || false;
 		sb.api.request(url, params, post, successCb, errorCb, stateCheck||null);
 	};
 	

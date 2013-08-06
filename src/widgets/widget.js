@@ -42,7 +42,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this._sizeDefs = {};
 			this._parent = parent;
 			this._def = def;
-			this._classList = {"sb_light_widget":true};
+			this._classList = {};
 
 			this._domFuncs = this._propertyOverrides();
 
@@ -105,6 +105,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		create:function() {
 			this._name = this._name || ("widget::" + this._rootElement);
 			this._dom = this.createDom(this._def);
+			this.className("sb_light_widget");
 			this.createLayout();
 			this.parentDom().appendChild(this._dom);
 			this._created = true;
@@ -274,7 +275,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 				this._def[name] = value;
 				return this;
 			}
-			return typeof this._def[name] === "undefined" ? null : this._def[name];
+			return this._def[name] === undefined ? null : this._def[name];
 		},
 
 
@@ -395,9 +396,6 @@ define(['sb_light/utils/Class'], function( Class ) {
 					}, this._animate, this.bind("handleResize"));
 				} else {
 					["left","top","width","height"].forEach(function(s) {
-						if(!sz(s) ) {
-							console.log("wtf");
-						}
 						dim(s, sz(s)() );
 					});
 				}

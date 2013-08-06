@@ -29,7 +29,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 			tag:null,		//tag id		
 
 			user_id:null,
-			company_id:null,
+			company_id:null
 		},
 
 		//"uncontrolled" event data, like authentication state, flash message, errors, etc...
@@ -39,7 +39,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 			session: state.session_startup,
 			errors:null,
 			prevBlocks: null,
-			prevPages: null,
+			prevPages: null
 		},
 
 		// local cache of app data -- stuff that you might store in a cookie. or non-model data that unrelated
@@ -84,8 +84,17 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	state.data = function(type, val) 	{		return _accessStorage("data", type, val);			};
 
 	
+	//init
+	//these functions are needed to initialize at an application level without specifically watching for changes
+	//e.g., we know we'll need the properties and we want to set a default without having to specify it in 
+	//each sub component that needs it. 
+	state.initState = function(type, _default) 	{			return _initStorage("state", type,_default);		};
+	state.initContext = function(type, _default) 	{		return _initStorage("context", type, _default);	};
+	state.initData = function(type, _default) 		{		return _initStorage("data", type, _default);		};
+
 	//WATCH
 	//* for "type" means it will watch everything in the group
+	//watching a property will initialize it as well. 
 	state.watchState = function(type, cb, _default) 	{		return _watch("state", type,cb, _default);		};
 	state.watchContext = function(type, cb, _default) 	{		return _watch("context", type,cb, _default);	};
 	state.watchData = function(type, cb, _default) 		{		return _watch("data", type,cb, _default);		};
@@ -120,10 +129,10 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	var _accessStorage = function(group, type,val) {
 		var sg = storage[group];
 		if(!sg.hasOwnProperty(type)) {
-			throw "SBLIGHT::State - Trying to access a state property that hasn't been initialized." + type;
-		};
+			throw "SBLIGHT::State - Trying to access a state property that hasn't been initialized. " + group + "::" + type;
+		}
 
-		if(typeof val !== "undefined" && sg[type] != val) {
+		if(val !== undefined && sg[type] != val) {
 			sg[type] = val;
 			state.publish(group, type);
 			return this;
@@ -131,12 +140,16 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		return sg[type];
 	};
 
-
-	var _watch = function(group, type, cb, _default, _urgent/*==false*/) {
+	var _initStorage = function(group, type, _default) {
 		var sg = storage[group];
 		if(type !== "*" && !sg.hasOwnProperty(type)) {
 			sg[type] = _default || null;
 		};
+
+	};
+
+	var _watch = function(group, type, cb, _default, _urgent/*==false*/) {
+		_initStorage(group, type, _default);
 
 		var w = state.watch[group];
 		w[type] = w[type] || {};
@@ -251,9 +264,11 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	
 	//returns true / false depending on whether the response session is valid
 	state.update = function(data) {
+
 		_updateSession(data);
 		_updateModels(data);
-		state.publish.bindDelay(state, 50, "context", "session");
+		sb.queue.add(state.publish.bind(state, "context", "session"), "sb_state_publish_context_session");
+
 		return state.authorized();
 	};
 	
@@ -298,8 +313,9 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 				storage.state.company_id = data.company ? data.company.id : storage.state.company_id;
 			}
 			if(storage.state.block == null && data.block != null) {
-				//delay so notification happens after the session is valid
 				storage.state.block = String(data.block);
+				//delay so notification happens after the session is valid
+				sb.queue.add(state.publish.bind(state, "state", "block"), "sb_state_publish_state_block", 100);
 			}
 		} else {
 			storage.state.user_id = null;
