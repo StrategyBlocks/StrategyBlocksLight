@@ -43,10 +43,10 @@ define(['widgets/widget'], function( W ) {
 		value: function(__ignore__, value) {
 			var args =this._sb.ext.slice(arguments, arguments[0] == "value" ? 1 : 0);
 			if(args.length) {
-				this._layout.widgets[this.cid("input")].dom().value = value;	
+				this._layout.widgets[this.cid("input")].dom.value = value;	
 				return this;
 			}
-			return this._layout.widgets[this.cid("input")].dom().value;
+			return this._layout.widgets[this.cid("input")].dom.value;
 		},
 		error: function(__ignore__, value) {
 			var args =this._sb.ext.slice(arguments, arguments[0] == "error" ? 1 : 0);

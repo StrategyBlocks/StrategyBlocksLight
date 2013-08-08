@@ -24,15 +24,21 @@ define(['widgets/widget'], function( W ) {
 				throw "You need to load the d3.js library to use SVG widgets";
 			}
 			this._rootElement = rootElement || (sb.ext.isStr(def.widget) ? def.widget : "svg");
+
+			Object.defineProperties(this, {
+				"d3": 		{get: function() { this._d3; }},
+				"pd3": 		{get: function() { this._pd3; }},
+			});
+
 			this._super(sb, parent, def);
 		},
 
 		create:function() {
-			this._name = this._name || (this._rootElement + " " + this.id());
+			this._name = this._name || (this._rootElement + " " + this.id);
 			this._children = {};
 			this._dispatches = this._dispatches || {};
 
-			this._pd3 = d3.select(this.parentDom());
+			this._pd3 = d3.select(this.parentDom);
 			this._d3 = this.createDom(this._def);
 
 			this._dom = this._d3.node();
@@ -50,11 +56,6 @@ define(['widgets/widget'], function( W ) {
 			this._super();
 		},
 
-
-		pd3: function() {	return this._pd3;	},
-		d3: function() {	return this._d3;	},
-
-		parentId:function() {	return this.pd3().attr("id");	},
 
 		_propertyOverrides: function() {
 			var po = this._super();
@@ -90,7 +91,7 @@ define(['widgets/widget'], function( W ) {
 				for( i = 0; i < childrenDef.length; ++i) {
 					d = childrenDef[i];
 					d.id = this._sb.layout.uniqueId(d);
-					this._children[d.id] = this._sb.ext.isString(d.widget) ? (new SVG(this._sb, this.dom(), d)) : (new d.widget(this._sb, this.dom(), d));
+					this._children[d.id] = this._sb.ext.isString(d.widget) ? (new SVG(this._sb, this.dom, d)) : (new d.widget(this._sb, this.dom, d));
 					if(d.children) {
 						this._children[d.id].createChildren(d.children);
 					}
@@ -107,20 +108,20 @@ define(['widgets/widget'], function( W ) {
 
 		createDom:function(opts) {
 			if(!opts.widget) { throw "The \'widget\' option must be specified, and be the name of a valid HTML element."; }
-			if(this._rootElement == "svg" && !this.parentDom().ownerSVGElement) {
-				this._svgDiv  = this.pd3().append("div").attr("class", "sb_light_widget");
+			if(this._rootElement == "svg" && !this.parentDom.ownerSVGElement) {
+				this._svgDiv  = this.pd3.append("div").attr("class", "sb_light_widget");
 			}
-			return (this._svgDiv || this.pd3()).append(this._rootElement);
+			return (this._svgDiv || this.pd3.append(this._rootElement));
 		},
 
 
 
 		//d3 functions--------------------------------------------------
 		attr: function() {
-			return this.d3().attr.apply(this._d3, arguments);
+			return this.d3.attr.apply(this._d3, arguments);
 		},
 		style:function() {
-			return this.d3().style.apply(this._d3, arguments);
+			return this.d3.style.apply(this._d3, arguments);
 		},
 		css:function() {
 			if(this._svgDiv){
@@ -131,7 +132,7 @@ define(['widgets/widget'], function( W ) {
 		},
 		text: function() {
 			var t = this._sb.ext.slice(arguments, arguments.length == 2 ? 1 : 0);
-			return this.d3().text.apply(this.d3(), t);
+			return this.d3.text.apply(this.d3, t);
 		},
 
 		className: function() {
@@ -172,34 +173,14 @@ define(['widgets/widget'], function( W ) {
 		dispatcher: function() {
 			return this._dispatcher;
 		},
-		////-----------------------------------------------------------
 
+		dims: function(left,top,width, height) {
+			this.dim("left", left);
+			this.dim("top", top);
+			this.dim("width", width);
+			this.dim("height", height);
 
-		//this gets called by the sb_light layout.js engine.
-		applyLayout: function() {
-			var d = (this._svgDiv || this._d3).node();
-			var dim = this.bind("dim");
-			var px = this._sb.ext.px;
-			var sz = this.bind("sizeFuncs");
-
-			["left","top","width","height"].forEach(function(s) {
-				var f = sz(s);
-				if(f) {
-					dim(s, f() );
-				}
-			});
-
-			//this._sb.ext.debug("sb_light Widget: applyLayout: ", this.id(), this.style());
-			this.draw();
-		},
-
-		_handleResize: function() {
-			this.draw();
-		},
-
-
-		draw: function() {
-			//update the children of this SVG. This should be managed by D3 functions.
+			this.invalidate();
 		},
 
 		dim: function(name, value) {
@@ -211,14 +192,14 @@ define(['widgets/widget'], function( W ) {
 				if(arguments.length > 1) {
 					this._svgDiv.style(name,  this._sb.ext.px(value));
 					if(name.match(/width|height/)) {
-						this.d3().attr(name,  value);
+						this.d3.attr(name,  value);
 					}
 					return this;
 				}
 			} else {
 				//use the d3 methods instead
 				if(arguments.length > 1) {
-					this.d3().attr(name, value);
+					this.d3.attr(name, value);
 					return this;
 				}
 			}

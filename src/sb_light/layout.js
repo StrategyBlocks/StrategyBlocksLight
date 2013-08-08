@@ -87,7 +87,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 		var widget = lo.create(parent, def);
 		layout.widgets[def.id] = widget; //{id:def.id, source:d, dom:obj, parentId:parentId};
-		if(parent.created && parent.created()) {
+		if(parent.created && parent.created) {
 			parent.addChild(def.id, widget);
 		}
 		
@@ -97,6 +97,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 				//positioning like HTML DOM / CSS (even before using d3 )
 				widget.createChildren(def.children);
 			} else {
+				//lo.parse(widget, def.children);
 				_createWidgets(def.id, def.children, layout);
 			}
 		}
@@ -112,7 +113,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			return;
 		}
 		sb.ext.each(layout.widgets, function(w,wid) {
-			var p = layout.widgets[w.parentId()] || null; //parent might be root
+			var p = layout.widgets[w.parentId] || null; //parent might be root
 
 			var sz = w.sizeDefs.bind(w);//func
 			var v = sb.ext.valid;
@@ -147,8 +148,8 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		sb.ext.each(layout.widgets, function(w,wid) {
 			var sz = w.sizeFuncs.bind(w);
 			//all elements from here should have a parentId with sizes
-			var p = layout.widgets[w.parentId()] || null; //parent might be root
-			var pid = w.parentId() || "_root"; //parent might be root
+			var p = layout.widgets[w.parentId] || null; //parent might be root
+			var pid = w.parentId || "_root"; //parent might be root
 			var pz = (p && p.sizeFuncs.bind(p)) || null;
 			var pzw = pz ? [pz, "width", (pid+"@width") ] : layout.rootWidth;
 			var pzh = pz ? [pz, "height", (pid+"@height") ] : layout.rootHeight;
@@ -259,7 +260,8 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 			var list = [];
 			var wid, cw,cz;
-			var wlayout = w.layout();
+			var wlayout = w.layout;
+			if(!wlayout) { return; }
 
 			for(wid in wlayout.widgets)  {
 				if(!wlayout.sized) {
@@ -288,10 +290,10 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 				return (dim == "width" || dim =="height") ? sb.ext.max.apply(null, list) : sb.ext.min.apply(null,list);
 			} 
 
-			var pid = w.parentId();
+			var pid = w.parentId;
 			var p =  layout.widgets[pid] || null;
-			var pd = p ? p.dom() : (layout.root.dom() || layout.root || null);
-			var rect = w.dom().getBoundingClientRect();
+			var pd = p ? p.dom : (layout.root.dom || layout.root || null);
+			var rect = w.dom.getBoundingClientRect();
 			var prect = pd ? pd.getBoundingClientRect() : {left:0, top:0, bottom:0, right:0, width:0, height:0}; 
 			
 			var ph = p ? p.sizeFuncs("height")(chain+"_"+dimId) : layout.rootHeight;
@@ -321,7 +323,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			// 		"height", 	r(sz("height")(wid),1)
 			// );
 
-			w.applyLayout();
+			w.invalidate();
 
 		}
 

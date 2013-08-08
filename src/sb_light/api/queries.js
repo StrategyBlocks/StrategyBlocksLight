@@ -167,12 +167,12 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS
 	*********************************/
 	q.currentBlock = function() {
-		var bid = q.currentBlockId();
-		return bid ? q.block(bid) : null; 
+		var bpath = q.currentBlockPath();
+		return bpath ? q.block(bpath) : null; 
 	};
 	q.previousBlock = function() {
-		var bid = q.previousBlockId();
-		return bid ? q.block(bid) : null; 
+		var bpath = q.previousBlockPath();
+		return bpath ? q.block(bpath) : null; 
 	};
 	q.rootBlock = function() {
 		var rbid = q.rootBlockId();

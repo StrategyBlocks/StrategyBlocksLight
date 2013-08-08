@@ -1,16 +1,16 @@
 
-define(['sb_light/globals'], function(sb) {
+define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 
 	var svg =  {};
 
-	var _d3 = d3 !== undefined && d3 || {"__missing" : true};
+	var d3 = ext.global("d3") && d3 || {"__missing" : true};
 
 	svg.ZERO = 1e-6;
 
 
-	svg.initD3 = function(d3) {		
-		var c = _d3.__cached || {};
-		_d3 = d3;	
+	svg.initD3 = function(_d3) {		
+		var c = d3.__cached || {};
+		d3 = _d3;	
 		//add the d3 extensions that were cached. 
 		sb.ext.each(c, function(v,k) {
 			svg.extendD3(k,v);
@@ -19,16 +19,16 @@ define(['sb_light/globals'], function(sb) {
 
 	svg.extendD3 = function(name, func) {
 		//protection for the compiled files. d3 is not necessarily required for this library to work. 
-		if(_d3.__missing) { 
+		if(d3.__missing) { 
 			//save the extensions in case D3 gets set  later. 
-			_d3.__cached = _d3.__cached || {};
-			_d3.__cached[name] = func;
+			d3.__cached = d3.__cached || {};
+			d3.__cached[name] = func;
 			return; 
 		}
 		//prototypes to extend
-		_d3.selection.prototype[name] = 
-		_d3.transition.prototype[name] = 
-		_d3.selection.enter.prototype[name] = 
+		d3.selection.prototype[name] = 
+		d3.transition.prototype[name] = 
+		d3.selection.enter.prototype[name] = 
 		//the function
 		func;
 	}

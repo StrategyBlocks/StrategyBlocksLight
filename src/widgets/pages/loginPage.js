@@ -15,7 +15,7 @@ define([
 
 		postCreate: function() {
 			this._super();
-			this.dom().addEventListener("submit", this.bind("_handleSubmit"));
+			this.dom.addEventListener("submit", this.bind("_handleSubmit"));
 		},
 
 		createLayout:function() {

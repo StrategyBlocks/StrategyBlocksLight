@@ -49,6 +49,12 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		}
 	};
 
+	var models = {};
+	var watching = {
+		state:{},
+		context: {},
+		data:{}
+	};
 
 
 	var _forceUpdateBuffer = {};
@@ -57,17 +63,10 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	
 	
 	state.host = "";
-	state.models = {};
-
-	state.watch = {
-		state:{},
-		context: {},
-		data:{}
-	};
 	
 
 	state.registerModel = function(model, urlDef, cb) {
-		var m = state.models;
+		var m = models;
 		if(!m[model.name]) {
 			m[model.name] = {timestamp:0, cb:cb, urlDef:urlDef};
 			if(state.authorized() && !_forceUpdateBuffer && !_forceUpdateBuffer[model.name]) {
@@ -95,9 +94,9 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	//WATCH
 	//* for "type" means it will watch everything in the group
 	//watching a property will initialize it as well. 
-	state.watchState = function(type, cb, _default) 	{		return _watch("state", type,cb, _default);		};
-	state.watchContext = function(type, cb, _default) 	{		return _watch("context", type,cb, _default);	};
-	state.watchData = function(type, cb, _default) 		{		return _watch("data", type,cb, _default);		};
+	state.watchState = function(type, cb, _default) 	{		return state.watch("state", type,cb, _default);		};
+	state.watchContext = function(type, cb, _default) 	{		return state.watch("context", type,cb, _default);	};
+	state.watchData = function(type, cb, _default) 		{		return state.watch("data", type,cb, _default);		};
 	
 
 	//REMOVE
@@ -105,12 +104,12 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	// has not changed. E.g., if you create a temporary
 	// function using func.bind, then you need to store
 	// that instance and use it for unsubscribing
-	state.unwatchState = function(type, remove) 		{		return _unwatch("state", type,remove);		};
-	state.unwatchContext = function(type, remove) 		{		return _unwatch("context", type,remove);	};
-	state.unwatchData = function(type, remove) 			{		return _unwatch("data", type,remove);		};
+	state.unwatchState = function(type, remove) 		{		return state.unwatch("state", type,remove);		};
+	state.unwatchContext = function(type, remove) 		{		return state.unwatch("context", type,remove);	};
+	state.unwatchData = function(type, remove) 			{		return state.unwatch("data", type,remove);		};
 
 	state.publish = function(group, type) {
-		var s = state.watch[group];
+		var s = watching[group];
 		var list = s[type] || [];
 		var value = state[group](type);
 		var ext= sb.ext;
@@ -148,10 +147,10 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 
 	};
 
-	var _watch = function(group, type, cb, _default, _urgent/*==false*/) {
+	state.watch = function(group, type, cb, _default, _urgent/*==false*/) {
 		_initStorage(group, type, _default);
 
-		var w = state.watch[group];
+		var w = watching[group];
 		w[type] = w[type] || {};
 		
 		var id = ["watch_state",group, type, sb.ext.unique()].join("_");
@@ -160,9 +159,9 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		return id;
 	};
 
-	var _unwatch = function(group, type, remove) {
+	state.unwatch = function(group, type, remove) {
 		var del = [];
-		var w = state.watch[group];
+		var w = watching[group];
 		//collect matches
 
 		ext.each(w[type], function(v,k) {
@@ -178,7 +177,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 
 
 	state.resetTimestamp = function(name) {
-		var m = state.models;
+		var m = models;
 		if(m[name]) {
 			m[name].timestamp = 0;	
 		}
@@ -194,6 +193,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 			params.company_id = storage.state.company_id;
 		}
 		sb.api.post(sb.urls.url(sb.urls.LOGIN), params, cb, errCb, state.unauthorized);
+		state.context("session", state.session_startup);
 	};
 	
 	state.reset = function(cid) {
@@ -230,7 +230,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		
 		if(!_forceUpdateBusy[model.name] && state.authorized()) {
 			_forceUpdateBusy[model.name] = true;
-			var m = state.models[model.name];
+			var m = models[model.name];
 			m.timestamp = 0;
 			//request the model directly, but we will only process the high level model elements
 			// IF THOSE HLM elements exist
@@ -297,10 +297,10 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 
 	
 	state.addTimestamps = function(params) {
-		sb.ext.debug("Adding timestamp for ", Object.keys(state.models).join(","));
+		sb.ext.debug("Adding timestamp for ", Object.keys(models).join(","));
 		
-		for (var m in state.models) {
-			params[m+"_timestamp"] = state.models[m].timestamp;
+		for (var m in models) {
+			params[m+"_timestamp"] = models[m].timestamp;
 		}
 	};
 
@@ -344,11 +344,11 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	}
 	
 	function _updateModels (data) {
-		for (var m in state.models) {
+		for (var m in models) {
 			if(data && data[m]) {
 				_forceUpdateBusy[m] = _forceUpdateBuffer[m] = null;
-				state.models[m].timestamp = data[m].timestamp;
-				state.models[m].cb(data[m]);
+				models[m].timestamp = data[m].timestamp;
+				models[m].cb(data[m]);
 			}
 		}	
 	}
