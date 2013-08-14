@@ -40,7 +40,7 @@ define(['sb_light/globals'], function(sb) {
 	q.user = function(uid /*optional*/) {
 		var us = sb.models.raw("users");
 		uid = uid || sb.state.state("user_id");
-		return us[uid];	
+		return us ? us[uid] : null;	
 	};
 	q.companyMembership = function() {
 		var u = q.user();

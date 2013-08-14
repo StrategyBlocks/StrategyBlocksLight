@@ -249,7 +249,6 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 	var _autoFunc = function(id, dim, w, layout) {
 		var dimId = id + ":" + dim;
-
 		w.dim(dim, "auto");
 
 		return function(chain) { 
@@ -260,14 +259,10 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 			var list = [];
 			var wid, cw,cz;
-			var wlayout = w.layout;
-			if(!wlayout) { return; }
+			var children = w.children;
 
-			for(wid in wlayout.widgets)  {
-				if(!wlayout.sized) {
-					lo.resize(wlayout);
-				}
-				cw = wlayout.widgets[wid];
+			for(wid in children)  {
+				cw = children[wid];
 				cz = cw.sizeFuncs.bind(cw);
 				list.push(
 					function() {
@@ -285,7 +280,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 					
 				); 
 			}
-
+ 
 			if(list.length) {
 				return (dim == "width" || dim =="height") ? sb.ext.max.apply(null, list) : sb.ext.min.apply(null,list);
 			} 
@@ -313,7 +308,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			var w = layout.widgets[wid];
 			var sz = w.sizeFuncs.bind(w);
 			var r = sb.ext.roundTo;
-			//console.log("apply layout to ", wid);
+//			console.log("apply layout to ", wid);
 			// console.log(wid, 
 			// 		"left",		r(sz("left")(wid),1),
 			// 		"right",	r(sz("right")(wid),1),

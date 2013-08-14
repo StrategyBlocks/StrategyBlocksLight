@@ -69,6 +69,8 @@ define(['sb_light/utils/Class'], function( Class ) {
 				"parentLayout": {get: function() { return this.parentWidget ? this.parentWidget.layout :null; }},
 
 				"widgets": 		{get: function() { return (this.layout && this.layout.widgets) || null; }},
+				//same as widgets, but doesn't failover into a parent layout
+				"children": 	{get: function() { return (this._layout && this._layout.widgets) || null; }},
 				"layout": 		{get: function() { return this._layout || this.parentLayout || null; }},
 				"visible": 		{	
 									get: function() { return this._visible;  },
@@ -150,6 +152,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 					dom.removeEventListener(k, cb);
 				});
 			});
+			this._sb.dom.empty(this.dom);
 
 
 			var w = this._watchers;
@@ -162,7 +165,10 @@ define(['sb_light/utils/Class'], function( Class ) {
 				});
 			});
 
-			this._sb.dom.empty(this.dom);
+			var ms = this._sb.models;
+			each(this._models, function(ref,k) {
+				ms.unsubscribe(k, ref);
+			});
 
 			//null all private properties that begin with "_"
 			for(var k in this) {
@@ -193,9 +199,9 @@ define(['sb_light/utils/Class'], function( Class ) {
 			var args = this._sb.ext.slice(arguments, 0);
 			var m = this._sb.models;
 			var ms = this._models;
-			var dirty = this.bind("dirty");
+			var df = this.bind("dirty");
 			args.forEach(function(v,i) {
-				ms[v] = m.subscribe(v, dirty);
+				ms[v] = m.subscribe(v, df);
 			});
 		},
 
@@ -203,9 +209,9 @@ define(['sb_light/utils/Class'], function( Class ) {
 			var args = this._sb.ext.slice(arguments, 1);
 			var s = this._sb.state;
 			var ss = this._watchers[type];
-			var dirty = this.bind("dirty");
+			var df = this.bind("dirty");
 			args.forEach(function(v,i) {
-				ss[v] = s.watch(type, v, dirty);
+				ss[v] = s.watch(type, v, df);
 			});
 
 		},
@@ -213,10 +219,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 		modelsValid: function() {
 			var ms = this._sb.models;
+			var valid= true;
 			this._sb.ext.each(this._models, function(v,k) {
-				if(!ms.raw(k)) { return false;}
+				valid = valid && ms.raw(k) !== null;
 			});
-			return true;
+			return valid;
 		},
 
 		_buildPropsList: function() {
@@ -439,7 +446,9 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		dirty: function() {
-			this._sb.queue.add(this.bind("_beforeDraw"), "_beforeDraw" + this.id);
+			if(this && this._sb) {
+				this._sb.queue.add(this.bind("_beforeDraw"), "_beforeDraw" + this.id);
+			}
 		},
 
 		canDraw: function() {
@@ -449,6 +458,8 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_beforeApplyLayout: function() {
 			if(this.canDraw()) { 		
 				this.applyLayout();
+			} else {
+				this.cleanup();
 			}
 		},
 
@@ -488,6 +499,10 @@ define(['sb_light/utils/Class'], function( Class ) {
 				//apply child layout. 
 				this._sb.layout.resize(this._layout);
 			}
+		},
+
+		cleanup: function() {
+
 		},
 
 

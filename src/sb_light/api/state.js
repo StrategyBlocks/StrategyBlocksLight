@@ -1,14 +1,16 @@
 
-define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], function(sb,consts,ext) {
+/*globals define */
+
+define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], function(sb,consts,ext) {
 	//console.log("State:",sb.version);
 	
 	var state = {};
 	
-	state.stateKeys = [ 
-		"session_unknown", 
-		"session_normal", 
-		"session_payment", 
-		"session_invalid", 
+	state.stateKeys = [
+		"session_unknown",
+		"session_normal",
+		"session_payment",
+		"session_invalid",
 		"session_disconnected",
 		"session_startup"
 	];
@@ -33,7 +35,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		},
 
 		//"uncontrolled" event data, like authentication state, flash message, errors, etc...
-		//stuff that doesn't belong in a url, but reflects the current state of the app
+		//stuff that doesn"t belong in a url, but reflects the current state of the app
 		context: {
 			flash:null,
 			session: state.session_startup,
@@ -59,7 +61,6 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 
 	var _forceUpdateBuffer = {};
 	var _forceUpdateBusy = {};
-	var _stateFunctions = {};
 	
 	
 	state.host = "";
@@ -71,32 +72,32 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 			m[model.name] = {timestamp:0, cb:cb, urlDef:urlDef};
 			if(state.authorized() && !_forceUpdateBuffer && !_forceUpdateBuffer[model.name]) {
 				//if we do a bunch of these at the same time, only run the first. The others will get picked up.
-				_forceUpdateBuffer[model.name] = _forceModelUpdate.bindDelay(state, 200, model);
+				_forceUpdateBuffer[model.name] = state.forceModelUpdate.bindDelay(state, 200, model);
 			}
-		} 
+		}
 	};
 
 
 	//ACCESSS
-	state.state = function(type, val) 	{		return _accessStorage("state", type, val);			};
-	state.context = function(type, val) {		return _accessStorage("context", type, val);		};
-	state.data = function(type, val) 	{		return _accessStorage("data", type, val);			};
+	state.state = function(type, val)	{		return _accessStorage("state", type, val);			};
+	state.context = function(type, val)	{		return _accessStorage("context", type, val);		};
+	state.data = function(type, val)	{		return _accessStorage("data", type, val);			};
 
 	
 	//init
 	//these functions are needed to initialize at an application level without specifically watching for changes
 	//e.g., we know we'll need the properties and we want to set a default without having to specify it in 
 	//each sub component that needs it. 
-	state.initState = function(type, _default) 	{			return _initStorage("state", type,_default);		};
-	state.initContext = function(type, _default) 	{		return _initStorage("context", type, _default);	};
-	state.initData = function(type, _default) 		{		return _initStorage("data", type, _default);		};
+	state.initState = function(type, _default)		{			return _initStorage("state", type,_default);	};
+	state.initContext = function(type, _default)	{		return _initStorage("context", type, _default);		};
+	state.initData = function(type, _default)		{		return _initStorage("data", type, _default);		};
 
 	//WATCH
 	//* for "type" means it will watch everything in the group
 	//watching a property will initialize it as well. 
-	state.watchState = function(type, cb, _default) 	{		return state.watch("state", type,cb, _default);		};
-	state.watchContext = function(type, cb, _default) 	{		return state.watch("context", type,cb, _default);	};
-	state.watchData = function(type, cb, _default) 		{		return state.watch("data", type,cb, _default);		};
+	state.watchState = function(type, cb, _default, _urgent)	{		return state.watch("state", type,cb, _default, _urgent);	};
+	state.watchContext = function(type, cb, _default, _urgent)	{		return state.watch("context", type,cb, _default, _urgent);	};
+	state.watchData = function(type, cb, _default, _urgent)		{		return state.watch("data", type,cb, _default, _urgent);		};
 	
 
 	//REMOVE
@@ -104,13 +105,13 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	// has not changed. E.g., if you create a temporary
 	// function using func.bind, then you need to store
 	// that instance and use it for unsubscribing
-	state.unwatchState = function(type, remove) 		{		return state.unwatch("state", type,remove);		};
-	state.unwatchContext = function(type, remove) 		{		return state.unwatch("context", type,remove);	};
-	state.unwatchData = function(type, remove) 			{		return state.unwatch("data", type,remove);		};
+	state.unwatchState = function(type, remove)			{		return state.unwatch("state", type,remove);		};
+	state.unwatchContext = function(type, remove)		{		return state.unwatch("context", type,remove);	};
+	state.unwatchData = function(type, remove)			{		return state.unwatch("data", type,remove);		};
 
 	state.publish = function(group, type) {
 		var s = watching[group];
-		var list = s[type] || [];
+		//var list = s[type] || [];
 		var value = state[group](type);
 		var ext= sb.ext;
 		ext.each(s[type], function(v) {
@@ -143,7 +144,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		var sg = storage[group];
 		if(type !== "*" && !sg.hasOwnProperty(type)) {
 			sg[type] = _default || null;
-		};
+		}
 
 	};
 
@@ -166,20 +167,20 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 
 		ext.each(w[type], function(v,k) {
 			//"remove" can be the key or the cb func
-			if(v.callback == remove || k == remove) { 
+			if(v.callback == remove || k == remove) {
 				del.push(k);
 			}
 		});
 		del.forEach(function(el) {
 			delete w[type][el];
-		})
+		});
 	};
 
 
 	state.resetTimestamp = function(name) {
 		var m = models;
 		if(m[name]) {
-			m[name].timestamp = 0;	
+			m[name].timestamp = 0;
 		}
 	};
 	
@@ -192,12 +193,15 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		if(storage.state.company_id) {
 			params.company_id = storage.state.company_id;
 		}
-		sb.api.post(sb.urls.url(sb.urls.LOGIN), params, cb, errCb, state.unauthorized);
-		state.context("session", state.session_startup);
+		state.context("session", state.session_unknown);
+
+		var url = sb.urls.url(sb.urls.LOGIN);
+
+		sb.queue.add(sb.api.post.bind(sb.api, url, params, cb, errCb, state.unauthorized), "sblight_state_login");
 	};
 	
 	state.reset = function(cid) {
-		storage.context.session = state.session_unknown;
+		storage.context.session = state.session_startup;
 		storage.context.flash = null;
 
 		if(cid) {
@@ -210,7 +214,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		storage.state.tag = null;
 
 		sb.queue.add(sb.models.reset.bind(sb.models), "sblight_models_reset");
-	}
+	};
 
 	state.logout = function() {
 		sb.api.post(sb.urls.url(sb.urls.LOGOUT));
@@ -219,7 +223,8 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	
 	state.changeCompany = function(cid) {
 		state.reset(cid);
-		sb.queue.add(state.publish.bind(state, "session"), "sblight_state_publish");
+		sb.queue.add(state.publish.bind(state,"context", "session"), "sblight_state_publish_context");
+		sb.queue.add(state.publish.bind(state,"state", "company_id"), "sblight_state_publish_state");
 	};
 	
 	state.forceModelUpdate = function(model) {
@@ -241,23 +246,23 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	};
 	
 	
-	state.any = function() { 		return true; };
+	state.any = function()	{	return true;	};
 
 	//startup -- the first state of this system. This used to be "unknown", but in some cases it's useful to
 	//know that we're in the initialization phase. So we always start in the "startup" state, and then
 	//move into the "unknown" state.  
-	state.startup = function() {	return storage.context.session == state.session_startup;	};
+	state.startup = function() {	return storage.context.session == state.session_startup };
 	
 	//any state but unknown 
 	state.known = function() {	return storage.context.session != state.session_unknown;	};
 	//not tried auth yet. 
-	state.unknown = function() {	return storage.context.session == state.session_unknown;	};
+	state.unknown = function() {	return storage.context.session == state.session_unknown || storage.context.session == state.session_startup;	};
 	//no auth
 	state.unauthorized = function() {	return  storage.context.session == state.session_unknown || storage.context.session == state.session_invalid || storage.context.session == state.session_startup;	};
 	//invalid
 	state.invalid = function() {	return  storage.context.session == state.session_invalid;	};
 	//has user/company
-	state.authorized = function() {	return storage.context.session == state.session_normal || storage.context.session == state.session_payment; };	
+	state.authorized = function() {	return storage.context.session == state.session_normal || storage.context.session == state.session_payment; };
 
 	//failed server response
 	state.disconnected = function() { return storage.context.session == state.session_disconnected; };
@@ -286,7 +291,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 	
 	state.setStateKey = function(type, key, value) {
 		var val = sb.urls.s_to_o(state.state(type));
-		if(value == null) {
+		if(value === null) {
 			delete val[key];
 		} else {
 			val[key] = value;
@@ -312,7 +317,10 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 				storage.state.user_id = data.user ? data.user.id : null;
 				storage.state.company_id = data.company ? data.company.id : storage.state.company_id;
 			}
-			if(storage.state.block == null && data.block != null) {
+
+			//if we have a block id in the response and there's no block defined in the state, OR 
+			//	 we have the  blocks model but the currentBlock is returning null
+			if(data.block && (!storage.state.block || (sb.models.raw("blocks") && !sb.queries.currentBlock()))) {
 				storage.state.block = String(data.block);
 				//delay so notification happens after the session is valid
 				sb.queue.add(state.publish.bind(state, "state", "block"), "sb_state_publish_state_block", 100);
@@ -320,7 +328,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		} else {
 			storage.state.user_id = null;
 		}
-		if(storage.state.user_id == null) {
+		if(!storage.state.user_id) {
 			sb.ext.debug("setting session to unauthorized");
 			if(state.unknown() || state.startup()) {
 				data.flash = {notice:"Please enter your login credentials."};
@@ -350,7 +358,7 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 				models[m].timestamp = data[m].timestamp;
 				models[m].cb(data[m]);
 			}
-		}	
+		}
 	}
 
 
@@ -359,30 +367,18 @@ define(['sb_light/globals', 'sb_light/utils/consts','sb_light/utils/ext'], funct
 		var res = result && result.result;
 		var m = res[model.name] || res;
 		
-		if(model.raw() == null && m) {
+		if(model.raw() === null && m) {
 			if(sb.ext.isArray(m)) {
-				m = m.reduce( (function(prev,el) { 
+				m = m.reduce( (function(prev,el) {
 					prev[el.id] = el;
 					return prev;
-				}), {});	
+				}), {});
 			}
 			model._handleUpdate({added:m});
 		}
 		_forceUpdateBusy[model.name] = false;
 	}
-		
-	function _handleBlockChange (oldVal, newVal) {
-		state.context.bindDelay(state, 0, "previousBlock", oldVal);
-		return sb.queries.blockPath(newVal).join("_");
-	}
-	function _handlePageChange (oldVal, newVal) {
-		oldVal = oldVal || "home";
-		state.context.bindDelay(state, 0, "previousPage", oldVal);
-		sb.ext.debug("HandlePageChange: ", oldVal, " to ", newVal);
-		return newVal;
-	}
-	
 
-	return state; 	
+	return state;
 	
 });

@@ -51,6 +51,11 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 				})[0];
 			}
 			this._massage(root, null, 0, (new Date()).getTime());
+
+			if(!this._sb.queries.currentBlock()) {
+				this._sb.state.state("block", root.id);
+			}
+
 			this._sb.ext.debug("Finished massaging blocks");
 		},
 		
