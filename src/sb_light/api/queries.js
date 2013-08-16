@@ -90,6 +90,16 @@ define(['sb_light/globals'], function(sb) {
 		var f = q.focusArea(fid);
 		return f ? f.description : null;
 	};
+
+	q.focusList = function(fid) {
+		var list = [];
+		var f = q.focusArea(fid);
+		while(f) {
+			list.put(f);
+			f = q.focusArea(f.parent_id);
+		}
+		return list; 
+	}
 	
 	/********************************
 		Levels
