@@ -317,6 +317,10 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 				storage.state.user_id = data.user ? data.user.id : null;
 				storage.state.company_id = data.company ? data.company.id : storage.state.company_id;
 			}
+			
+			storage.context.user = data.user || null;
+			storage.context.company = data.company || null;
+
 
 			//if we have a block id in the response and there's no block defined in the state, OR 
 			//	 we have the  blocks model but the currentBlock is returning null

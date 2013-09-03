@@ -2,7 +2,9 @@
 /*jslint passfail: false */
 
 
-define(['sb_light/globals'], function(sb) {
+define(["sb_light/globals"], function(sb) {
+	"use strict";
+
 	//console.log("ext", sb.version);
 	var ext = {};
 
@@ -31,7 +33,7 @@ define(['sb_light/globals'], function(sb) {
 		idx = isNaN(idx) ? 0 : idx;
 		if(isNaN(end)) {
 			return Array.prototype.slice.call(a, idx);
-		} 
+		}
 		return Array.prototype.slice.call(a, idx, end);
 	};
 	
@@ -41,7 +43,7 @@ define(['sb_light/globals'], function(sb) {
 		if(ext.global("Ti")) {
 			Ti.API.debug(str);
 		} else if(ext.global("console")) {
-			console.log(str);	
+			console.log(str);
 		}
 	};
 
@@ -50,7 +52,7 @@ define(['sb_light/globals'], function(sb) {
 		if(ext.global("Ti")) {
 			Ti.API.warn(str);
 		} else if(ext.global("console")) {
-			console.log(str);	
+			console.log(str);
 		}
 	};
 	ext.warning = ext.warn;
@@ -60,9 +62,9 @@ define(['sb_light/globals'], function(sb) {
 		var res = [];
 		var i, len,k;
 		if (ext.isArray(list)) {
-			for(i = 0, len = list.length; i < len; ++i) {  
-				res.push( fn.call(scope || this, list[i], i, list));  
-			}  
+			for(i = 0, len = list.length; i < len; ++i) {
+				res.push( fn.call(scope || this, list[i], i, list));
+			}
 		} else { //Object
 			for (k in list) {
 				//func(value,key,list)
@@ -75,12 +77,24 @@ define(['sb_light/globals'], function(sb) {
 	ext.each = function ext_each(list, fn, scope) {
 		var el;
 		if(ext.isArray(list)) {
-			list.forEach(fn,scope);	
+			list.forEach(fn,scope);
 		} else {
 			for(el in list) {
 				//func(value,key,list)
 				fn.call(scope || list, list[el], el, list);
 			}	
+		}
+	};
+
+
+	ext.reduce = function ext_reduce(list, fn, init, scope) {
+		if(ext.isArray(list)) {
+			return list.reduce(fn, init);
+		} else {
+			for(var el in list) {
+				init = fn.call(scope|| list, init, list[el], el, list);
+			}
+			return init;
 		}
 	};
 
@@ -680,17 +694,17 @@ define(['sb_light/globals'], function(sb) {
 	
 		var aArgs = ext.slice(arguments, 1), 
 			fToBind = this, 
-			fNOP = function () {},
-			fBound = function () {
-			  return fToBind.apply(	(this instanceof fNOP ? this : oThis), 
+			NOP = function () {},
+			Bound = function () {
+			  return fToBind.apply(	(this instanceof NOP ? this : oThis), 
 			  						aArgs.concat(ext.slice(arguments))
 			  					  );
 			};
 	
-		fNOP.prototype = this.prototype;
-		fBound.prototype = new fNOP();
+		NOP.prototype = this.prototype;
+		Bound.prototype = new NOP();
 	
-		return fBound;
+		return Bound;
 	  };
 	}
 	
@@ -789,7 +803,6 @@ define(['sb_light/globals'], function(sb) {
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/filter
 	if (!Array.prototype.filter) {
 		Array.prototype.filter = function ext_array_filter(fun /*, thisp */) {
-			"use strict";
 			if (this === null) {
 				throw new TypeError();
 			}
@@ -874,7 +887,6 @@ define(['sb_light/globals'], function(sb) {
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/indexOf
 	if (!Array.prototype.indexOf) {  
 		Array.prototype.indexOf = function ext_array_indexOf(searchElement /*, fromIndex */ ) {  
-			"use strict";  
 			if (this === null) {  
 				throw new TypeError();  
 			}  
@@ -983,7 +995,6 @@ define(['sb_light/globals'], function(sb) {
 
 	if (!Array.prototype.every)	{
 		Array.prototype.every = function(fun /*, thisp */)	{
-			"use strict";
 
 			if (this === null) {
 				throw new TypeError();
@@ -1007,8 +1018,6 @@ define(['sb_light/globals'], function(sb) {
 	
 	if (!Array.prototype.some)	{
 		Array.prototype.some = function(fun /*, thisp */)  {
-			"use strict";
-
 			if (this === null){
 				throw new TypeError();
 			}

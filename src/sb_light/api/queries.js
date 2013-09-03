@@ -20,8 +20,16 @@ define(['sb_light/globals'], function(sb) {
 		COMPANIES
 	*********************************/
 	q.company = function(cid /*optional*/) {
+
 		var cs = sb.models.raw("companies");
-		cid = cid || sb.state.state("company_id");
+		var sid = sb.state.state("company_id");
+		cid = cid || sid;
+		//use the company returned in the JSON 
+		if(cid == sid) {
+			return sb.state.context("company") || null;
+		}
+
+		//fall back on the companies model
 		return (cs && cid && cs[cid] ) || null; 
 	};
 	
@@ -38,9 +46,17 @@ define(['sb_light/globals'], function(sb) {
 		return u ? u.first_name : "<removed>";
 	};
 	q.user = function(uid /*optional*/) {
+		var sid = sb.state.state("user_id");
+		uid = uid || sid;
+
+		//return the user in the JSON before the user in the users model
+		if(uid == sid) {
+			return sb.state.context("user") || null;
+		}
+
+		//fall back onto the users model, if we have it. 
 		var us = sb.models.raw("users");
-		uid = uid || sb.state.state("user_id");
-		return us ? us[uid] : null;	
+		return us && uid ? us[uid] : null;	
 	};
 	q.companyMembership = function() {
 		var u = q.user();
@@ -190,7 +206,7 @@ define(['sb_light/globals'], function(sb) {
 	};
 	q.rootBlockId = function() {
 		var c = q.company();
-		return c ? c.root_block.id : null; 
+		return c && c.root_block ? c.root_block.id : null; 
 	};
 	q.currentBlockId = function() {
 		var p = q.currentBlockPath(); 

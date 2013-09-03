@@ -45,7 +45,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 					this._sb.ext.debug("Forcing the update");
 					this._sb.state.forceModelUpdate(this);
 				} else {
-					//this._sb.queue.add(this.get.bind(this), this.name+"::model::get", 200);
+					var me = this;
+					var subid = this._sb.state.watchContext("session", function() {
+						me._sb.state.unwatchContext("session", subid);
+						me.get();
+					});
 				}
 				return null;
 			} 
