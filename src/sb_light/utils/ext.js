@@ -443,7 +443,8 @@ define(["sb_light/globals"], function(sb) {
 	ext.healthColor = function ext_healthColor(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1]; };
 	ext.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	ext.blockProgressFill = function ext_blockProgressFill(block) {
-		switch(block.progress_color) {
+		//support passing just the color
+		switch(block.progress_color || block) {
 			case "green": 	return ["#176717", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"] ];
 			case "yellow":	return ["#77771B", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"] ];
 			case "red": 	return ["#641717", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"] ];

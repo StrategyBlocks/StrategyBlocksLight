@@ -195,6 +195,8 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this.dom.addEventListener(type, cb);
 		},
 
+
+		//which models this widget subscribes to
 		models: function(/*string list...*/) {
 			var args = this._sb.ext.slice(arguments, 0);
 			var m = this._sb.models;
@@ -205,6 +207,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			});
 		},
 
+		//watch a list of state properties
 		watch: function(type /*, string list*/) {
 			var args = this._sb.ext.slice(arguments, 1);
 			var s = this._sb.state;

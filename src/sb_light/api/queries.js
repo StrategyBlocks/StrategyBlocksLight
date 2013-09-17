@@ -89,7 +89,8 @@ define(['sb_light/globals'], function(sb) {
 			return cm && cm.active && (cm.role == "Author" || cm.role =="Administrator");
 		}).sort(sb.ext.sortUsers);
 	};
-	
+
+
 	/********************************
 		FOCUS AREAS
 	*********************************/
@@ -409,6 +410,11 @@ define(['sb_light/globals'], function(sb) {
 		blocks = blocks || sb.models.raw("blocks");
 		if(!blocks) { return; }
 		
+		if(sb.ext.isStr(cpath) && sb.ext.isArr(ppath)) {
+			cpath = ppath.concat([cpath]);
+		}
+
+
 		cpath = q.blockPath(cpath || q.rootBlock().default_path);
 		ppath = ppath ||[];
 		//var ppath = ppath ||cpath.slice(0,-1);                                        
@@ -439,6 +445,7 @@ define(['sb_light/globals'], function(sb) {
 		d.size  = size;
 		return d;
 	};
+
 
 
 	//linear function that builds the center list from the current block to the root. 
