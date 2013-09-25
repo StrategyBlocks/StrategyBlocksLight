@@ -24,11 +24,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_visible:true,
 		_listeners:null,
 		_watching:null,
-		_sized:false,
 		_layout: null,
 		_rootElement:null,
 		_childrenLayout:null,
 		_defaultLayout:null,
+		_delay:50,
 
 		//do not override
 		init:function(sb, parent, def) {
@@ -445,12 +445,14 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 
 		invalidate: function() {
-			this._sb.queue.add(this.bind("_beforeApplyLayout"), "_beforeApplyLayout" + this.id);
+			//this._beforeApplyLayout.bindDelay(this,this._delay);
+			this._sb.queue.add(this.bind("_beforeApplyLayout"), "_beforeApplyLayout" + this.id, this._delay);
 		},
 
 		dirty: function() {
 			if(this && this._sb) {
-				this._sb.queue.add(this.bind("_beforeDraw"), "_beforeDraw" + this.id);
+				//this._beforeDraw.bindDelay(this,this._delay);
+				this._sb.queue.add(this.bind("_beforeDraw"), "_beforeDraw" + this.id, this._delay);
 			}
 		},
 
@@ -461,40 +463,59 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_beforeApplyLayout: function() {
 			if(this.canDraw()) { 		
 				this.applyLayout();
+				this._afterApplyLayout();
 			} else {
 				this.cleanup();
 			}
 		},
 
+		_afterApplyLayout: function() {
+			//var children = this.children || {};
+			// this._sb.ext.each(children, function(v,k) {
+			// 	v.invalidate();
+			// });
+
+			this.dirty();
+		},
+
 		applyLayout: function() {
+			this._sb.ext.debug("Applying layout:", this.id, this.name);
 			var d = this.dom;
 			var dim = this.bind("dim");
 			var px = this._sb.ext.px;
 			var sz = this.bind("sizeFuncs");
 
-			if(this._animate > 0) {
-				$(dom).animate({
-					"left": sz("left")(),
-					"top": sz("top")(),
-					"width": sz("width")(),
-					"height": sz("height")()
-				}, this._animate, this.bind("_handleRedraw"));
-			} else {
+			// if(this._animate > 0) {
+			// 	$(d).animate({
+			// 		"left": sz("left")(),
+			// 		"top": sz("top")(),
+			// 		"width": sz("width")(),
+			// 		"height": sz("height")()
+			// 	}, this._animate, this.bind("invalidate"));
+			// } else {
 				["left","top","width","height"].forEach(function(s) {
-					dim(s, sz(s)() );
+					var sf = sz(s);
+					if(sf) {
+						dim(s, sf() );
+					}
 				});
-			}
-			this.dirty();
+			// }
 		},
 
 
 		_beforeDraw: function() {
 			if(this.canDraw()) {
 				this.draw();
+				this._afterDraw();
 			}
 		},
+
+		_afterDraw: function() {
+		},
+
 		draw: function() {
 			//do this to the local layout, not the parent one
+			this._sb.ext.debug("Drawing:", this.id, this.name);
 			if(this._layout) {
 				var rect = this._dom.getBoundingClientRect();
 				this._layout.rootWidth = rect.width;

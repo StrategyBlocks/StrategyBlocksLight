@@ -114,14 +114,13 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		//var list = s[type] || [];
 		var value = state[group](type);
 		var ext= sb.ext;
+		ext.debug("Publish: ", type, value);
 		ext.each(s[type], function(v) {
-			ext.debug("Publish: ", type, value, v.urgent);
-			v.callback.bindDelay(null, (v.urgent?0:50), value, type);
+			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});
 		//notify all the global subs
 		ext.each(s["*"], function(v) {
-			ext.debug("Publish(*): ", type, value, v.urgent);
-			v.callback.bindDelay(null, (v.urgent?0:50), value, type);
+			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});
 	};
 
@@ -149,6 +148,11 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	};
 
 	state.watch = function(group, type, cb, _default, _urgent/*==false*/) {
+		if(!cb) {
+			throw "Error: callback is not defined: " + group + " " + type;
+		}
+
+
 		_initStorage(group, type, _default);
 
 		var w = watching[group];

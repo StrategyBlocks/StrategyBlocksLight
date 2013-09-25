@@ -188,7 +188,30 @@ define(['sb_light/globals'], function(sb) {
 		return blocks;
 	};
 	
+	/********************************
+		KPIS
+	*********************************/
+	q.kpi = function(id) {
+		id = id || sb.state.state("kpi");
+		var m = sb.models.raw("kpis");
+		if(id && m) {
+			return m[id];
+		}
+		return null;
+	}
+
+	/********************************
+		RISKS
+	*********************************/
 	
+	q.risk = function(id) {
+		id = id || sb.state.state("risk");
+		var m = sb.models.raw("risks");
+		if(id && m) {
+			return m[id];
+		}
+		return null;
+	}
 
 	/********************************
 		BLOCKS

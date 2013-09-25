@@ -46,11 +46,10 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	};
 
 	lo.resize = function(layout) {
-		if(layout) {
+		if(layout ) {
 			_buildLayout(layout);
 			_evalLayout(layout);
 			_applyLayout(layout);
-			layout.sized = true;
 		}
 	};
 
@@ -58,9 +57,13 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	//specify "true" if you want to prevent the re-layout -- this is useful when applying a bunch of changes (e.g., in a loop) and you 
 	//		want to call resize manually. 
 	lo.change = function(layout, key, dim, value, wait/*==false*/) {
-		layout.widgets[key].source(dim, value);
-		if(!wait) {
-			lo.resize(layout);
+		var w = layout.widgets[key];
+		var curr = w.source(dim);
+		if(curr != value) {
+			w.source(dim, value);
+			if(!wait) {
+				lo.resize(layout);
+			}
 		}
 	};
 	lo.uniqueId = function(def) {
@@ -87,6 +90,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 		var widget = lo.create(parent, def);
 		layout.widgets[def.id] = widget; //{id:def.id, source:d, dom:obj, parentId:parentId};
+
 		if(parent.created && parent.created) {
 			parent.addChild(def.id, widget);
 		}
@@ -317,11 +321,8 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			// 		"width", 	r(sz("width")(wid),1),
 			// 		"height", 	r(sz("height")(wid),1)
 			// );
-
 			w.invalidate();
-
 		}
-
 	};
 
 
