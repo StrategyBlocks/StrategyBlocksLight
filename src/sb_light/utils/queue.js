@@ -3,19 +3,70 @@ define(['sb_light/globals'], function(sb) {
 	var queue = {};
 	var low_list = [];
 	var high_list = [];
+	var buffer_list = {};
 	var interval = 0;
 
 	var start = function() {
 		queue.next();
 		start = function() {}; //remove the function
-	}
+	};
 
 	queue.interval = function(value) {
 		if(arguments.length) {
 			interval = value;
 		}
 		return interval;
-	}
+	};
+
+
+	//This function buffers calls with the same name so that we don't run the same layout loops
+	//over and over too often. 
+	//If 0 delay is passed, the function will execute immediately, but will still be in the buffer for its
+	// execution time
+	//If update is true, unstarted functions will be reset and started functions will have to be run a 2nd time.   
+	queue.buffer = function queue_buffer(func, name, delay, update) {
+		update = update || false;
+
+		var b = buffer_list[name];
+		if(!b) {
+			//create the initial entry
+			b = buffer_list[name] = {};
+			b.func = (function() {
+				//console.log("Executing:", name);
+				var cb = buffer_list[name];
+				if(!cb) { return; }
+
+				cb.started = true;
+				func();
+				delete buffer_list[name];
+				if(cb.queued) {
+					var args = [cb.queued.func, name, cb.queued.delay, true];
+					//call the buffer command again. 
+					queue.buffer.apply(queue, args);
+				}
+			});
+			b.delay = delay;
+			if(delay) {
+				//set the id so we can clear it if necessary
+				//console.log("Set timeout:", name);
+				b.id = setTimeout(b.func, delay);
+			} else {
+				//run immediately
+				b.func();
+			}
+		} else if(!b.started && update) {
+			//console.log("Clear timeout:", name);
+			clearTimeout(b.id);
+			delete buffer_list[name];
+			queue.buffer.apply(queue, [func, name, delay, update]);
+		} else if(update) {
+			//console.log("Queueing :", name);
+			//function is currently running. We will need to run it again.
+			b.queued = {func:func, delay:delay};
+		}
+	};
+
+
 
 
 
@@ -51,6 +102,11 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 	queue.cancel = function(name) {
+		if(buffer_list[name]) {
+			delete buffer_list[name];
+			return;
+		}
+
 		var lidx = low_list.find("name", name).index;
 		if(lidx >= 0) {
 			low_list.splice(lidx,1);
@@ -61,6 +117,8 @@ define(['sb_light/globals'], function(sb) {
 			high_list.splice(hidx,1);
 			return;
 		}
+
+
 
 	};
 

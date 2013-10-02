@@ -1,4 +1,4 @@
-/* globals define, $, console */
+/* globals define, $ */
 
 define(['sb_light/utils/Class'], function( Class ) {
 	
@@ -21,7 +21,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_props:null,
 		_animate:0,
 		_created:false,
-		_visible:true,
+		_visible:false,
 		_listeners:null,
 		_watching:null,
 		_layout: null,
@@ -73,8 +73,12 @@ define(['sb_light/utils/Class'], function( Class ) {
 				"children": 	{get: function() { return (this._layout && this._layout.widgets) || null; }},
 				"layout": 		{get: function() { return this._layout || this.parentLayout || null; }},
 				"visible": 		{	
-									get: function() { return this._visible;  },
-								 	set: function(x) { this._visible = x; this.invalidate();  }
+									get: function() {   return 	this._visible;		},
+								 	set: function(x) { 
+								 		if(this._visible != x) {
+								 			this._visible = x; $(this.dom).toggle(x); this.invalidate(); 
+								 		} 
+								 	}		
 								},
 
 			});
@@ -140,7 +144,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			var each = this._sb.ext.each;
 			//use the local layout so we don't destroy a parent's layout
 			if(this._layout) {
-				each(this._layout.widgets, function(v,k) {
+				each(this.children, function(v,k) {
 					if(v.created) {
 						v.destroy();
 					}
@@ -208,11 +212,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		//watch a list of state properties
-		watch: function(type /*, string list*/) {
+		watch: function(funcName, type /*, string list*/) {
 			var args = this._sb.ext.slice(arguments, 1);
 			var s = this._sb.state;
 			var ss = this._watchers[type];
-			var df = this.bind("dirty");
+			var df = this.bind(funcName);
 			args.forEach(function(v,i) {
 				ss[v] = s.watch(type, v, df);
 			});
@@ -256,21 +260,22 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 
 		addChild: function(id, w) {
-			var ws = this.widgets;
+			var ws = this.children;
 			if(ws && !ws[id]) {
 				ws[id] = w;
-				var lo = this._sb.layout;
-				this._sb.queue.add(lo.resize.bind(lo, this.layout), this.id+"_resize", 50);
+				this.invalidate();
 			}
 		},
 		removeChild:function(id) {
-			var ws = this.widgets;
+			var ws = this.children;
 			if(ws[id]) {
 				var w = ws[id];
+				if(this.dom) {
+					this.dom.removeChild(w.dom);
+				}
 				delete ws[id];
 				w.destroy();
-				var lo = this._sb.layout;
-				this._sb.queue.add(lo.resize.bind(lo, this.layout), this.id+"_resize", 50);
+				this.invalidate();
 			}
 		},
 
@@ -291,6 +296,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 				"style": this.bind("cssText"),
 				"widget": this._noop,
 				"animate": this.bind("prop"),
+				"visible": this.bind("prop"),
 				"widget-name": this.bind("dataProperty"),
 				"class":this.deprecated.bind(this, 'Please use "klass" instead.'),
 				"klass":this.bind("className"), //class is reserved
@@ -306,7 +312,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 				"y": this._noop,
 				"height": this._noop,
 				"width": this._noop,
-				"fringe": this._noop
+				"fringe": this._noop,
 			};
 		},
 
@@ -322,6 +328,9 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		childrenLayout: function(/*name,*/ layout) {
+			//childrenLayout: layout defined by a 3rd party who likely creates this widget
+			//defaultLayout: layout this widget defines for itself. Normally this is set in the inherited
+			//					createLayout function, and then the super function is called. 
 			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
 			if(args.length) {
 				this._childrenLayout = layout;
@@ -445,14 +454,16 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 
 		invalidate: function() {
-			//this._beforeApplyLayout.bindDelay(this,this._delay);
-			this._sb.queue.add(this.bind("_beforeApplyLayout"), "_beforeApplyLayout" + this.id, this._delay);
+			if(this && this._sb) {
+				//this._beforeDraw.bindDelay(this,this._delay);
+				this._sb.queue.buffer(this.bind("_beforeApplyLayout"), "_buffer" + this.id, this._delay, true);
+			}
 		},
 
 		dirty: function() {
 			if(this && this._sb) {
 				//this._beforeDraw.bindDelay(this,this._delay);
-				this._sb.queue.add(this.bind("_beforeDraw"), "_beforeDraw" + this.id, this._delay);
+				this._sb.queue.buffer(this.bind("_beforeDraw"), "_buffer" + this.id, this._delay, true);
 			}
 		},
 
@@ -462,9 +473,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 		_beforeApplyLayout: function() {
 			if(this.canDraw()) { 		
+				this.showChildren();
 				this.applyLayout();
 				this._afterApplyLayout();
 			} else {
+				this.showChildren();
 				this.cleanup();
 			}
 		},
@@ -478,8 +491,18 @@ define(['sb_light/utils/Class'], function( Class ) {
 			this.dirty();
 		},
 
+
+		showChildren:function() {
+			var cd  = this.canDraw();
+			var children = this.children || {};
+			this._sb.ext.each(children, function(v,k) {
+				v.visible = cd;
+			});
+
+		},
+
 		applyLayout: function() {
-			this._sb.ext.debug("Applying layout:", this.id, this.name);
+			//this._sb.ext.debug("Applying layout:", this.id, this.name);
 			var d = this.dom;
 			var dim = this.bind("dim");
 			var px = this._sb.ext.px;
@@ -515,7 +538,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 		draw: function() {
 			//do this to the local layout, not the parent one
-			this._sb.ext.debug("Drawing:", this.id, this.name);
+			//this._sb.ext.debug("Drawing:", this.id, this.name);
 			if(this._layout) {
 				var rect = this._dom.getBoundingClientRect();
 				this._layout.rootWidth = rect.width;

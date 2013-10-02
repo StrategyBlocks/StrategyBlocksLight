@@ -79,9 +79,9 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 
 	//ACCESSS
-	state.state = function(type, val)	{		return _accessStorage("state", type, val);			};
-	state.context = function(type, val)	{		return _accessStorage("context", type, val);		};
-	state.data = function(type, val)	{		return _accessStorage("data", type, val);			};
+	state.state = function(type, val,force)	{		return _accessStorage("state", type, val, force);			};
+	state.context = function(type, val,force)	{		return _accessStorage("context", type, val, force);	 		};
+	state.data = function(type, val,force)	{		return _accessStorage("data", type, val, force);			};
 
 	
 	//init
@@ -125,16 +125,19 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	};
 
 
-	var _accessStorage = function(group, type,val) {
+	var _accessStorage = function(group, type,val, force) {
 		var sg = storage[group];
 		if(!sg.hasOwnProperty(type)) {
 			throw "SBLIGHT::State - Trying to access a state property that hasn't been initialized. " + group + "::" + type;
 		}
 
-		if(val !== undefined && sg[type] != val) {
-			sg[type] = val;
-			state.publish(group, type);
-			return this;
+		if(val !== undefined) {
+			//we still need to return "this" when 
+			if(force || sg[type] != val) {
+				sg[type] = val;
+				state.publish(group, type);
+			}
+			return state;
 		}
 		return sg[type];
 	};

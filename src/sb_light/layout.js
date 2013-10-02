@@ -105,7 +105,9 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 				_createWidgets(def.id, def.children, layout);
 			}
 		}
+		return widget;
 	};
+
 
 	var _matchLink = /^@(.+?)(#(left|right|top|bottom|height|width))?(#(-?\d+))?$/;
 	var _matchNum = /^(-?[\d\.]+)([^0-9]+)?$/;
@@ -304,24 +306,12 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 				return ph - rect.height - (rect.top- prect.top);
 			}
 			return pw - rect.width  - (rect.left - prect.left);
-		}
+		};
 	};
 
 	var _applyLayout = function(layout) {
 		for (var wid in layout.widgets) {
-			var w = layout.widgets[wid];
-			var sz = w.sizeFuncs.bind(w);
-			var r = sb.ext.roundTo;
-//			console.log("apply layout to ", wid);
-			// console.log(wid, 
-			// 		"left",		r(sz("left")(wid),1),
-			// 		"right",	r(sz("right")(wid),1),
-			// 		"top",		r(sz("top")(wid),1),
-			// 		"bottom",	r(sz("bottom")(wid),1),
-			// 		"width", 	r(sz("width")(wid),1),
-			// 		"height", 	r(sz("height")(wid),1)
-			// );
-			w.invalidate();
+			layout.widgets[wid].invalidate();
 		}
 	};
 
