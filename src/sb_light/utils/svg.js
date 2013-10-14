@@ -185,7 +185,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 	}
 
 	svg.isSvg = function(el) {
-		return el && el.ownerSVGElement != undefined; 
+		return el && el.namespaceURI.match(/svg/); 
 	}
 
 	svg.multiline = function(el, text, dx,dy) {

@@ -8,6 +8,13 @@ define(["sb_light/globals"], function(sb) {
 	//console.log("ext", sb.version);
 	var ext = {};
 
+	ext.pi = Math.PI;
+	ext.rad0 = 0;
+	ext.rad90 = ext.pi /2;
+	ext.rad180 = ext.pi;
+	ext.rad270 = ext.rad180 + ext.rad90;
+	
+
 	ext._unique = 0;
 	//return a unique number /id
 	ext.unique = function ext_unique() {
