@@ -49,14 +49,11 @@ define(['sb_light/globals'], function(sb) {
 		var sid = sb.state.state("user_id");
 		uid = uid || sid;
 
-		//return the user in the JSON before the user in the users model
-		if(uid == sid) {
-			return sb.state.context("user") || null;
-		}
-
-		//fall back onto the users model, if we have it. 
 		var us = sb.models.raw("users");
-		return us && uid ? us[uid] : null;	
+
+		//try the model, then the state, then null
+		return (us && uid && us[uid]) || (uid == sid && sb.state.context("user")) || null;
+
 	};
 	q.companyMembership = function() {
 		var u = q.user();

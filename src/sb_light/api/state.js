@@ -183,7 +183,13 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		});
 	};
 
-
+	state.getTimestamp = function(name) {
+		var m = models;
+		if(m[name]) {
+			return m[name].timestamp  || 0;
+		}
+		return 0;
+	};
 	state.resetTimestamp = function(name) {
 		var m = models;
 		if(m[name]) {

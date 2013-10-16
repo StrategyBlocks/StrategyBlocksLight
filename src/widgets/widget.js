@@ -249,7 +249,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		createLayout:function() {
 			var layout = this.childrenLayout();
 			if(layout && layout.length) {
-				this._layout = this._sb.layout.parse(this,layout);
+				this._layout = this._sb.layout.parse(this, layout);
 			} 
 		},
 
@@ -569,7 +569,10 @@ define(['sb_light/utils/Class'], function( Class ) {
 				width: this.dim("width"),
 				height:this.dim("height")
 			};
-		}
+		},
+
+
+
 
 	});
 

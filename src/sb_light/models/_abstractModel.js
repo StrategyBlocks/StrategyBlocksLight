@@ -152,7 +152,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_processResponse: function(data) {
 			this._model = this._model || {};
 			
-			this._sb.ext.debug("Processin Model", this.name);
+			this._sb.ext.debug("Processing Model", this.name);
 			
 			//The following order assumes a faulty server and ensures we don't update  or delete missing
 			//items.
@@ -198,6 +198,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 		//usually override by the model subclasses to provide some post-processing on the model elements before consumption 
 		//by a view
 		_massageUpdatedModel: function() {
+			var ts = this._sb.state.getTimestamp(this.name);
+			this._modelArray.forEach(function(v) {
+				//this can be used for performance reasons to check whether a model has been updated
+				v.__timestamp = ts;
+			});
 			
 		},
 		
