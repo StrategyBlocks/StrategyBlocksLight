@@ -279,7 +279,9 @@ define(["sb_light/globals"], function(sb) {
 	ext.sortTime = function ext_sortTime(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
 	ext.sortNumber = function ext_sortNumber(a,b){ return a-b; };
 	ext.sortNumbers = ext.sortNumber;
-	ext.sortDate = function ext_sortDate(a,b){ return ext.daysDiff(a,b); }; 
+	ext.sortDay = function ext_sortDate(a,b){ return ext.daysDiff(a,b); }; 
+	ext.sortDays = ext.sortDay;
+	ext.sortDate = function ext_sortDate(a,b){ return ext.sortNumber(ext.dateNumber(a), ext.dateNumber(b)); }; 
 	ext.sortDates = ext.sortDate;
 	ext.sortString = function ext_sortString(a,b){ return String(a).localeCompare(String(b)); };
 	ext.sortStrings = ext.sortString;
