@@ -77,13 +77,16 @@ var config_commonjs = {
 		}
 
 		if(!expName.match(/(almond)/) && !expName.match(/(main)/)) {
-			return contents + "\n\n exports."+ expName + " = require('" + moduleName + "');\n\n";
+			//return contents + "\n\n exports."+ expName + " = sb_light.require('" + moduleName + "');\n\n";
 		}
 
 
-		if(expName.match(/(main)/)) {
-			return contents + "\n\n exports.sb_light = require('" + moduleName + "');\n\n";
+		if(moduleName == "sb_light/main") {
+ 			return contents + "\n\n exports.sb_light = sb_light.require('" + moduleName + "');\n\n";
 		}
+		// if(moduleName == "widgets/main") {
+ 	// 		return contents + "\n\n exports.widgets = sb_light.require('" + moduleName + "');\n\n";
+		// }
 		return contents;
 	},
 	cjsTranslate: true,

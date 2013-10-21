@@ -23,7 +23,13 @@ define(["sb_light/globals"], function(sb) {
 
 	ext.noop = function(){};
 	ext.global = function(str) {
-		return window[str] !== undefined;
+		if(typeof window !== "undefined") {
+			return window[str] !== undefined;
+		} else if (typeof Ti !== "undefined") {
+			return Ti[str];
+		}
+		
+		return typeof window !== "undefined" &&  window[str] !== undefined;
 	};
 
 	ext.deprecated = function(oldF, newF, message) {
@@ -47,7 +53,7 @@ define(["sb_light/globals"], function(sb) {
 	ext.debug = function ext_debug() {
 		if(!sb.debug) { return; }
 		var str = ([(new Date()).toTimeString()]).concat(ext.slice(arguments)).join(" ");
-		if(ext.global("Ti")) {
+		if(ext.global("API")) {
 			Ti.API.debug(str);
 		} else if(ext.global("console")) {
 			console.log(str);

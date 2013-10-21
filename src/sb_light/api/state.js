@@ -41,7 +41,9 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			session: state.session_startup,
 			errors:null,
 			prevBlocks: null,
-			prevPages: null
+			prevPages: null,
+			user:null,
+			company:null
 		},
 
 		// local cache of app data -- stuff that you might store in a cookie. or non-model data that unrelated
@@ -84,6 +86,25 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	state.data = function(type, val,force)	{		return _accessStorage("data", type, val, force);			};
 
 	
+	state.url = function(url) {
+		if(arguments.length) {
+			var parts = sb.ext.isStr(url) ? url.split(";") : url;
+			if(sb.ext.isArray(parts)) {
+				parts = parts.reduce(function(prev,el) {
+					var km = el.split("=");
+					prev[km[0]] = km[1];
+					return prev;
+				}, {});
+			}
+			sb.each(parts, function(v,k) {
+				sb.state(k, v);
+			});
+		}
+		return sb.map(storage.state, function(v,k) {
+			return k + "=" + v; 
+		}).join(";");
+	}; 
+
 	//init
 	//these functions are needed to initialize at an application level without specifically watching for changes
 	//e.g., we know we'll need the properties and we want to set a default without having to specify it in 

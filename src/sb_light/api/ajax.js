@@ -89,7 +89,6 @@ define(['sb_light/globals'], function(sb) {
 
 	ajax.titanium = function() {	return function(opts) {
 		var p, str;
-		if(!sb.ext.ti()) { return; }
 		
 	    // Merge with default props
 	    var o = sb.ext.merge({
