@@ -404,7 +404,13 @@ define(['sb_light/utils/Class'], function( Class ) {
 			}
 			return dom.className;
 		},
+
+
+		_propertyMap: {
+			"fer":"for"
+		},
 		property: function(name, value /*==null*/) {
+			name = (name && this._propertyMap[name])  || name;
 			if(arguments.length > 1) {
 				this._dom.setAttribute(name, value);
 				return this;
@@ -428,7 +434,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 		text: function() {
 			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
-			if(args.length) {
+			if(args.length ) {
 				this._dom.textContent = args[0];
 				return this;
 			}

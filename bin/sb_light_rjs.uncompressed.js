@@ -7027,7 +7027,7 @@ sb_light.define('sb_light/main',[
 
 	state.host = "https://app.strategyblocks.com";
 
-	globals.ext.debug("Loaded SB: ", globals.state.host);
+	globals.ext.debug("Loaded SB: ");
 
 
 	return globals;

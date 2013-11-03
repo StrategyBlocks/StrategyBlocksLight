@@ -271,12 +271,18 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 		return path.join("");
 	};
 		
+	svg.transformMap = {"r": "rotate", "s":"scale", "t":"translate"};
 	svg.transform = function(o) { 
+		var order = o.order || ["r","s", "t"];
 		var t = [];
+
+		order.forEach(function(v) {
+			if(o[v]) {
+				var f = svg[svg.transformMap[v]]
+				t.put(f.apply(svg, o[v]));
+			}
+		});
 		
-		if(o.r) { t.put(this.rotate.apply(this,o.r)); }
-		if(o.s) { t.put(this.scale.apply(this,o.s)); }
-		if(o.t) { t.put(this.translate.apply(this, o.t)); }
 		// console.log("transform", t.join(" "));
 		return t.join(" "); 
 	};
