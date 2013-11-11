@@ -246,6 +246,8 @@ define(["sb_light/globals"], function(sb) {
 	ext.moment = function ext_moment(d) { return sb.moment(d);	};
 	ext.dateNumber = function ext_dateNumber(d) { return ext.moment(d).valueOf();	};
 	ext.date = function ext_date(d) { return ext.moment(d).toDate();	};
+
+	//number is positive when db is earlier than da
 	ext.daysDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"days");};
 	ext.today = function ext_today() { return new Date(); };
 	ext.minDate = function ext_minDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate)[0]); };
@@ -321,7 +323,6 @@ define(["sb_light/globals"], function(sb) {
 		//Now, both have started. Return the variance diff
 		return ext.sortNumbers( (a.percent_progress/aep), (b.percent_progress/bep) );
 	};
-	
 		
 		/************  CSS ***************************/
 	ext.px = function ext_px(number) {		return [number,"px"].join("");	};
@@ -513,8 +514,6 @@ define(["sb_light/globals"], function(sb) {
 		data.values = data.values && data.values.length ? data.values : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
 		data.target = data.target && data.target.length ? data.target : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
 
-		var td = [];
-		var vd = [];
 		var dataMap = {};
 		
 		data.values.forEach(function ext_massageTA_forEachVal(el) {
@@ -545,7 +544,44 @@ define(["sb_light/globals"], function(sb) {
 		}
 		
 		data.dates = dates.sort(ext.sortDate);
-		
+
+		var vdata = data.values;
+		var tdata = data.target;
+
+		var v = 0;
+		var ts = 0;
+		var tn = Math.min(tdata.length-1, 1);
+		while(v < vdata.length) {
+			var vd = vdata[v];
+			var tsd = tdata[ts];
+			var tnd = tdata[tn];
+
+			//v is before ts
+			if(ext.daysDiff(vd.date, tsd.date) <= 0) {
+				vd.target = tsd.value; v++; continue;
+			}
+			//v is after next target
+			if(ext.daysDiff(vd.date, tnd.date) > 0) {
+				if(tn == tdata.length-1) {
+					vd.target = tnd.value;
+					v++; continue; 
+				} else {
+					ts++; tn++; continue;
+				}
+			}
+
+			//v is before tn but after ts
+			if(ext.daysDiff(vd.date, tnd.date) <=0 ) {
+				var tsn = ext.dateNumber(tsd.date);
+				var tnn = ext.dateNumber(tnd.date);
+				var vn = ext.dateNumber(vd.date);
+
+				vd.target = tsd.value + (((tnn-vn)/(tnn-tsn)) * (tnd.value - tsd.value));
+				v++;
+			}
+
+		}
+
 		return data;
 	};
 
@@ -584,12 +620,14 @@ define(["sb_light/globals"], function(sb) {
 		ext.each(vd, function(el) {
 			minA = ext.min( el.value, minA );
 			maxA = ext.max( el.value, maxA );
+			el.id = el.id || ("actual_" + ext.unique());
 		});
 		var minT = td[0].value;
 		var maxT = td[0].value;
 		ext.each(td, function(el) {
 			minT = ext.min( el.value, minT );
 			maxT = ext.max( el.value, maxT );
+			el.id = el.id || ("target_" + ext.unique());
 		});
 		
 		var upper = ext.max(data.tolerance.range_end, data.tolerance.range_start) / (pc ? 100 : 1);

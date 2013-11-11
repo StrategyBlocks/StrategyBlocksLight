@@ -114,6 +114,13 @@ define(['sb_light/globals'], function(sb) {
 		}
 		return list; 
 	}
+
+	q.focusPath = function(fid) {
+		var list = q.focusList(fid);
+		return list.reverse().map(function(v,k){
+			return v.title;
+		}).join(" / ");
+	}
 	
 	/********************************
 		Levels
@@ -352,11 +359,31 @@ define(['sb_light/globals'], function(sb) {
 	
 	
 	q.maxDate = function() {
-		return sb.ext.moment(q.rootBlock().end_date);
+		return sb.ext.date(q.rootBlock().end_date);
 	};
 	q.minDate = function() {
-		return sb.ext.moment(q.rootBlock().start_date);
+		return sb.ext.date(q.rootBlock().start_date);
 	};
+
+	q.blockTarget = function(b) {
+		b = (sb.ext.isStr(b) || sb.ext.isArr(b)) ? block(b) : b;
+		if(!b || b.ownership_state == "new") { return 0; }
+		return b.expected_progress;
+	},
+	q.blockProgress = function(b) {
+		b = (sb.ext.isStr(b) || sb.ext.isArr(b)) ? block(b) : b;
+		if(!b || b.ownership_state == "new") { return 0; }
+		return b.percent_progress;
+	},
+	q.blockVariance = function(b) {
+		var p  = q.blockProgress(b);
+		var e  = q.blockTarget(b);
+		return e > 0 ? Math.floor( ((p - e)/e) *100) : 100;
+
+
+	}
+
+
 
 	//returns the available range of dates for the date picker on this block
 	// 1. Block cannot START earlier than its parent blocks
@@ -509,7 +536,7 @@ define(['sb_light/globals'], function(sb) {
 			
 			pnode.children = siblings.map(function(el, idx) {
 				var path = ppath.concat([el]).join("_");
-				var vt = q.blockViewType(path);
+				var vt = q.blockType(path);
 
 				
 				return {
@@ -528,17 +555,28 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 
-	q.blockViewType = function(path) {
-		//make sure this property exists before we use it. 
-		sb.state.initState(sb.consts.STATE.BLOCKS_TREE_VIEW, sb.consts.BLOCK_SETTINGS.VIEW.STATUS.key);
-		sb.state.initState(sb.consts.STATE.BLOCK_SETTINGS_VIEW, "");
+	q.defaultBlockType = function(type) {
+		var kn = type || null;
+		var types = sb.consts.blockTypes();
+		var val = types.find("key", sb.state.state("blockType")).value;
+		val = val || types[0];
+		return kn ? val[kn] : val;
+		
+	};
 
-		var defaultType = sb.state.state(sb.consts.STATE.BLOCKS_TREE_VIEW) || sb.consts.BLOCK_SETTINGS.VIEW.STATUS.key;
-		var localType = sb.state.getStateKey(sb.consts.STATE.BLOCK_SETTINGS_VIEW, path);
-		if(!localType || localType == sb.consts.BLOCK_SETTINGS.VIEW.DEFAULT.key) {
-			localType = defaultType;
-		} 	
-		return localType;
+	q.blockType = function(path) {
+		//make sure this property exists before we use it. 
+		sb.state.initState("blockType", "status");
+		sb.state.initState("blockSettings", "");
+
+		var types = sb.consts.blockTypes({key:"shortkey"});
+
+		var defaultType = q.defaultBlockType("shortkey");
+		var localType = sb.state.getStateKey("blockSettings", path);
+		if(localType) {
+			localType = localType.match(/b\w/)[0];
+		}
+		return localType || defaultType;
 	}
 
 	return q;

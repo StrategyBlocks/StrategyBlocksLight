@@ -1,3 +1,7 @@
+
+/*globals define */
+
+
 //Subscription manager
 //Created to help with D3 exit().remove(). 
 //We need D3 element creation functions to be able to subscribe to SBLight events, but that
@@ -7,32 +11,49 @@
 //As long as the initial su
 
 define(['sb_light/globals'], function(sb) {
-	var subs = {};
+	'use strict';
 
+	var subs = {};
 	var _subsCache = [];
 
-	subs.subscribe = function(element, who, what, where) {
+
+
+	//opts:
+	//	opts.type = model | state
+	//	opts.group = state group
+	//	opts.name = subscription name
+	//	opts.handler = cb function 
+	subs.subscribe = function(element, opts) {
 		var match = _subsCache.find("element", element);
 		if(!match.value) {
 			_subsCache.push({element:element, subs:[]});
 		}
 		var elSubs = match.value || _subsCache.last();
-		var found = elSubs.subs.some(function(sub) {
-			return sub.who == who && sub.what == what;
-		});
 
-		if(!found) {
-			//sb.ext.debug("Subscribe", element, who, what)
-			try {
-			elSubs.subs.push({
-				who:who,
-				what:what,
-				key: who.subscribe(what, where)
-			})
-			} catch(e) {
-				sb.ext.debug("Capture error", e);
+		var found = false;
+		if(opts.type == "model") {
+			found= elSubs.subs.some(function(sub) {
+				return sub.name == opts.name;
+			});
+			if(!found) {
+				elSubs.subs.push({
+					type:opts.type,
+					name:opts.name,
+					key: sb.models.subscribe(opts.type, opts.name, opts.handler)
+				});
 			}
-			//sb.ext.debug("Done Subscribe");
+		} else if (opts.type == "state") {
+			found= elSubs.subs.some(function(sub) {
+				return opts.group == sub.group && sub.name == opts.name;
+			});
+			if(!found) {
+				elSubs.subs.push({
+					type:opts.type,
+					group:opts.group,
+					name:opts.name,
+					key:  sb.state.watch(opts.group, opts.name, opts.handler)
+				});
+			}
 
 		}
 	};
@@ -41,8 +62,11 @@ define(['sb_light/globals'], function(sb) {
 		var elSubs = _subsCache.find("element", element).value;
 		if(elSubs) {
 			elSubs.subs.forEach(function(sub) {
-				//sb.ext.debug("Unsubscribe", element, sub.who, sub.what)
-				sub.who.unsubscribe(sub.what, sub.key);
+				if(sub.type == "model") {
+					sb.models.unsubscribe(sub.name, sub.key);
+				} else 	if(sub.type == "state") {
+					sb.state.unwatch(sub.group, sub.name, sub.key);
+				}
 			});
 		}
 	};

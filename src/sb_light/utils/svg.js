@@ -1,5 +1,9 @@
 
+/*globals define*/
+
 define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
+
+	'use strict';
 
 	var svg =  {};
 
@@ -14,8 +18,8 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 		//add the d3 extensions that were cached. 
 		sb.ext.each(c, function(v,k) {
 			svg.extendD3(k,v);
-		})
-	}
+		});
+	};
 
 	svg.extendD3 = function(name, func) {
 		//protection for the compiled files. d3 is not necessarily required for this library to work. 
@@ -31,11 +35,11 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 		d3.selection.enter.prototype[name] = 
 		//the function
 		func;
-	}
+	};
 
-	svg.extendD3("isD3", function(el) {
+	svg.extendD3("isD3", function() {
 		return true;
-	})
+	});
 
 
 	//extensions to d3
@@ -61,19 +65,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 	//takes an object taking the subscribe call(who),
 		//a string describing what to subscribe to (what), and
 		//a cb function to handle the subscription (where)
-	svg.extendD3("subscribe", function(who,what,where) {
+	svg.extendD3("subscribe", function(opts) {
 		var sel = this;
 		sel.each(function(d,i) {
-			sb.subman.subscribe(this, who,what, where);
+			sb.subman.subscribe(this, opts);
 		});
 		return sel;
-	})
+	});
 
 	svg.extendD3("cleanup", function() {
 		var sel = this;
 		sel.each(function(d,i) {
 			sb.subman.unsubscribe(this);
-		})
+		});
 		sel.remove();
 		return sel;
 	});
@@ -142,7 +146,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 		"left":"start", "start":"start", "l":"start", "s":"start",
 		"center":"middle", "middle":"middle", "c":"middle", "m":"middle",
 		"right":"end", "end":"end", "r":"end", "e":"end"
-	}	
+	};	
 
 	//d3 uses this property as a "style" rather than an attribute in their SVG helpers.
 	//keep this consistent. 
@@ -179,14 +183,13 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 
 	svg.d3 = function(el) {
 		// console.log("Checking el", el);
-		var isD3 = el && el["isD3"] && el.isD3();
-
+		var isD3 = el && el.isD3 && el.isD3();
 		return isD3 ? el : d3.select(el);
-	}
+	};
 
 	svg.isSvg = function(el) {
 		return el && el.namespaceURI.match(/svg/); 
-	}
+	};
 
 	svg.multiline = function(el, text, dx,dy) {
 		if(!text) { return ; }
@@ -278,7 +281,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 
 		order.forEach(function(v) {
 			if(o[v]) {
-				var f = svg[svg.transformMap[v]]
+				var f = svg[svg.transformMap[v]];
 				t.put(f.apply(svg, o[v]));
 			}
 		});
@@ -304,7 +307,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
 		
 	svg.path = function() {
 		return sb.ext.slice(arguments).join("");
-	}	
+	};	
 
 		//utils for d3
 		

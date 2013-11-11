@@ -75,6 +75,8 @@ define(['sb_light/utils/Class'], function( Class ) {
 				"visible": 		{	
 									get: function() {   return 	this._visible;		},
 								 	set: function(x) { 
+								 		//normalize to force boolean otherwise .toggle gets odd
+								 		x = x ? true : false;
 								 		if(this._visible != x) {
 								 			this._visible = x; $(this.dom).toggle(x); this.invalidate(); 
 								 		} 
@@ -352,6 +354,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 			}
 		},
 
+
 		//widget property, not dom property
 		prop:function(name,value) {
 			//convert the name to "_name" if necessary
@@ -534,8 +537,21 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 		_beforeDraw: function() {
 			if(this.canDraw()) {
+				d3.select(this.dom).style("visibility", "visible");
+				//do this to the local layout, not the parent one
+				//this._sb.ext.debug("Drawing:", this.id, this.name);
+				if(this._layout) {
+					var rect = this._dom.getBoundingClientRect();
+					this._layout.rootWidth = rect.width;
+					this._layout.rootHeight = rect.height;
+					//apply child layout. 
+					this._sb.layout.resize(this._layout);
+				}
+
 				this.draw();
 				this._afterDraw();
+			} else {
+				d3.select(this.dom).style("visibility", "hidden");
 			}
 		},
 
@@ -543,15 +559,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 		draw: function() {
-			//do this to the local layout, not the parent one
-			//this._sb.ext.debug("Drawing:", this.id, this.name);
-			if(this._layout) {
-				var rect = this._dom.getBoundingClientRect();
-				this._layout.rootWidth = rect.width;
-				this._layout.rootHeight = rect.height;
-				//apply child layout. 
-				this._sb.layout.resize(this._layout);
-			}
+			
 		},
 
 		cleanup: function() {

@@ -3,7 +3,8 @@
 
 define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], function(sb,consts,ext) {
 	//console.log("State:",sb.version);
-	
+	'use strict';
+
 	var state = {};
 	
 	state.stateKeys = [
@@ -78,7 +79,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 	//ACCESSS
 	state.state = function(type, val,force)	{		return _accessStorage("state", type, val, force);			};
-	state.context = function(type, val,force)	{		return _accessStorage("context", type, val, force);	 		};
+	state.context = function(type, val,force)	{	return _accessStorage("context", type, val, force);	 		};
 	state.data = function(type, val,force)	{		return _accessStorage("data", type, val, force);			};
 
 	
@@ -86,7 +87,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	//these functions are needed to initialize at an application level without specifically watching for changes
 	//e.g., we know we'll need the properties and we want to set a default without having to specify it in 
 	//each sub component that needs it. 
-	state.initState = function(type, _default)		{			return _initStorage("state", type,_default);	};
+	state.initState = function(type, _default)		{		return _initStorage("state", type,_default);	};
 	state.initContext = function(type, _default)	{		return _initStorage("context", type, _default);		};
 	state.initData = function(type, _default)		{		return _initStorage("data", type, _default);		};
 
@@ -267,7 +268,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	//startup -- the first state of this system. This used to be "unknown", but in some cases it's useful to
 	//know that we're in the initialization phase. So we always start in the "startup" state, and then
 	//move into the "unknown" state.  
-	state.startup = function() {	return storage.context.session == state.session_startup };
+	state.startup = function() {	return storage.context.session == state.session_startup; };
 	
 	//any state but unknown 
 	state.known = function() {	return storage.context.session != state.session_unknown;	};
