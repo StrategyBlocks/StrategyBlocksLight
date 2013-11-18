@@ -176,8 +176,8 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 			
 			var p = ppath ? this._model[ppath.last()] : null;
 			if(p) {
-				var pel =  b.parents.find("parent_id", p.id).value;
-				var dpel = b.parents.find("linked_parent_id", null).value;
+				var pel =  b.parents.findKey("parent_id", p.id).value;
+				var dpel = b.parents.findKey("linked_parent_id", null).value;
 				pel.position = p.children.indexOf(b.id);
 				pel.level = depth;
 				

@@ -275,7 +275,7 @@ define(['sb_light/globals'], function(sb) {
 		bpath = q.blockPath(bpath);
 		var b = bpath ? q.block(bpath) : null;
 		if(b && b.parents && b.parents.length) {
-			return b.parents.find("parent_id", bpath.last(1)).value;
+			return b.parents.findKey("parent_id", bpath.last(1)).value;
 		}
 		return null;	
 	};
@@ -558,7 +558,7 @@ define(['sb_light/globals'], function(sb) {
 	q.defaultBlockType = function(type) {
 		var kn = type || null;
 		var types = sb.consts.blockTypes();
-		var val = types.find("key", sb.state.state("blockType")).value;
+		var val = types.findKey("key", sb.state.state("blockType")).value;
 		val = val || types[0];
 		return kn ? val[kn] : val;
 		

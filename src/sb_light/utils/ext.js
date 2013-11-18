@@ -928,14 +928,14 @@ define(["sb_light/globals"], function(sb) {
 	}
 	
 	
-	if (!Array.prototype.find) {  
-		Array.prototype.find = function ext_array_find(key, value) {  
+	if (!Array.prototype.findKey) {  
+		Array.prototype.findKey = function ext_array_find(key, value) {  
 			for(var i = 0; i < this.length; ++i) {
 				if(this[i][key] == value) { return {index:i, value:this[i]} ; }
 			}
 			return {index:NaN, value:null};
 		};
-	}
+	} 
 
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/indexOf

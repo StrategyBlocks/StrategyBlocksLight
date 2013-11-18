@@ -40,7 +40,9 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		context: {
 			flash:null,
 			session: state.session_startup,
-			errors:null
+			errors:null,
+			company:null,
+			user:null
 		},
 
 		// local cache of app data -- stuff that you might store in a cookie. or non-model data that unrelated
@@ -333,6 +335,8 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			if(uid != storage.state.user_id || cid != storage.state.company_id) {
 				storage.state.user_id = data.user ? data.user.id : null;
 				storage.state.company_id = data.company ? data.company.id : storage.state.company_id;
+				sb.queue.add(state.publish.bind(state, "state", "user_id"), "sb_state_publish_state_user_id", 100);
+				sb.queue.add(state.publish.bind(state, "state", "company_id"), "sb_state_publish_state_company_id", 100);
 			}
 			
 			storage.context.user = data.user || null;

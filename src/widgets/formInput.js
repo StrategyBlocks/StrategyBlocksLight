@@ -27,10 +27,10 @@ define(['widgets/widget'], function( W ) {
 		type: function(__ignore__, value) {
 			var args =this._sb.ext.slice(arguments, arguments[0] == "type" ? 1 : 0);
 			if(args.length) {
-				this._layout.widgets[this.cid("input")].property("type", value);	
+				this._layout.widgets[this.cid("input")].attr("type", value);	
 				return this;
 			}
-			return this._layout.widgets[this.cid("input")].property("type");
+			return this._layout.widgets[this.cid("input")].attr("type");
 		},
 		label: function(__ignore__, value) {
 			var args =this._sb.ext.slice(arguments, arguments[0] == "label" ? 1 : 0);

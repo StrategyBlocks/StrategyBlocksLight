@@ -76,7 +76,7 @@ define(['sb_light/globals'], function(sb) {
 	queue.add = function queue_add(func, name, delay, update) {
 		delay = sb.ext.number(delay, 0)
 		name = name || ("queued_" + sb.ext.unique());
-		var val = low_list.find("name", name).value;
+		var val = low_list.findKey("name", name).value;
 		if(!val) {
 			//sb.ext.debug("QUEUE: Adding: ", name);
 			low_list.push({name:name, func:func, time:sb.ext.time(), delay:delay});
@@ -89,7 +89,7 @@ define(['sb_light/globals'], function(sb) {
 	queue.high = function queue_high(func,name, delay, update) {
 		delay = sb.ext.number(delay,0);
 		name = name || "queued_" + sb.ext.unique();
-		var val = high_list.find("name", name).value;
+		var val = high_list.findKey("name", name).value;
 		if(!val) {
 			//sb.ext.debug("QUEUE: Adding HIGH: ", name);
 			high_list.push({name:name, func:func,  time:sb.ext.time(), delay:delay});
@@ -107,12 +107,12 @@ define(['sb_light/globals'], function(sb) {
 			return;
 		}
 
-		var lidx = low_list.find("name", name).index;
+		var lidx = low_list.findKey("name", name).index;
 		if(lidx >= 0) {
 			low_list.splice(lidx,1);
 			return;
 		}
-		var hidx = high_list.find("name", name).index;
+		var hidx = high_list.findKey("name", name).index;
 		if(hidx >= 0) {
 			high_list.splice(hidx,1);
 			return;

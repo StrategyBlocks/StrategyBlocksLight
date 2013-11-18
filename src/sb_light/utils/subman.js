@@ -24,7 +24,7 @@ define(['sb_light/globals'], function(sb) {
 	//	opts.name = subscription name
 	//	opts.handler = cb function 
 	subs.subscribe = function(element, opts) {
-		var match = _subsCache.find("element", element);
+		var match = _subsCache.findKey("element", element);
 		if(!match.value) {
 			_subsCache.push({element:element, subs:[]});
 		}
@@ -59,7 +59,7 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 	subs.unsubscribe = function(element) {
-		var elSubs = _subsCache.find("element", element).value;
+		var elSubs = _subsCache.findKey("element", element).value;
 		if(elSubs) {
 			elSubs.subs.forEach(function(sub) {
 				if(sub.type == "model") {

@@ -100,8 +100,8 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 
 
-		cid:function(name) {
-			return [this.id, name].join("_");
+		cid:function(name, hash) {
+			return (hash ? "#":"") + [this.id, name].join("_");
 		},
 
 
@@ -143,6 +143,10 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 		destroy: function() {
 			if(!this._created) { return; }
+			this._created = false; 
+			//NEEDS DOING or events go wonky. 
+			this._sb.queue.cancel("_buffer" + this.id);
+
 			var each = this._sb.ext.each;
 			//use the local layout so we don't destroy a parent's layout
 			if(this._layout) {
@@ -293,7 +297,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_noop: function() {},
 		_propertyOverrides: function() {
 			return {
-				"default": this.bind("property"),
+				"default": this.bind("attr"),
 				"css": this.bind("cssText"),
 				"style": this.bind("cssText"),
 				"widget": this._noop,
@@ -302,7 +306,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 				"widget-name": this.bind("dataProperty"),
 				"class":this.deprecated.bind(this, 'Please use "klass" instead.'),
 				"klass":this.bind("className"), //class is reserved
-				"fer": this.bind("property"), //alias for "for" on labels, as it's a reserved word. 
+//				"fer": this.bind("attr"), //alias for "for" on labels, as it's a reserved word. 
 				"children":this.bind("childrenLayout"),
 				"domNode":this._noop,
 				"text": this.bind("text"),
@@ -355,7 +359,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 
-		//widget property, not dom property
+		//widget property, not dom attribute
 		prop:function(name,value) {
 			//convert the name to "_name" if necessary
 			var innerName;
@@ -389,19 +393,22 @@ define(['sb_light/utils/Class'], function( Class ) {
 			}
 		},
 		//optional "class" string based on who calls it. does nothing,gets ignored. 
-		//name is the class name to apply
+		//name is the class name to apply. separate multiple with spaces as usual
 		//remove is a boolean, which removes the class if true. 
 		className: function(/*class(?), name, remove*/) {
 			var args = this._sb.ext.slice(arguments, arguments[0]=="klass" ? 1 : 0);
 			var dom = this.dom;
+			var self = this;
 			if(args.length) {
-				var name = args[0];
+				var names = args[0];
 				var remove = args[1]  || false;
-				if(remove) {
-					delete this._classList[name];
-				} else {
-					this._classList[name] = true;
-				}
+				names.split(" ").forEach(function(n) {
+					if(remove) {
+						delete self._classList[n];
+					} else {
+						self._classList[n] = true;
+					}
+				});
 				dom.className = this._sb.ext.keys(this._classList).join(" ");
 				return this;
 			}
@@ -409,11 +416,11 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},
 
 
-		_propertyMap: {
-			"fer":"for"
+		_attrMap: {
+			"fer":"for"   //"for" is a reserved word
 		},
-		property: function(name, value /*==null*/) {
-			name = (name && this._propertyMap[name])  || name;
+		attr: function(name, value /*==null*/) {
+			name = (name && this._attrMap[name])  || name;
 			if(arguments.length > 1) {
 				this._dom.setAttribute(name, value);
 				return this;
@@ -423,7 +430,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 
 
 		dataProperty: function(name, value /*==null*/) {
-			this.property.call(this, "data-"+name, value);
+			this.attr.call(this, "data-"+name, value);
 		},
 
 		cssText: function() {
@@ -504,6 +511,9 @@ define(['sb_light/utils/Class'], function( Class ) {
 		showChildren:function() {
 			var cd  = this.canDraw();
 			var children = this.children || {};
+			if(!this._sb) {
+				console.log("wtf");
+			}
 			this._sb.ext.each(children, function(v,k) {
 				v.visible = cd;
 			});
@@ -528,7 +538,10 @@ define(['sb_light/utils/Class'], function( Class ) {
 				["left","top","width","height"].forEach(function(s) {
 					var sf = sz(s);
 					if(sf) {
-						dim(s, sf() );
+						var amt = sf();
+						if( (s != "width" && s != "height") || amt != 0) {
+							dim(s, amt );
+						}
 					}
 				});
 			// }
