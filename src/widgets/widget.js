@@ -1,6 +1,10 @@
 /* globals define, $ */
 
-define(['sb_light/utils/Class'], function( Class ) {
+define([
+	'sb_light/utils/Class', 
+	//no args
+	"d3"
+], function( Class ) {
 	
 	//local private statics
 	var dims = {"b":"bottom", "l":"left", "r":"right", "t":"top", "h":"height","w":"width", "f":"fringe"};
