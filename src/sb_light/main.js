@@ -3,7 +3,7 @@
 
 define([
 	'sb_light/globals',
-	'sb_light/lib/moment',	
+	'moment',	
 	'sb_light/utils/ext',	
 	'sb_light/utils/dom',	
 	'sb_light/utils/subman',	

@@ -11,7 +11,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	lo.create = function(parent, def) {
 		try {
 			var el;
-			if(sb.ext.isStr(def.widget)) {
+			if(!def.widget || sb.ext.isStr(def.widget)) {
 				if(def.widget == "svg") {
 					el = (new SvgWidget(sb,parent,def));
 				} else {
@@ -187,6 +187,10 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 					}
 				} else if (dim == "auto") {
 					sz(s, _autoFunc(wid, s, w, layout));
+				} else if (dim == "flow") {
+					sz(s, function(s) {
+						w.dom.getBoundingClientRect()[s];
+					});
 				} else if (!m) {
 					//console.log("Undefined: ", wid, s, w.parentId);
 					//console.log("Undefined: ", pzw, pzh);

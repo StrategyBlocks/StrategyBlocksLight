@@ -1,8 +1,8 @@
-/*globals define, Ti, console*/
+/*globals define, Ti, console, moment*/
 /*jslint passfail: false */
 
 
-define(["sb_light/globals"], function(sb) {
+define(["sb_light/globals", "moment"], function(sb) {
 	"use strict";
 
 	//console.log("ext", sb.version);
@@ -243,7 +243,7 @@ define(["sb_light/globals"], function(sb) {
 	ext.parseDate = function ext_moment(d) {
 		ext.deprecated("ext.parseDate", "ext.moment");
 	};
-	ext.moment = function ext_moment(d) { return sb.moment(d);	};
+	ext.moment = function ext_moment(d) { return moment(d);	};
 	ext.dateNumber = function ext_dateNumber(d) { return ext.moment(d).valueOf();	};
 	ext.date = function ext_date(d) { return ext.moment(d).toDate();	};
 
@@ -255,17 +255,19 @@ define(["sb_light/globals"], function(sb) {
 	ext.serverFormat = "YYYY/MM/DD";
 	ext.userFormat = function ext_userFormat() { 
 		var u = sb.queries.user();
-		return u ? u.date_format : ext.serverFormat;
+		var udf = u ? u.date_format : ext.serverFormat;
+		ext.debug("User date format: ", udf);
+		return udf;
 	};
-	ext.serverDate = function ext_serverDate(d) { return sb.moment(d||new Date()).format(ext.serverFormat); };
-	ext.userDate = function ext_userDate(d) { return sb.moment(d||new Date()).format( ext.userFormat()); };
+	ext.serverDate = function ext_serverDate(d) { return moment(d||new Date()).format(ext.serverFormat); };
+	ext.userDate = function ext_userDate(d) { return moment(d||new Date()).format( ext.userFormat()); };
 	ext.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
 		if(reverse) {
-			return "(" + sb.moment(d).fromNow() + ")&nbsp;" + sb.moment(d).format(format || ext.userFormat());
+			return "(" + moment(d).fromNow() + ")&nbsp;" + moment(d).format(format || ext.userFormat());
 		} 
-		return sb.moment(d).format(format || ext.userFormat()) + "&nbsp;(" + sb.moment(d).fromNow() + ")";
+		return moment(d).format(format || ext.userFormat()) + "&nbsp;(" + moment(d).fromNow() + ")";
 	};
-	ext.fromNow = function ext_fromNow(d) {		return sb.moment(d).fromNow();	};
+	ext.fromNow = function ext_fromNow(d) {		return moment(d).fromNow();	};
 
 
 		/************  REGEXPS ***************************/
@@ -727,6 +729,36 @@ define(["sb_light/globals"], function(sb) {
 		return res; 
 
 	};
+
+
+	ext.template = function ext_template(obj, template, defaults) {
+		var m = template.match(/({.+?})/g);
+		return m.reduce(function(out, str) {
+			var key = str.replace(/[{}]/g, "");
+			var val = (obj[key] !== undefined) ? obj[key] : null;
+			val = (val === null && defaults[key] !== undefined) ? defaults[key] : val; 
+			val = (val === null && key.match(/col\d/) )? key.replace(/col(\d\d?)/, "col-sm-$1") : val;
+			val = (val === null && key.match(/offset\d/) )? key.replace(/col(\d\d?)/, "col-sm-offset-$1") : val;
+
+			return val == null ? out : out.replace(str, val);
+		}, template);
+	};
+
+
+//POLYFILLS ------------------------------------------------------------------------------------------------
+//POLYFILLS ------------------------------------------------------------------------------------------------
+//POLYFILLS ------------------------------------------------------------------------------------------------
+//POLYFILLS ------------------------------------------------------------------------------------------------
+//POLYFILLS ------------------------------------------------------------------------------------------------
+//POLYFILLS ------------------------------------------------------------------------------------------------
+//POLYFILLS ------------------------------------------------------------------------------------------------
+//POLYFILLS ------------------------------------------------------------------------------------------------
+//POLYFILLS ------------------------------------------------------------------------------------------------
+
+
+
+
+
 
 	//From Mozilla
 	//https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/forEach

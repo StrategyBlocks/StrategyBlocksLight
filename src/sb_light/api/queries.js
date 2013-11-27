@@ -11,7 +11,7 @@
 	nature of the models. 
 ************************/
 
-define(['sb_light/globals'], function(sb) {
+define(['sb_light/globals', "moment"], function(sb, moment) {
 	
 	
 	var q = {};
@@ -67,13 +67,13 @@ define(['sb_light/globals'], function(sb) {
 	}; 
 	q.userDate = function(date, opts) {
 		var u = q.user();
-		return sb.moment(date, opts).format(u.date_format);	
+		return moment(date, opts).format(u.date_format);	
 	
 	};
 	var _serverDateFormat =  "YYYY/MM/DD";
 	q.userToServerDate = function(date, opts) {
 		var u = q.user();
-		var m = sb.moment(date, u.date_format);
+		var m = moment(date, u.date_format);
 		return m.format(_serverDateFormat);
 	};
 	
@@ -392,10 +392,10 @@ define(['sb_light/globals'], function(sb) {
 	// 4. Block cannot END after its parent unless that parent it floating
 	q.dateRange = function(b) {
 		var dates = {
-			minStart: sb.moment(new Date(1980,1,1)),	
-			maxStart: sb.moment(new Date(2038,12,31)),	
-			minEnd: sb.moment(new Date(1980,1,1)),	
-			maxEnd: sb.moment(new Date(2038,12,31))	
+			minStart: moment(new Date(1980,1,1)),	
+			maxStart: moment(new Date(2038,12,31)),	
+			minEnd: moment(new Date(1980,1,1)),	
+			maxEnd: moment(new Date(2038,12,31))	
 		};
 		
 		var p = q.block(b.default_parent);

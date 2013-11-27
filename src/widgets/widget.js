@@ -314,6 +314,7 @@ define([
 				"children":this.bind("childrenLayout"),
 				"domNode":this._noop,
 				"text": this.bind("text"),
+				"html": this.bind("html"),
 				"left": this._noop,
 				"right": this._noop,
 				"top": this._noop,
@@ -455,6 +456,15 @@ define([
 			return this._dom.textContent;
 		},
 
+		html: function() {
+			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
+			if(args.length ) {
+				this._dom.innerHTML = args[0];
+				return this;
+			}
+			return this._dom.innerHTML;
+		},
+
 		sizeDefs:function(name, value) {
 			if(arguments.length > 1) {
 				this._sizeDefs[name] = value;
@@ -546,7 +556,7 @@ define([
 						if( (s != "width" && s != "height") || amt != 0) {
 							dim(s, amt );
 						}
-					}
+					} 
 				});
 			// }
 		},

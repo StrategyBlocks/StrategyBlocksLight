@@ -6,7 +6,7 @@ define(['sb_light/globals'], function(sb) {
 
 	consts.blockWidth = function() {	return 350;	};
 	consts.blockHeight= function(selected) {return selected ? 185 : 150;};
-	consts.blockTreePadding= function(x) {return x ? 80 : 90;};
+	consts.blockTreePadding= function(x) {return x ? 80 : 110;};
 	consts.blockTypes = function(opts) {
 		opts = opts || {};
 		var types = [
