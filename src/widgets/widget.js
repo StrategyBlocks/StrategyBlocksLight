@@ -33,6 +33,7 @@ define([
 		_childrenLayout:null,
 		_defaultLayout:null,
 		_delay:50,
+		__drawing:false,
 
 		//do not override
 		init:function(sb, parent, def) {
@@ -63,6 +64,7 @@ define([
 			Object.defineProperties(this, {
 				"created": 		{get: function() { return this._created; }},
 				"widget": 		{get: function() { return true; }},
+				"isDrawing": 	{get: function() { return this.__drawing; }},
 				"dom": 			{get: function() { return this._dom; }},
 				"id": 			{get: function() { return (this._def && this._def.id) || (this._dom && this._dom.id);  	}},
 				"name": 		{get: function() { return this._name || (this._def && this._def.widget); }},
@@ -238,7 +240,9 @@ define([
 			var ms = this._sb.models;
 			var valid= true;
 			this._sb.ext.each(this._models, function(v,k) {
-				valid = valid && ms.raw(k) !== null;
+				var m = ms.get(k);
+				//"m.get" will force a fetch if it's not valid. 
+				valid = valid && m && m.get() !== null;
 			});
 			return valid;
 		},
@@ -353,9 +357,7 @@ define([
 
 
 		applyProperties: function() {
-
 			this._def["widget-name"]  = this.name;
-
 
 			for(var k in this._def) {
 				var f = this._domFuncs[k] || this._domFuncs["default"];
@@ -375,6 +377,7 @@ define([
 			}
 			if(arguments.length > 1) {
 				this[innerName] = value;
+				this.dirty();
 				return this;
 			}
 			return this[innerName];
@@ -574,8 +577,11 @@ define([
 					//apply child layout. 
 					this._sb.layout.resize(this._layout);
 				}
-
+				//convenience helper. all widgets can check whether they are in the process of a draw or not. 
+				this.__drawing = true;
 				this.draw();
+				this.__drawing = false;
+
 				this._afterDraw();
 			} else {
 				d3.select(this.dom).style("visibility", "hidden");

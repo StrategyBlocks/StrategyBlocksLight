@@ -18,7 +18,8 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_NEWS: 		{url: "/news.js", 						post:false},
 		MODEL_LICENSES:		{url: "/licenses.js", 					post:false},
 		MODEL_PROGRESS:		{url: "/blocks/progress.js", 			post:false},
-		MODEL_HEALTH: 		{url: "/health_calculations.js", 		post:false},
+		MODEL_HEALTHS: 		{url: "/health_calculations.js", 		post:false},
+		MODEL_MILESTONES: 	{url: "/milestone_definitions.js", 		post:false},
 		MODEL_NPV: 			{url: "/blocks/npv.js", 				post:false},		
 		MODEL_RISK: 		{url: "/blocks/risk.js", 				post:false},		
 		MODEL_USERS: 		{url: "/users.js", 						post:false},
@@ -38,7 +39,7 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true},
 		BLOCKS_PROPERTIES: 				{url: "/blocks/%type%/%id%.js"},
 		BLOCKS_RELOCATE: 				{url: "/blocks/reassign_parent/%id%.js", normalParams:true},
-		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", massageParamsFunc: "massageParamsForBlockUpdate"},
+		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", deleteId: true},
 		BLOCKS_UNWATCH: 				{url: "/blocks/unwatch/%id%.js"},
 		BLOCKS_WATCHING_USERS: 			{url: "/blocks/watching_users/%id%.js"},
 		BLOCKS_TAGGED: 					{url: "/blocks_for_tag/%name%.js"},
@@ -173,10 +174,10 @@ define(['sb_light/globals'], function(sb) {
 		return _regExprs[s];
 	};
 	
-	urls.massageParamsForBlockUpdate = function(params) {
-		delete params.id;
-		return params;
-	};
+	// urls.massageParamsForBlockUpdate = function(params) {
+	// 	delete params.id;
+	// 	return params;
+	// };
 	
 	//convers a sub-url pattern into an object
 	// e.g., blockSettings=blockA!bs-blockB!bp

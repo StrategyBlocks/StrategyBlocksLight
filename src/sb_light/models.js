@@ -11,25 +11,28 @@ define([
 	'sb_light/models/focusModel',
 	'sb_light/models/risksModel',
 	'sb_light/models/kpisModel',
-	//'sb_light/models/groupsModel',
 	'sb_light/models/companiesModel',
 	'sb_light/models/timezonesModel',
+	'sb_light/models/healthsModel',
+	'sb_light/models/milestonesModel',
 	'sb_light/models/capabilities'
-], function(sb, tags,news,users,blocks,levels,focus,risks,kpis,/*groups,*/companies,timezones,capabilities) {
+], function(sb, tags,news,users,blocks,levels,focus,risks,kpis, companies,timezones,healths, milestones, capabilities) {
 	
 	var _models = {
-		tags:			{klass:tags},
-		news:			{klass:news},
-		users:			{klass:users},
-		blocks:			{klass:blocks},
-		levels:			{klass:levels},
-		focus:			{klass:focus},
-		risks:			{klass:risks},
-		kpis:			{klass:kpis},
-		//groups:		{klass:groups},
-		companies:		{klass:companies},
-		timezones:		{klass:timezones},
-		capabilities:	{klass:capabilities}
+		tags:						{klass:tags},
+		news:						{klass:news},
+		users:						{klass:users},
+		blocks:						{klass:blocks},
+		levels:						{klass:levels},
+		focus:						{klass:focus},
+		risks:						{klass:risks},
+		kpis:						{klass:kpis},
+		//groups:					{klass:groups},
+		companies:					{klass:companies},
+		timezones:					{klass:timezones},
+		capabilities:				{klass:capabilities},
+		health_calculations:		{klass:healths},
+		milestone_definitions:		{klass:milestones}
 	};
 	
 	var models = {};

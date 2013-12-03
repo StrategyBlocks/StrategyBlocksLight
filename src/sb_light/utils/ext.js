@@ -280,6 +280,8 @@ define(["sb_light/globals", "moment"], function(sb) {
 		//sort an array based on a property, and the function to use
 		//so if an array is [{date:...,value:...},...], you can sort using ext.sortProp("date",ext.sortDate); 
 	ext.sortFactory = function ext_sortFactory(prop, func, reverse) {
+		func = func || ext.sortString;
+		reverse = reverse || false;
 		return function ext_sortFactory_cb(a,b) {	
 			var aprop = a ? a[prop] : null;
 			var bprop = b ? b[prop] : null;
@@ -738,9 +740,10 @@ define(["sb_light/globals", "moment"], function(sb) {
 			var val = (obj[key] !== undefined) ? obj[key] : null;
 			val = (val === null && defaults[key] !== undefined) ? defaults[key] : val; 
 			val = (val === null && key.match(/col\d/) )? key.replace(/col(\d\d?)/, "col-sm-$1") : val;
-			val = (val === null && key.match(/offset\d/) )? key.replace(/col(\d\d?)/, "col-sm-offset-$1") : val;
+			val = (val === null && key.match(/offset\d/) )? key.replace(/offset(\d\d?)/, "col-sm-offset-$1") : val;
 
-			return val == null ? out : out.replace(str, val);
+			val = (val === null) ? "" : val;
+			return out.replace(str, val);
 		}, template);
 	};
 
