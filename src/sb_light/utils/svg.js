@@ -1,13 +1,13 @@
 
 /*globals define*/
 
-define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, ext) {
+define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 	'use strict';
 
 	var svg =  {};
 
-	var d3 = ext.global("d3") && d3 || {"__missing" : true};
+	//var d3 = ext.global("d3") && d3 || {"__missing" : true};
 
 	svg.ZERO = 1e-6;
 
