@@ -482,14 +482,22 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 		}
 				
 		var size = 1;
+		var leaves = 0;
+		var height= 1;
 		var child;
+		d.height = height;
 		
 		children.forEach(function(el) {
 			var child = q.blockFullTree(el, cpath, blocks);
 			size += child.size;
 			d.children.put(child);
+			leaves += child.leaves || 1;
+			height = Math.max(d.height+1, child.height+1);
 		});
+		d.height = height;
 		d.size  = size;
+		d.leaves = leaves;
+		d.depth = cpath.length -1;
 		return d;
 	};
 

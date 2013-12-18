@@ -464,11 +464,15 @@ define(["sb_light/globals", "moment"], function(sb) {
 	ext.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	ext.blockProgressFill = function ext_blockProgressFill(block) {
 		//support passing just the color
-		switch(block.progress_color || block) {
+		block = block || "none";
+		block = ext.isStr(block) ? block : block.progress_color;
+		block = block || "none";
+
+		switch(block) {
 			case "green": 	return ["#176717", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"] ];
 			case "yellow":	return ["#77771B", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"] ];
 			case "red": 	return ["#641717", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"] ];
-			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		, ];
+			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		,["#999", "#aaa"]  ];
 		}
 	};
 
