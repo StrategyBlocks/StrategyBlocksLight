@@ -38,6 +38,9 @@ define(['sb_light/globals'], function(sb) {
 	controller.blockUpdate = function( changes, cb) {
 		controller.invoke(sb.urls.BLOCKS_UPDATE,changes, cb,cb);
 	};
+	controller.userUpdate = function( changes, cb) {
+		controller.invoke(sb.urls.USERS_UPDATE,changes, cb,cb);
+	};
 	
 	controller.blockComment = function(id, message, cb) {
 		controller.invoke(sb.urls.COMMENT_PROPERTIES_ADD, {id:id, body:message}, cb,cb);
