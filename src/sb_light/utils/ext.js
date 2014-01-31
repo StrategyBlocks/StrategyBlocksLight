@@ -99,6 +99,15 @@ define(["sb_light/globals", "moment"], function(sb) {
 		}
 	};
 
+	ext.filter = function ext_filter(list, fn, scope) {
+		var res = [];
+		ext.each(list, function(v, k) {
+			if(fn.call(scope || this, v, k)) {
+				res.push(v);
+			}
+		});
+		return res; 
+	};
 
 	ext.reduce = function ext_reduce(list, fn, init, scope) {
 		if(ext.isArray(list)) {
