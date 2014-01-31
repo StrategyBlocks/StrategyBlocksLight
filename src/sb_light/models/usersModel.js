@@ -12,6 +12,9 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 			for(var i in this._model) {
 				var u = this._model[i];
 				u.name = u.first_name + " " + u.last_name;
+				u.role = u.company_membership.role;
+				u.active = u.company_membership.active;
+				u.deletable = u.company_membership.deletable;
 			}
 		}
 	});	
