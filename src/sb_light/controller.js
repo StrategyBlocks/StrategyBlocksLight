@@ -3,6 +3,35 @@ define(['sb_light/globals'], function(sb) {
 
 	var controller = {};
 
+	controller.forgotPassword =  function(email,cb,errCb) {
+		controller.invoke(sb.urls.LOGIN_FORGOT_PASSWORD, {username:email}, cb,errCb, sb.state.invalid);
+	};
+
+	controller.blockUpdate = function( changes, cb) {
+		controller.invoke(sb.urls.BLOCKS_UPDATE,changes, cb,cb);
+	};
+	controller.blockClose = function(id, closeObj, cb) {
+		//{"rating":[0-5], "comment":String}
+		controller.invoke(sb.urls.BLOCKS_CLOSE, sb.ext.mixin({id:id}, closeObj), cb,cb);
+	};
+	controller.blockPublish = function(id, children, cb) {
+		//children:bool
+		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, children:children}, cb,cb);
+	};
+	controller.userUpdate = function( changes, cb) {
+		controller.invoke(sb.urls.USERS_UPDATE,changes, cb,cb);
+	};
+	controller.usersCreate = function( list, cb) {
+		controller.invoke(sb.urls.USERS_CREATE_BATCH,list, cb,cb);
+	};
+	
+	controller.blockComment = function(id, message, cb) {
+		controller.invoke(sb.urls.COMMENT_PROPERTIES_ADD, {id:id, body:message}, cb,cb);
+	};
+	controller.changeDefaultCompany = function(id,cb, errCb) {
+		controller.invoke(sb.urls.USERS_CHANGE_DEFAULT_COMPANY, {id:sb.state.state("user_id"),default_company_id:id}, cb,errCb);
+	};
+	
 	controller.invoke = function(urlObj, args, successCb, errorCb, stateCheck) {
 		var url = sb.urls.url(urlObj, args);
 		var params = {};
@@ -30,32 +59,6 @@ define(['sb_light/globals'], function(sb) {
 		sb.api.request(url, params, post, successCb, errorCb, stateCheck||null);
 	};
 	
-	
-	controller.forgotPassword =  function(email,cb,errCb) {
-		controller.invoke(sb.urls.LOGIN_FORGOT_PASSWORD, {username:email}, cb,errCb, sb.state.invalid);
-	};
-
-	controller.blockUpdate = function( changes, cb) {
-		controller.invoke(sb.urls.BLOCKS_UPDATE,changes, cb,cb);
-	};
-	controller.userUpdate = function( changes, cb) {
-		controller.invoke(sb.urls.USERS_UPDATE,changes, cb,cb);
-	};
-	
-	controller.blockComment = function(id, message, cb) {
-		controller.invoke(sb.urls.COMMENT_PROPERTIES_ADD, {id:id, body:message}, cb,cb);
-	};
-	controller.blockClose = function(id, closeObj, cb) {
-		//{"rating":[0-5], "comment":String}
-		controller.invoke(sb.urls.BLOCKS_CLOSE, sb.ext.mixin({id:id}, closeObj), cb,cb);
-	};
-	controller.blockPublish = function(id, children, cb) {
-		//children:bool
-		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, children:children}, cb,cb);
-	};
-	controller.changeDefaultCompany = function(id,cb, errCb) {
-		controller.invoke(sb.urls.USERS_CHANGE_DEFAULT_COMPANY, {id:sb.state.state("user_id"),default_company_id:id}, cb,errCb);
-	};
 	
 	
 	return controller;
