@@ -149,6 +149,15 @@ define(["sb_light/globals", "moment"], function(sb) {
 			return keyName ? el[keyName] : el;
 		});
 	};
+	//create an array of the specified size, and then set the values;
+	//if  the val is a function then it is called with the current index and the optional "data" is passed. 
+	ext.initArray = function ext_init_array(size, val, data) {
+		var a = [];
+		for(var i = 0; i < size; ++i) {
+			a.push(ext.isFunc(val) ? val(i, data) : val);
+		}
+		return a;
+	};
 
 	//alias for Object.keys
 	ext.keys = function ext_keys(map) {
@@ -1189,7 +1198,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 			return this; 
 		};
 	}
-	
+
 	
 	
 	//DATE stuff from 
