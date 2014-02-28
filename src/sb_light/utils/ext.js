@@ -9,6 +9,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 	var ext = {};
 
 	ext.pi = Math.PI;
+	ext.tau = ext.pi * 2;
 	ext.rad0 = 0;
 	ext.rad90 = ext.pi /2;
 	ext.rad180 = ext.pi;
@@ -22,6 +23,8 @@ define(["sb_light/globals", "moment"], function(sb) {
 	};
 
 	ext.noop = function(){};
+	ext.true = function(){ return true; };
+	ext.false = function(){ return false; };
 	ext.global = function(str) {
 		if(typeof window !== "undefined") {
 			return window[str] !== undefined;
@@ -70,6 +73,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 	};
 	ext.warning = ext.warn;
 	
+
 	
 	ext.map = function ext_map(list, fn, scope) {
 		var res = [];
@@ -472,9 +476,31 @@ define(["sb_light/globals", "moment"], function(sb) {
 		return Math.abs(a-b) <= within;
 	};
 		
-	ext.absDiff = function(a,b) {
+	ext.absDiff = function  ext_absDiff(a,b) {
 		return Math.abs(a-b);
 	};
+
+
+	ext.fixRect = function(rect) {
+		return {
+			x: ext.first(rect.x, rect.left),
+			y: ext.first(rect.y, rect.top),
+			width:rect.width,
+			height:rect.height
+		};
+	};
+
+	ext.rectDiff = function ext_rectDiff(target, reference) {
+		target = ext.fixRect(target);
+		reference = ext.fixRect(reference);
+		return {
+			x: 		(target.x - reference.x), 
+			y:		(target.y - reference.y), 
+			width:	target.width, 
+			height:	target.height
+		};
+
+	}
 
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)

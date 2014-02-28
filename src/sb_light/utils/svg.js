@@ -302,8 +302,14 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	svg.H =				function(d) { return ["H",d].join(""); };
 	svg.v =				function(d) { return ["v",d].join(""); };
 	svg.V = 			function(d) { return ["V",d].join(""); };
-	svg.q = 			function(cx,cy,x,y) { var s= sep; return ["q",cx,s,cy,s,x,s,y].join(""); };
-	svg.Q =				function(cx,cy,x,y) { var s= sep; return ["Q",cx,s,cy,s,x,s,y].join(""); };
+	svg.q = 			function(cx,cy,x,y) { return "q" + [cx,cy,x,y].join(sep); };
+	svg.Q =				function(cx,cy,x,y) { return "Q" + [cx,cy,x,y].join(sep); };
+	svg.a =				function(rx,ry, xr, laf,sf ,x,y) { return "a" + [rx,ry,xr,laf,sf,x,y].join(sep); };
+	svg.A =				function(rx,ry, xr, laf,sf ,x,y) { return "A" + [rx,ry,xr,laf,sf,x,y].join(sep); };
+	svg.c =				function(x1,y1,x2,y2,x,y) { return "c" + [x1,y1,x2,y2,x,y].join(sep); };
+	svg.C =				function(x1,y1,x2,y2,x,y) { return "C" + [x1,y1,x2,y2,x,y].join(sep); };
+	svg.s =				function(cx,cy,x,y) { return "s" + [cx,cy,x,y].join(sep); };
+	svg.S =				function(cx,cy,x,y) { return "S" + [cx,cy,x,y].join(sep); };
 		
 	svg.path = function() {
 		return sb.ext.slice(arguments).join("");
@@ -395,6 +401,98 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		sda:"stroke-dasharray",
 		ta:"text-anchor"
 	};
+
+	svg.utils = {
+		pt: null,
+		ctm:null,
+
+		setRoot: function(root) {
+			svg.utils.pt = root.createSVGPoint();
+			svg.utils.ctm = root.getScreenCTM().inverse();
+		},
+
+		svgPoint: function(el, evt, offset) {
+			var root= el.ownerSVGElement || el; 
+			var pt = svg.utils.pt;
+			var ctm = svg.utils.ctm;
+
+			pt.x = ext.first(evt.clientX,evt.pageX); 
+			pt.y = ext.first(evt.clientY, evt.pageY);
+			var res = pt.matrixTransform(ctm);
+			if(offset) {
+				res.x -= ctm.e;
+				res.y -= ctm.f;
+			}
+			return res;
+		},
+
+		//requires an _arc property on the data to keep track of the current arc definition,
+		//and then do the interpolation.
+		tweenArc: function tweenArc(arcs, b) {
+			return function(a, i) {
+				var d = b.call(this, a, i);
+				var arc = arcs ? arcs[i] : a._prevArc;
+				if(!arc) {
+					console.log("wtf");
+				}
+				var interpolate = d3.interpolate(arc, d);
+				ext.mixin(arc,d);
+				a._prevArc = arc;
+				return function(t) { 
+					return d3.svg.arc()(interpolate(t)); 
+				};
+			};
+		},
+		tweenBorder: function tweenBorder(borders, b) {
+			return function(a, i) {
+				var d = b.call(this, a, i);
+				var border = borders ? borders[i] : a._prevBorder;
+				var interpolate = d3.interpolate(border, d);
+				ext.mixin(border,d);
+				a._prevBorder = border;
+				return function(t) { 
+					var pd = interpolate(t);
+					var ma = (pd.startAngle + (pd.endAngle - pd.startAngle)/2)
+					var invert = ma > (ext.tau *0.25) && ma < (ext.tau * 0.75);
+					var sa = (invert ? pd.endAngle : pd.startAngle) - ext.rad90;
+					var ea = (invert ? pd.startAngle : pd.endAngle) - ext.rad90;
+					var dir = invert ? 0 : 1;
+					var rad = pd.radius;
+					var sx = (rad * Math.cos(sa));
+					var sy = (rad * Math.sin(sa));
+					var ex = (rad * Math.cos(ea));
+					var ey = (rad * Math.sin(ea));
+					//console.log(t, pd.endAngle);
+					return svg.M(sx, sy) + svg.A(rad,rad,0,0,dir,ex,ey);
+				};
+			};
+		},
+		id: function(prop, prefix, suffix) {
+			var str = (prefix ? (prefix + "_") : "") + "%id%" +  (suffix ? ("_" + suffix) : "");
+			return function(d,i) {
+				return str.replace("%id%", d[prop ? prop : "id"]);
+			}
+		},
+		//obolete elsewhere. saving here for posterity.
+		icons: [
+			//svg paths --- 16x16
+
+			"M8,2 L2,14 L14,14 Z",  								//triangle
+			"M8,0 L2,8 L8,16 L14,8 Z",  							//diamond
+			"M0,14 L14,0 L16,2 L2,16 Z",  							//NE / SW BAR
+			"M6,0 V6 H0 V10 H6 V16 H10 V10 H16 V6 H10 V0 Z",  		//Plus
+			"M 16 8 a 8 8 0 1 0 -16 0 Z",  							//Semi
+			"M2,2 h14 v14 h-14 Z",  								//square
+			"M 8 0 a 8 8 0 1 0 0.0001 0",							//circle
+			"M0,2 L14,16 L16,14 L2,0 Z", 							//NW / SE BAR
+
+			//arrow
+			"M0,0 h30 v-10 l20,20 l-20,20 v-10 h-30 Z",				//arrow --> (50x40)
+			"M50,0 h-30 v-10 l-20,20 l20,20 v-10 h30 Z"				//arrow <-- (50x40)
+
+		]
+
+	}
 
 	return svg;
 	
