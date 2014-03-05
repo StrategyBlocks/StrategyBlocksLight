@@ -11,6 +11,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 	ext.pi = Math.PI;
 	ext.tau = ext.pi * 2;
 	ext.rad0 = 0;
+	ext.rad45 = ext.pi /4;
 	ext.rad90 = ext.pi /2;
 	ext.rad180 = ext.pi;
 	ext.rad270 = ext.rad180 + ext.rad90;

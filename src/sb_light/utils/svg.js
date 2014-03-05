@@ -474,23 +474,23 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 			}
 		},
 		//obolete elsewhere. saving here for posterity.
-		icons: [
+		//eventually make these functions that will draw based on specified dims
+		icons: {
 			//svg paths --- 16x16
-
-			"M8,2 L2,14 L14,14 Z",  								//triangle
-			"M8,0 L2,8 L8,16 L14,8 Z",  							//diamond
-			"M0,14 L14,0 L16,2 L2,16 Z",  							//NE / SW BAR
-			"M6,0 V6 H0 V10 H6 V16 H10 V10 H16 V6 H10 V0 Z",  		//Plus
-			"M 16 8 a 8 8 0 1 0 -16 0 Z",  							//Semi
-			"M2,2 h14 v14 h-14 Z",  								//square
-			"M 8 0 a 8 8 0 1 0 0.0001 0",							//circle
-			"M0,2 L14,16 L16,14 L2,0 Z", 							//NW / SE BAR
+			triangle: 	"M8,2 L2,14 L14,14 Z",
+			diamond: 	"M8,0 L2,8 L8,16 L14,8 Z",
+			fslash:		"M0,14 L14,0 L16,2 L2,16 Z",
+			bslash:		"M0,2 L14,16 L16,14 L2,0 Z", 							
+			plus:		"M6,0 V6 H0 V10 H6 V16 H10 V10 H16 V6 H10 V0 Z",
+			semicircle: "M 16 8 a 8 8 0 1 0 -16 0 Z",
+			square: 	"M2,2 h14 v14 h-14 Z",
+			circle:		"M 8 0 a 8 8 0 1 0 0.0001 0",
 
 			//arrow
-			"M0,0 h30 v-10 l20,20 l-20,20 v-10 h-30 Z",				//arrow --> (50x40)
-			"M50,0 h-30 v-10 l-20,20 l20,20 v-10 h30 Z"				//arrow <-- (50x40)
+			rightArrow: 	"M0,0 h30 v-10 l20,20 l-20,20 v-10 h-30 Z",				//arrow --> (50x40)
+			leftArrow:	"M50,0 h-30 v-10 l-20,20 l20,20 v-10 h30 Z"				//arrow <-- (50x40)
 
-		]
+		}
 
 	}
 
