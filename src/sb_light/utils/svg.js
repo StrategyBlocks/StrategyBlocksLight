@@ -5,23 +5,23 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 	'use strict';
 
-	var svg =  {};
+	var S =  {};
 
 	//var d3 = ext.global("d3") && d3 || {"__missing" : true};
 
-	svg.ZERO = 1e-6;
+	S.ZERO = 1e-6;
 
 
-	svg.initD3 = function(_d3) {		
+	S.initD3 = function(_d3) {		
 		var c = d3.__cached || {};
 		d3 = _d3;	
 		//add the d3 extensions that were cached. 
 		sb.ext.each(c, function(v,k) {
-			svg.extendD3(k,v);
+			S.extendD3(k,v);
 		});
 	};
 
-	svg.extendD3 = function(name, func) {
+	S.extendD3 = function(name, func) {
 		//protection for the compiled files. d3 is not necessarily required for this library to work. 
 		if(d3.__missing) { 
 			//save the extensions in case D3 gets set  later. 
@@ -37,7 +37,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		func;
 	};
 
-	svg.extendD3("isD3", function() {
+	S.extendD3("isD3", function() {
 		return true;
 	});
 
@@ -45,7 +45,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	//extensions to d3
 	//adds x,y,width,height to "rect" type SVG elements
 	//skips any property that === null
-	svg.extendD3("rect", function(x,y,width,height) {
+	S.extendD3("rect", function(x,y,width,height) {
 		var sel = this;
 		var args= sb.ext.slice(arguments);
 		if(args.length) {
@@ -65,7 +65,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	//takes an object taking the subscribe call(who),
 		//a string describing what to subscribe to (what), and
 		//a cb function to handle the subscription (where)
-	svg.extendD3("subscribe", function(opts) {
+	S.extendD3("subscribe", function(opts) {
 		var sel = this;
 		sel.each(function(d,i) {
 			sb.subman.subscribe(this, opts);
@@ -73,7 +73,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		return sel;
 	});
 
-	svg.extendD3("cleanup", function() {
+	S.extendD3("cleanup", function() {
 		var sel = this;
 		sel.each(function(d,i) {
 			sb.subman.unsubscribe(this);
@@ -87,24 +87,24 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	//		if the element isn't SVG and the value is not a function, add "px" to it
 	// on get:
 	//		parse a  float from the string.
-	svg.extendD3("dim", function(name, value) {
+	S.extendD3("dim", function(name, value) {
 		if(arguments.length > 1) {
-			if( svg.isSvg(this.node()) )  {
+			if( S.isSvg(this.node()) )  {
 				this.attr(name, value);
 			} else {
 				if(name == "x") { name = "left"; }
 				if(name == "y") { name = "top"; }
 				this.style(name, (sb.ext.isFunc(value) || sb.ext.isString(value)) ? value : sb.ext.px(value));
 			}
-			//this.attr(name, svg.isSvg(this.node() || sb.ext.isFunc(value)) ? value : sb.ext.px(value)) 
+			//this.attr(name, S.isSvg(this.node() || sb.ext.isFunc(value)) ? value : sb.ext.px(value)) 
 
 			return this;
 		} 
-		return sb.ext.to_f( svg.isSvg(this.node()) ? this.attr(name) : this.style(name) );
+		return sb.ext.to_f( S.isSvg(this.node()) ? this.attr(name) : this.style(name) );
 	});
 
 	//get/set the corners on a rect, for instance. (rx/ry)
-	svg.extendD3("corners", function(rx,ry) {
+	S.extendD3("corners", function(rx,ry) {
 		if(arguments.length) {
 			this.dim("rx", rx);
 			this.dim("ry", ry);
@@ -113,7 +113,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		return {rx:this.dim("rx"), ry:this.dim("ry")};
 	});
 	//set multiple classes on an svg item directly. 
-	svg.extendD3("class", function(classA/*...*/) {
+	S.extendD3("class", function(classA/*...*/) {
 		var args = sb.ext.slice(arguments);
 		if(args.length) {
 			this.attr("class", args.join(" "));
@@ -124,7 +124,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 
 	//set the title on elements
-	svg.extendD3("title", function(s) {
+	S.extendD3("title", function(s) {
 		var args = sb.ext.slice(arguments);
 		if(args.length) {
 			return this.attr("title", s);
@@ -133,7 +133,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	});
 
 	//set the rx/ry on elements. When "get" is done, returns only "rx" for the first selection item
-	svg.extendD3("radius", function(r) {
+	S.extendD3("radius", function(r) {
 		var args = sb.ext.slice(arguments);
 		if(args.length) {
 			return this.attr("rx", r).attr("ry", r);
@@ -142,7 +142,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	});
 
 	//set the text anchor
-	svg._anchorMap = {
+	S._anchorMap = {
 		"left":"start", "start":"start", "l":"start", "s":"start",
 		"center":"middle", "middle":"middle", "c":"middle", "m":"middle",
 		"right":"end", "end":"end", "r":"end", "e":"end"
@@ -150,17 +150,17 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 	//d3 uses this property as a "style" rather than an attribute in their SVG helpers.
 	//keep this consistent. 
-	svg.extendD3("align", function(a) {
+	S.extendD3("align", function(a) {
 		var args = sb.ext.slice(arguments);
 		if(args.length) {
-			return this.style("text-anchor", svg._anchorMap[a]);
+			return this.style("text-anchor", S._anchorMap[a]);
 		}
 		return this.style("text-anchor");
 	});
 
 
 	//get/sets the size and position of a circle
-	svg.extendD3("circle", function(r, cx,cy) {
+	S.extendD3("circle", function(r, cx,cy) {
 		if(arguments.length) {
 			this.dim("r", r);
 			this.dim("cx", cx);
@@ -170,7 +170,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		return {r:this.dim("r"), cx:this.dim("cx"), cy:this.dim("cy")};
 	});
 	//get/sets the points on a line
-	svg.extendD3("line", function(x1,y1,x2,y2) {
+	S.extendD3("line", function(x1,y1,x2,y2) {
 		if(arguments.length) {
 			this.dim("x1", x1);
 			this.dim("x2", x2);
@@ -181,19 +181,19 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		return {x1:this.dim("x1"), y1:this.dim("y1"),x2:this.dim("x2"), y2:this.dim("y2")};
 	});
 
-	svg.d3 = function(el) {
+	S.d3 = function(el) {
 		// console.log("Checking el", el);
 		var isD3 = el && el.isD3 && el.isD3();
 		return isD3 ? el : d3.select(el);
 	};
 
-	svg.isSvg = function(el) {
+	S.isSvg = function(el) {
 		return el && el.namespaceURI.match(/svg/); 
 	};
 
-	svg.multiline = function(el, text, dx,dy) {
+	S.multiline = function(el, text, dx,dy) {
 		if(!text) { return ; }
-		el = svg.d3(el);
+		el = S.d3(el);
 		var width= el.attr("width");
 		//var domEl = el.get(0);
 		var words = text.split(' ');                        
@@ -220,7 +220,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	//given a series of x points and y points, generate a
 	//grid that fits the given dimension
 	//returns an SVG path string
-	svg.gridPath = function(x,y,w,h, xLinesOrStep, yLinesOrStep) {
+	S.gridPath = function(x,y,w,h, xLinesOrStep, yLinesOrStep) {
 		var p = [];
 		var t= this;
 		var xlines = (typeof xLinesOrStep == "number") ? d3.range(x+xLinesOrStep,x+w,xLinesOrStep) : xLinesOrStep;
@@ -240,7 +240,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		// BL, BM, BR: Bottom positions (left  middle  right)
 		// RT, RM, RB: Right positions (top middle bottom)
 		
-	svg.popupPath = function(x,y, w,h, pointerType) {
+	S.popupPath = function(x,y, w,h, pointerType) {
 		var cr = 10;
 		var cr2 = cr*2;
 		var pw = 15; //half pointer width
@@ -274,15 +274,15 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		return path.join("");
 	};
 		
-	svg.transformMap = {"r": "rotate", "s":"scale", "t":"translate"};
-	svg.transform = function(o) { 
+	S.transformMap = {"r": "rotate", "s":"scale", "t":"translate"};
+	S.transform = function(o) { 
 		var order = o.order || ["r","s", "t"];
 		var t = [];
 
 		order.forEach(function(v) {
 			if(o[v]) {
-				var f = svg[svg.transformMap[v]];
-				t.put(f.apply(svg, o[v]));
+				var f = S[S.transformMap[v]];
+				t.put(f.apply(S, o[v]));
 			}
 		});
 		
@@ -290,28 +290,28 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		return t.join(" "); 
 	};
 	var sep = ",";
-	svg.translate = 	function(x,y) { return (isNaN(y) ? ["translate(",x,")"] : ["translate(",x,", ",y,")"]).join("");  };
-	svg.scale =  		function(x,y) { return (isNaN(y) ? ["scale(",x,")"] : ["scale(",x,", ",y,")"]).join(""); };
-	svg.rotate =	 	function(x) { return "rotate("+x+")"; };
-	svg.viewBox = 		function(x,y,w,h) { return [x,y,w,h].join(" "); };
-	svg.l =				function(x,y) { return ["l",x,sep,y].join(""); };
-	svg.L = 			function(x,y) { return ["L",x,sep,y].join(""); };
-	svg.m =				function(x,y) { return ["m",x,sep,y].join(""); };
-	svg.M =				function(x,y) { return ["M",x,sep,y].join(""); };
-	svg.h = 			function(d) { return ["h",d].join(""); };
-	svg.H =				function(d) { return ["H",d].join(""); };
-	svg.v =				function(d) { return ["v",d].join(""); };
-	svg.V = 			function(d) { return ["V",d].join(""); };
-	svg.q = 			function(cx,cy,x,y) { return "q" + [cx,cy,x,y].join(sep); };
-	svg.Q =				function(cx,cy,x,y) { return "Q" + [cx,cy,x,y].join(sep); };
-	svg.a =				function(rx,ry, xr, laf,sf ,x,y) { return "a" + [rx,ry,xr,laf,sf,x,y].join(sep); };
-	svg.A =				function(rx,ry, xr, laf,sf ,x,y) { return "A" + [rx,ry,xr,laf,sf,x,y].join(sep); };
-	svg.c =				function(x1,y1,x2,y2,x,y) { return "c" + [x1,y1,x2,y2,x,y].join(sep); };
-	svg.C =				function(x1,y1,x2,y2,x,y) { return "C" + [x1,y1,x2,y2,x,y].join(sep); };
-	svg.s =				function(cx,cy,x,y) { return "s" + [cx,cy,x,y].join(sep); };
-	svg.S =				function(cx,cy,x,y) { return "S" + [cx,cy,x,y].join(sep); };
+	S.translate = 	function(x,y) { return (isNaN(y) ? ["translate(",x,")"] : ["translate(",x,", ",y,")"]).join("");  };
+	S.scale =  		function(x,y) { return (isNaN(y) ? ["scale(",x,")"] : ["scale(",x,", ",y,")"]).join(""); };
+	S.rotate =	 	function(x) { return "rotate("+x+")"; };
+	S.viewBox = 		function(x,y,w,h) { return [x,y,w,h].join(" "); };
+	S.l =				function(x,y) { return ["l",x,sep,y].join(""); };
+	S.L = 			function(x,y) { return ["L",x,sep,y].join(""); };
+	S.m =				function(x,y) { return ["m",x,sep,y].join(""); };
+	S.M =				function(x,y) { return ["M",x,sep,y].join(""); };
+	S.h = 			function(d) { return ["h",d].join(""); };
+	S.H =				function(d) { return ["H",d].join(""); };
+	S.v =				function(d) { return ["v",d].join(""); };
+	S.V = 			function(d) { return ["V",d].join(""); };
+	S.q = 			function(cx,cy,x,y) { return "q" + [cx,cy,x,y].join(sep); };
+	S.Q =				function(cx,cy,x,y) { return "Q" + [cx,cy,x,y].join(sep); };
+	S.a =				function(rx,ry, xr, laf,sf ,x,y) { return "a" + [rx,ry,xr,laf,sf,x,y].join(sep); };
+	S.A =				function(rx,ry, xr, laf,sf ,x,y) { return "A" + [rx,ry,xr,laf,sf,x,y].join(sep); };
+	S.c =				function(x1,y1,x2,y2,x,y) { return "c" + [x1,y1,x2,y2,x,y].join(sep); };
+	S.C =				function(x1,y1,x2,y2,x,y) { return "C" + [x1,y1,x2,y2,x,y].join(sep); };
+	S.s =				function(cx,cy,x,y) { return "s" + [cx,cy,x,y].join(sep); };
+	S.S =				function(cx,cy,x,y) { return "S" + [cx,cy,x,y].join(sep); };
 		
-	svg.path = function() {
+	S.path = function() {
 		return sb.ext.slice(arguments).join("");
 	};	
 
@@ -322,9 +322,9 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		// "src" needs to be a d3 object
 		// "selector" needs to be a string
 		// "func" takes the element to be returned and applies custom creation logic to it. 
-	svg.append =  function(src, selector, func) {
+	S.append =  function(src, selector, func) {
 		// console.log("svg append pre d3");
-		src = svg.d3(src);
+		src = S.d3(src);
 		var res = src.select(selector);
 
 		// console.log("svg append");
@@ -354,8 +354,8 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	};
 		
 		//takes "x.foo y.bar.stuff" and removes only y.var.stuff
-	svg.remove = function(src, selector) {
-		src = svg.d3(el);
+	S.remove = function(src, selector) {
+		src = S.d3(el);
 		var el = src.select(selector);
 		if(!el.empty()) {
 			el.remove();
@@ -365,13 +365,13 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 
 		//selection comes last so you can bind the function with args first, then use it in the d3 selection "call"
-		//e.g., svg.selectAll("rect").call(sb.svg.dims.bind(null, 0,0,100,100));
-	svg.dims = function(x,y,w,h, selection) {
+		//e.g., S.selectAll("rect").call(sb.S.dims.bind(null, 0,0,100,100));
+	S.dims = function(x,y,w,h, selection) {
 		selection.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
 		return selection;
 	};
 
-	svg.dim = function(sel, dim, value) {
+	S.dim = function(sel, dim, value) {
 		if(arguments.length == 3) {
 			return sel.attr(dim, value);
 		}
@@ -380,7 +380,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 
 	//quick style
-	svg.style = function(selection/*, arguments*/) {
+	S.style = function(selection/*, arguments*/) {
 		for(var i = 1; i < arguments.length; i+=2) {
 			var prop = arguments[i];
 			prop = styleMap[prop] || prop;
@@ -402,19 +402,19 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		ta:"text-anchor"
 	};
 
-	svg.utils = {
+	S.utils = {
 		pt: null,
 		ctm:null,
 
 		setRoot: function(root) {
-			svg.utils.pt = root.createSVGPoint();
-			svg.utils.ctm = root.getScreenCTM().inverse();
+			S.utils.pt = root.createSVGPoint();
+			S.utils.ctm = root.getScreenCTM().inverse();
 		},
 
 		svgPoint: function(el, evt, offset) {
 			var root= el.ownerSVGElement || el; 
-			var pt = svg.utils.pt;
-			var ctm = svg.utils.ctm;
+			var pt = S.utils.pt;
+			var ctm = S.utils.ctm;
 
 			pt.x = ext.first(evt.clientX,evt.pageX); 
 			pt.y = ext.first(evt.clientY, evt.pageY);
@@ -458,15 +458,21 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 					var ea = (invert ? pd.startAngle : pd.endAngle) - ext.rad90;
 					var dir = invert ? 0 : 1;
 					var rad = pd.radius;
-					var sx = (rad * Math.cos(sa));
-					var sy = (rad * Math.sin(sa));
-					var ex = (rad * Math.cos(ea));
-					var ey = (rad * Math.sin(ea));
+					var start = S.utils.arcPoint(rad, sa);
+					var end = S.utils.arcPoint(rad, ea);
 					//console.log(t, pd.endAngle);
-					return svg.M(sx, sy) + svg.A(rad,rad,0,0,dir,ex,ey);
+					return S.M(start.x, start.y) + S.A(rad,rad,0,0,dir,end.x,end.y);
 				};
 			};
 		},
+
+		arcPoint: function(radius, radians) {
+			return {
+				x: (radius * Math.cos(radians)),
+				y: (radius * Math.sin(radians))
+			}
+		},
+
 		id: function(prop, prefix, suffix) {
 			var str = (prefix ? (prefix + "_") : "") + "%id%" +  (suffix ? ("_" + suffix) : "");
 			return function(d,i) {
@@ -494,6 +500,6 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 	}
 
-	return svg;
+	return S;
 	
 });
