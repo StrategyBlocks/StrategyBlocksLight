@@ -12,11 +12,12 @@ define([
 	'sb_light/models/risksModel',
 	'sb_light/models/kpisModel',
 	'sb_light/models/companiesModel',
+	'sb_light/models/groupsModel',
 	'sb_light/models/timezonesModel',
 	'sb_light/models/healthsModel',
 	'sb_light/models/milestonesModel',
 	'sb_light/models/capabilities'
-], function(sb, tags,news,users,blocks,levels,focus,risks,kpis, companies,timezones,healths, milestones, capabilities) {
+], function(sb, tags,news,users,blocks,levels,focus,risks,kpis, companies, groups,timezones,healths, milestones, capabilities) {
 	
 	var _models = {
 		tags:						{klass:tags},
@@ -27,7 +28,7 @@ define([
 		focus:						{klass:focus},
 		risks:						{klass:risks},
 		kpis:						{klass:kpis},
-		//groups:					{klass:groups},
+		groups:						{klass:groups},
 		companies:					{klass:companies},
 		timezones:					{klass:timezones},
 		capabilities:				{klass:capabilities},

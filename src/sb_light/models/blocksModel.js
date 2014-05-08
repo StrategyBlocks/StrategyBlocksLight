@@ -32,7 +32,8 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 			this._progress = null;
 			this._health = null;
 			this._npv = null;
-			
+			this._properties = {};
+
 			this._super(update);
 		},
 		

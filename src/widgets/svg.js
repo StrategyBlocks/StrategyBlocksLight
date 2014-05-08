@@ -2,7 +2,10 @@
 
 define(['widgets/widget'], function( W ) {
 
+	'use strict';
+
 	var SVG = W.extend({
+
 
 		_d3:null,
 		_pd3:null,

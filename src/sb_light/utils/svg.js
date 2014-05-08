@@ -1,7 +1,7 @@
 
 /*globals define*/
 
-define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
+define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 
 	'use strict';
 
@@ -16,7 +16,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		var c = d3.__cached || {};
 		d3 = _d3;	
 		//add the d3 extensions that were cached. 
-		sb.ext.each(c, function(v,k) {
+		E.each(c, function(v,k) {
 			S.extendD3(k,v);
 		});
 	};
@@ -47,7 +47,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	//skips any property that === null
 	S.extendD3("rect", function(x,y,width,height) {
 		var sel = this;
-		var args= sb.ext.slice(arguments);
+		var args= E.slice(arguments);
 		if(args.length) {
 			["x","y","width","height"].forEach(function(dim,i){
 				if(args[i] !== null) {
@@ -58,7 +58,26 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		}
 
 		return ["x","y","width","height"].reduce(function(prev, el) {
-			return sb.ext.set(prev, el, sel.dim(el));
+			return E.set(prev, el, sel.dim(el));
+		}, {});
+	});
+
+	//adds x1,x2,y1,y2 to "line" type SVG elements
+	//skips any property that === null
+	S.extendD3("line", function(x1,x2,y1,y2) {
+		var sel = this;
+		var args= E.slice(arguments);
+		if(args.length) {
+			["x1","x2","y1","y2"].forEach(function(dim,i){
+				if(args[i] !== null) {
+					sel.attr(dim, args[i]);
+				}
+			});
+			return sel;
+		}
+
+		return ["x1","x2","y1","y2"].reduce(function(prev, el) {
+			return E.set(prev, el, sel.attr(el));
 		}, {});
 	});
 
@@ -94,13 +113,13 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 			} else {
 				if(name == "x") { name = "left"; }
 				if(name == "y") { name = "top"; }
-				this.style(name, (sb.ext.isFunc(value) || sb.ext.isString(value)) ? value : sb.ext.px(value));
+				this.style(name, (E.isFunc(value) || E.isString(value)) ? value : E.px(value));
 			}
-			//this.attr(name, S.isSvg(this.node() || sb.ext.isFunc(value)) ? value : sb.ext.px(value)) 
+			//this.attr(name, S.isSvg(this.node() || E.isFunc(value)) ? value : E.px(value)) 
 
 			return this;
 		} 
-		return sb.ext.to_f( S.isSvg(this.node()) ? this.attr(name) : this.style(name) );
+		return E.to_f( S.isSvg(this.node()) ? this.attr(name) : this.style(name) );
 	});
 
 	//get/set the corners on a rect, for instance. (rx/ry)
@@ -114,7 +133,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	});
 	//set multiple classes on an svg item directly. 
 	S.extendD3("class", function(classA/*...*/) {
-		var args = sb.ext.slice(arguments);
+		var args = E.slice(arguments);
 		if(args.length) {
 			this.attr("class", args.join(" "));
 			return this;
@@ -125,7 +144,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 	//set the title on elements
 	S.extendD3("title", function(s) {
-		var args = sb.ext.slice(arguments);
+		var args = E.slice(arguments);
 		if(args.length) {
 			return this.attr("title", s);
 		}
@@ -134,7 +153,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 
 	//set the rx/ry on elements. When "get" is done, returns only "rx" for the first selection item
 	S.extendD3("radius", function(r) {
-		var args = sb.ext.slice(arguments);
+		var args = E.slice(arguments);
 		if(args.length) {
 			return this.attr("rx", r).attr("ry", r);
 		}
@@ -151,7 +170,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	//d3 uses this property as a "style" rather than an attribute in their SVG helpers.
 	//keep this consistent. 
 	S.extendD3("align", function(a) {
-		var args = sb.ext.slice(arguments);
+		var args = E.slice(arguments);
 		if(args.length) {
 			return this.style("text-anchor", S._anchorMap[a]);
 		}
@@ -208,8 +227,8 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 			if (tspan.node().getComputedTextLength() > width)	{
 				tspan.text(tst);
 
-				tspan = el.append("tspan").attr("x",  sb.ext.number(dx,10))
-											.attr("dy", sb.ext.number(dy,18))
+				tspan = el.append("tspan").attr("x",  E.number(dx,10))
+											.attr("dy", E.number(dy,18))
 											.text(words[i])
 				;
 			}
@@ -298,10 +317,10 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	S.L = 			function(x,y) { return ["L",x,sep,y].join(""); };
 	S.m =				function(x,y) { return ["m",x,sep,y].join(""); };
 	S.M =				function(x,y) { return ["M",x,sep,y].join(""); };
-	S.h = 			function(d) { return ["h",d].join(""); };
-	S.H =				function(d) { return ["H",d].join(""); };
-	S.v =				function(d) { return ["v",d].join(""); };
-	S.V = 			function(d) { return ["V",d].join(""); };
+	S.h = 			function(d) { return "h"+d; };
+	S.H =				function(d) { return "H"+d; };
+	S.v =				function(d) { return "v"+d; };
+	S.V = 			function(d) { return "V"+d; };
 	S.q = 			function(cx,cy,x,y) { return "q" + [cx,cy,x,y].join(sep); };
 	S.Q =				function(cx,cy,x,y) { return "Q" + [cx,cy,x,y].join(sep); };
 	S.a =				function(rx,ry, xr, laf,sf ,x,y) { return "a" + [rx,ry,xr,laf,sf,x,y].join(sep); };
@@ -312,7 +331,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 	S.S =				function(cx,cy,x,y) { return "S" + [cx,cy,x,y].join(sep); };
 		
 	S.path = function() {
-		return sb.ext.slice(arguments).join("");
+		return E.slice(arguments).join("");
 	};	
 
 		//utils for d3
@@ -375,7 +394,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 		if(arguments.length == 3) {
 			return sel.attr(dim, value);
 		}
-		return sb.ext.to_f(sel.attr(dim));
+		return E.to_f(sel.attr(dim));
 	};
 
 
@@ -479,6 +498,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 				return str.replace("%id%", d[prop ? prop : "id"]);
 			}
 		},
+
 		//obolete elsewhere. saving here for posterity.
 		//eventually make these functions that will draw based on specified dims
 		icons: {
@@ -492,11 +512,42 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, ext, d3) {
 			square: 	"M2,2 h14 v14 h-14 Z",
 			circle:		"M 8 0 a 8 8 0 1 0 0.0001 0",
 
-			//arrow
-			rightArrow: 	"M0,0 h30 v-10 l20,20 l-20,20 v-10 h-30 Z",				//arrow --> (50x40)
-			leftArrow:	"M50,0 h-30 v-10 l-20,20 l20,20 v-10 h30 Z"				//arrow <-- (50x40)
 
-		}
+			//arrow (50x40) was original
+			rightArrow:	function(w,h) {
+				return S.path(S.M(0,0), S.h(w*0.6), S.v(-h/4), S.l(w*0.4,h/2),
+								S.l(-w*0.4, h/2), S.v(-h/4), S.h(-w*0.6), "Z")
+			}, 		
+			leftArrow:	function(w,h) {
+				return S.path(S.M(w,0), S.h(-w*0.6), S.v(-h/4), S.l(ww*0.4,h/2),
+								S.l(w*0.4, h/2), S.v(-h/4), S.h(w*0.6), "Z")
+			},
+			star:function(size) {
+				return S.path(	S.M(0,0), S.h(size), 
+								S.l(-0.761*size, 0.524*size), 
+								S.l(0.301*size, -0.924*size), 
+								S.l(0.301*size, 0.924*size), "Z");
+			}
+ 		
+
+		},
+
+
+		//angles for a tachometer (3/4 circle starting at 3/4PI)
+		tachoAngles: [	{"startAngle":1.5707963267948966,"endAngle":3.9269908169872414},
+						{"startAngle":3.9269908169872414,"endAngle":4.319689898685965},
+						{"startAngle":4.319689898685965,"endAngle":4.71238898038469},
+						{"startAngle":4.71238898038469,"endAngle":5.105088062083414},
+						{"startAngle":5.105088062083414,"endAngle":5.497787143782138},
+						{"startAngle":5.497787143782138,"endAngle":5.890486225480862},
+						{"startAngle":5.890486225480862,"endAngle":6.283185307179586},
+						{"startAngle":6.283185307179586,"endAngle":6.67588438887831},
+						{"startAngle":6.67588438887831,"endAngle":7.0685834705770345},
+						{"startAngle":7.0685834705770345,"endAngle":7.461282552275759},
+						{"startAngle":7.461282552275759,"endAngle":7.853981633974483},
+						{"startAngle":7.853981633974483,"endAngle":8.246680715673207},
+						{"startAngle":8.246680715673207,"endAngle":8.63937979737193}
+		]
 
 	}
 

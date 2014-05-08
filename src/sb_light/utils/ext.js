@@ -272,6 +272,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 
 	//number is positive when db is earlier than da
 	ext.daysDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"days");};
+	ext.daysFrom = function ext_daysDiff(da, db, noPrefix) {return ext.moment(db).from(da, noPrefix||false); };
 	ext.today = function ext_today() { return new Date(); };
 	ext.minDate = function ext_minDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate)[0]); };
 	ext.maxDate = function ext_maxDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate).last()); };
@@ -279,7 +280,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 	ext.userFormat = function ext_userFormat() { 
 		var u = sb.queries.user();
 		var udf = u ? u.date_format : ext.serverFormat;
-		ext.debug("User date format: ", udf);
+		//ext.debug("User date format: ", udf);
 		return udf;
 	};
 	ext.serverDate = function ext_serverDate(d) { return moment(d||new Date()).format(ext.serverFormat); };
@@ -350,6 +351,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 		//Now, both have started. Return the variance diff
 		return ext.sortNumbers( (a.percent_progress/aep), (b.percent_progress/bep) );
 	};
+
 		
 		/************  CSS ***************************/
 	ext.px = function ext_px(number) {		return [number,"px"].join("");	};
@@ -383,6 +385,16 @@ define(["sb_light/globals", "moment"], function(sb) {
 	ext.to_color = function ext_to_color(num) {
 		return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
 	};
+
+	//str in #ff4455 or 0x004340 format to int
+	ext.from_color = function ext_from_color(str) {
+		//handle an existing number
+		if(ext.isNum(str)) { return str; }
+
+		//str is a string
+		str = str.replace("#", "0x");
+		return ext.to_i(str, 16);
+	}
 	
 	// The argument [n] can be:
 	//		literal numbers (e.g., 24)
@@ -420,6 +432,13 @@ define(["sb_light/globals", "moment"], function(sb) {
 		}
 		return NaN;
 	};
+
+	//given a value and a total, returns a rounded percentage out of 100
+	// e.g., percent(3, 7, 1) returns 42.9
+	ext.percent = function ext_percent(val, total, round/*==0*/) {
+		round = ext.first(round,0);
+		return ext.roundTo(  (ext.number(val) / ext.number(total))*100, round );
+	}
 
 	ext.range = function ext_range(min,max,num) {
 		return ext.max(min, ext.min(max,num));
@@ -505,18 +524,19 @@ define(["sb_light/globals", "moment"], function(sb) {
 
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
-	ext.healthColor = function ext_healthColor(data) { return (["#D80000","#EACF00","#0FAD00"])[data.status+1]; };
+
+	ext.healthColor = function ext_healthColor(data) { return (["#196419","#7d741f","#7d1f1f"])[data.status+1]; };
 	ext.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
-	ext.blockProgressFill = function ext_blockProgressFill(block) {
+	ext.progressColor = function ext_progressColor(block) {
 		//support passing just the color
 		block = block || "none";
-		block = ext.isStr(block) ? block : block.progress_color;
+		block = ext.isStr(block) ? block : ( (block.closed || block.ownership_state=="new") ? "" : block.progress_color);
 		block = block || "none";
 
 		switch(block) {
-			case "green": 	return ["#176717", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"] ];
-			case "yellow":	return ["#77771B", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"] ];
-			case "red": 	return ["#641717", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"] ];
+			case "green": 	return ["#196419", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"] ];
+			case "yellow":	return ["#7d741f", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"] ];
+			case "red": 	return ["#7d1f1f", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"] ];
 			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		,["#999", "#aaa"]  ];
 		}
 	};
@@ -764,7 +784,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 	};		
 	//same as combine but only takes two properties.
 	ext.merge = function ext_merge(a, b, ignore) {
-		return ext.combine([a,b], ignore);	
+		return ext.combine([a||{},b||{}], ignore);	
 	};
 
 	//cherry pick the key/values of an object and clone them into a new one
@@ -781,6 +801,32 @@ define(["sb_light/globals", "moment"], function(sb) {
 
 	};
 
+	//return the number of differences from diff to orig
+	ext.changes = function ext_changes(diff,orig) {
+		var res = {};
+		orig = orig || {};
+		ext.each(diff, function(v,k) {
+			if(orig[k] != v) {
+				res[k] = v;
+			}
+		})
+		return res;
+	};
+
+	//dumb string to object function
+	//doesn't parse values from string to, say, number, array, etc like JSON. 
+	// String keys, String values
+	ext.fromStr = function ext_fromStr(str, elSep, valSep) {
+		var o = {};
+		elSep = elSep || ";";
+		valSep = valSep || ":";
+		str = str.split(elSep);
+		ext.each(str, function(v) {
+			v = v.split(valSep);
+			o[v[0]] = v[1];
+		});
+		return o;
+	};
 
 	ext.template = function ext_template(obj, template, defaults) {
 		var m = template.match(/({.+?})/g);

@@ -1,4 +1,4 @@
-/* globals define, $ */
+/* globals define, $, d3 */
 
 define([
 	'sb_light/utils/Class', 
@@ -6,9 +6,13 @@ define([
 	"d3"
 ], function( Class ) {
 	
+	'use strict';
+
 	//local private statics
 	var dims = {"b":"bottom", "l":"left", "r":"right", "t":"top", "h":"height","w":"width", "f":"fringe"};
 	var dimReg = /left|right|top|bottom|height|width|fringe/;
+
+	var E;
 
 	var Widget = Class.extend({
 		//called by "new Widget()"
@@ -38,6 +42,8 @@ define([
 		//do not override
 		init:function(sb, parent, def) {
 			this._sb = sb;
+			E = this._sb.ext;
+
 			this._rootElement = this._rootElement || "div";
 			this._props = this._buildPropsList();
 
@@ -66,6 +72,7 @@ define([
 				"widget": 		{get: function() { return true; }},
 				"isDrawing": 	{get: function() { return this.__drawing; }},
 				"dom": 			{get: function() { return this._dom; }},
+				"d3dom": 		{get: function() { return d3.select(this._dom); }},
 				"id": 			{get: function() { return (this._def && this._def.id) || (this._dom && this._dom.id);  	}},
 				"name": 		{get: function() { return this._name || (this._def && this._def.widget); }},
 				"parent": 		{get: function() { return this._parent || null;  }},
@@ -132,7 +139,9 @@ define([
 			var c = this.child(id);
 			return c ? c.dom : null;
 		},
-
+		childD3: function(id) {
+			return d3.select(this.childDom(id));
+		},
 
 
 		create:function() {
@@ -142,7 +151,7 @@ define([
 			this.createLayout();
 			this.parentDom.appendChild(this._dom);
 			this._created = true;
-			//this._sb.ext.debug("created", this._name);
+			//E.debug("created", this._name);
 		},
 
 
@@ -153,7 +162,7 @@ define([
 			//NEEDS DOING or events go wonky. 
 			this._sb.queue.cancel("_buffer" + this.id);
 
-			var each = this._sb.ext.each;
+			var each = E.each;
 			//use the local layout so we don't destroy a parent's layout
 			if(this._layout) {
 				each(this.children, function(v,k) {
@@ -214,7 +223,7 @@ define([
 
 		//which models this widget subscribes to
 		models: function(/*string list...*/) {
-			var args = this._sb.ext.slice(arguments, 0);
+			var args = E.slice(arguments, 0);
 			var m = this._sb.models;
 			var ms = this._models;
 			var df = this.bind("dirty");
@@ -225,7 +234,7 @@ define([
 
 		//watch a list of state properties
 		watch: function(funcName, type /*, string list*/) {
-			var args = this._sb.ext.slice(arguments, 1);
+			var args = E.slice(arguments, 1);
 			var s = this._sb.state;
 			var ss = this._watchers[type];
 			var df = this.bind(funcName);
@@ -239,7 +248,7 @@ define([
 		modelsValid: function() {
 			var ms = this._sb.models;
 			var valid= true;
-			this._sb.ext.each(this._models, function(v,k) {
+			E.each(this._models, function(v,k) {
 				var m = ms.get(k);
 				//"m.get" will force a fetch if it's not valid. 
 				valid = valid && m && m.get() !== null;
@@ -312,7 +321,7 @@ define([
 				"animate": this.bind("prop"),
 				"visible": this.bind("prop"),
 				"widget-name": this.bind("dataProperty"),
-				"class":this.deprecated.bind(this, 'Please use "klass" instead.'),
+				//"class":this.deprecated.bind(this, 'Please use "klass" instead.'),
 				"klass":this.bind("className"), //class is reserved
 //				"fer": this.bind("attr"), //alias for "for" on labels, as it's a reserved word. 
 				"children":this.bind("childrenLayout"),
@@ -337,7 +346,7 @@ define([
 			}
 		},
 		createDom:function(opts) {
-			opts.widget = this._sb.ext.isStr(opts.widget) ? opts.widget : this._rootElement;
+			opts.widget = E.isStr(opts.widget) ? opts.widget : this._rootElement;
 			if(!opts.widget) { throw new Error("The \'widget\' option must be specified, and be the name of a valid HTML element."); }
 			return opts.domNode || document.createElement(opts.widget);
 		},
@@ -346,7 +355,7 @@ define([
 			//childrenLayout: layout defined by a 3rd party who likely creates this widget
 			//defaultLayout: layout this widget defines for itself. Normally this is set in the inherited
 			//					createLayout function, and then the super function is called. 
-			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
+			var args = E.slice(arguments, arguments.length > 1 ? 1 : 0);
 			if(args.length) {
 				this._childrenLayout = layout;
 				return this; 
@@ -397,14 +406,14 @@ define([
 			if(this._sb.debug) {
 				throw msg;
 			} else {
-				this._sb.ext.warn(msg);
+				E.warn(msg);
 			}
 		},
 		//optional "class" string based on who calls it. does nothing,gets ignored. 
 		//name is the class name to apply. separate multiple with spaces as usual
 		//remove is a boolean, which removes the class if true. 
 		className: function(/*class(?), name, remove*/) {
-			var args = this._sb.ext.slice(arguments, arguments[0]=="klass" ? 1 : 0);
+			var args = E.slice(arguments, arguments[0]=="klass" ? 1 : 0);
 			var dom = this.dom;
 			var self = this;
 			if(args.length) {
@@ -417,7 +426,7 @@ define([
 						self._classList[n] = true;
 					}
 				});
-				dom.className = this._sb.ext.keys(this._classList).join(" ");
+				dom.className = E.keys(this._classList).join(" ");
 				return this;
 			}
 			return dom.className;
@@ -442,7 +451,7 @@ define([
 		},
 
 		cssText: function() {
-			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
+			var args = E.slice(arguments, arguments.length > 1 ? 1 : 0);
 			if(args.length) {
 				this._dom.style.cssText = args[0];
 				return this;
@@ -451,7 +460,7 @@ define([
 		},
 
 		text: function() {
-			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
+			var args = E.slice(arguments, arguments.length > 1 ? 1 : 0);
 			if(args.length ) {
 				this._dom.textContent = args[0];
 				return this;
@@ -460,7 +469,7 @@ define([
 		},
 
 		html: function() {
-			var args = this._sb.ext.slice(arguments, arguments.length > 1 ? 1 : 0);
+			var args = E.slice(arguments, arguments.length > 1 ? 1 : 0);
 			if(args.length ) {
 				this._dom.innerHTML = args[0];
 				return this;
@@ -517,7 +526,7 @@ define([
 
 		_afterApplyLayout: function() {
 			//var children = this.children || {};
-			// this._sb.ext.each(children, function(v,k) {
+			// E.each(children, function(v,k) {
 			// 	v.invalidate();
 			// });
 
@@ -531,17 +540,17 @@ define([
 			if(!this._sb) {
 				console.log("wtf");
 			}
-			this._sb.ext.each(children, function(v,k) {
+			E.each(children, function(v,k) {
 				v.visible = cd;
 			});
 
 		},
 
 		applyLayout: function() {
-			//this._sb.ext.debug("Applying layout:", this.id, this.name);
+			//E.debug("Applying layout:", this.id, this.name);
 			var d = this.dom;
 			var dim = this.bind("dim");
-			var px = this._sb.ext.px;
+			var px = E.px;
 			var sz = this.bind("sizeFuncs");
 
 			// if(this._animate > 0) {
@@ -569,7 +578,7 @@ define([
 			if(this.canDraw()) {
 				d3.select(this.dom).style("visibility", "visible");
 				//do this to the local layout, not the parent one
-				//this._sb.ext.debug("Drawing:", this.id, this.name);
+				//E.debug("Drawing:", this.id, this.name);
 				if(this._layout) {
 					var rect = this._dom.getBoundingClientRect();
 					this._layout.rootWidth = rect.width;
@@ -601,12 +610,12 @@ define([
 
 
 		dim: function(name, value) {
-			var ext = this._sb.ext;
+			var ext = E;
 			if(arguments.length > 1) {
 				this.dom.style[name] = ext.isStr(value) ? value : ext.px(value);
 				return this;
 			}
-			return this._sb.ext.to_i(this.dom.style[name]);
+			return E.to_i(this.dom.style[name]);
 		},
 
 		rect: function() {

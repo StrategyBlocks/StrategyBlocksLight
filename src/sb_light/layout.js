@@ -2,7 +2,11 @@
 /*global define, require, d3, console, $*/
 
 define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget, SvgWidget) {
+
+	'use strict';
+
 	var lo =  {};
+
 
 	lo.init = function() {
 	};
@@ -11,7 +15,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	lo.create = function(parent, def) {
 		try {
 			var el;
-			if(!def.widget || sb.ext.isStr(def.widget)) {
+			if(!def.markup && !def.widget || sb.ext.isStr(def.widget)) {
 				if(def.widget == "svg") {
 					el = (new SvgWidget(sb,parent,def));
 				} else {
@@ -30,7 +34,42 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	};
 
 
+	//when we don't need the weight of a widget object for a bunch of children, set a widget to be markup, and it will
+	//get created as html/svg markup instead of a bunch of widget objects. (basically an html templating engine)
+	lo.addMarkup = function(parent, def) {
+		var p = d3.select(parent);
 
+		if(!def || !def.markup) {
+			console.log("wtf");
+		}
+		console.log("markup", parent, p, def.markup, Object.keys(def));
+		try {
+			var c = p.append(def.markup);
+		} catch(e) {
+			console.log("wtf");
+		}
+		var E = sb.ext;
+
+		E.each(def, function(v, k) {
+			if(k == "markup") {
+				return;
+			} else if(k == "children") {
+				v = E.isArr(v) ? v : [v];
+				E.each(v, function(cdef) {
+					lo.addMarkup(c.node(), cdef)
+				});
+			} else if (k == "style") {
+				v=  E.isStr(v) ? E.fromStr(v) : v;
+				c.style(v);
+			} else if (k == "text") {
+				c.text(v);
+			} else {
+				c.attr(k, v);
+			}
+		});
+
+		return c;
+	};
 
 
 
@@ -58,6 +97,10 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	//		want to call resize manually. 
 	lo.change = function(layout, key, dim, value, wait/*==false*/) {
 		var w = layout.widgets[key];
+		if(!w) {
+			console.log(["SB_Light::Layout::change ", ("Widget " + key + " does not exist in the layout definition.")].join(" -- "));
+			throw new Error(["SB_Light::Layout::change ", ("Widget " + key + " does not exist in the layout definition.")].join(" -- "));
+		}
 		var curr = w.source(dim);
 		if(curr != value) {
 			w.source(dim, value);
@@ -84,6 +127,18 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	};
 
 	lo.createWidget = function(layout, parent,def, i) {
+		//skip out and just create html/svg markup 
+		if(def.markup) {
+			try {
+				return lo.addMarkup(parent.dom||parent, def);
+			} catch(e) {
+				console.log(["SB_Light::Layout::createMarkup ", JSON.stringify(e), def.id].join(" -- "));
+				throw new Error(["SB_Light::Layout::createMArkup ", JSON.stringify(e), def.id].join(" -- "));
+
+			}
+		}
+
+		//ELSE -- create normal widget
 		def.id = lo.uniqueId(def);
 		def.style = def.style || "";
 		def.style = (def.style.match("/z-index/") ? "" : "z-index:"+i+";") + def.style;

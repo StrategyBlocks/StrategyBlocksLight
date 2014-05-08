@@ -1,6 +1,6 @@
 
 
-
+/*globals define,  CryptoJS */
 
 
 
@@ -13,7 +13,7 @@
 
 define(['sb_light/globals', "moment"], function(sb, moment) {
 	
-	
+	'use strict';
 	var q = {};
 	
 	/********************************
@@ -32,8 +32,20 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 		//fall back on the companies model
 		return (cs && cid && cs[cid] ) || null; 
 	};
-	
-	
+	q.companyRollup = function() {
+		var c = q.company();
+		return c ? c.default_progress_weight_method : 1;
+	};
+	q.companyLinkedRollup = function() {
+		var c = q.company();
+		return c ? c.default_linked_rollup_method : 2;
+	};
+	q.companyHealth = function() {
+		var c = q.company();
+		return c ? c.default_health_calculation_id : null;
+	};
+
+
 	/********************************
 		USERS
 	*********************************/
@@ -55,8 +67,8 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 		return (us && uid && us[uid]) || (uid == sid && sb.state.context("user")) || null;
 
 	};
-	q.companyMembership = function() {
-		var u = q.user();
+	q.companyMembership = function(uid) {
+		var u = q.user(uid);
 		if(u.company_membership) {
 			return u.company_membership;
 		} else {
@@ -71,7 +83,7 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 	
 	};
 	var _serverDateFormat =  "YYYY/MM/DD";
-	q.userToServerDate = function(date, opts) {
+	q.userToServerDate = function(date) {
 		var u = q.user();
 		var m = moment(date, u.date_format);
 		return m.format(_serverDateFormat);
@@ -87,6 +99,88 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 		}).sort(sb.ext.sortUsers);
 	};
 
+	q.gravatar = function(uid) {
+		var u = q.user(uid);
+		return "http://www.gravatar.com/avatar/" +  CryptoJS.MD5(u ? u.username : "") + "?d=identicon";
+	};
+
+	q.isAdmin = function(uid) {
+		var cm = q.companyMembership(uid);
+		return cm && cm.role == "Administrator";
+	};
+	q.isAuthor = function(uid) {
+		var cm = q.companyMembership(uid);
+		return cm && cm.role == "Author";
+	};
+	q.isUser = function(uid) {
+		var cm = q.companyMembership(uid);
+		return cm && cm.role == "User";
+	};
+
+	q.userActive = function(uid) {
+		var cm = q.companyMembership(uid);
+		return cm && cm.active;	
+	};
+	q.userPrimary = function(uid) {
+		var cm = q.companyMembership(uid);
+		return cm && cm.primary_contact;	
+	};
+
+	q.userGroups = function(uid) {
+		var u = q.user(uid);
+		var g = sb.models.rawArray("groups") || [];
+
+		return g.filter(function(v) {
+			return v.users.indexOf(u.id) > -1;
+		}).map(function(v) {
+			return v.id;
+
+		});
+	};
+
+	q.userBlocks = function(uid) {
+		return sb.models.rawArray("blocks").filter(function(b) {
+			return b.owner_id == uid || b.manager_id == uid;
+		});
+	};
+	q.userKpis = function(uid) {
+		return sb.models.rawArray("kpis").filter(function(b) {
+			return b.owner_id == uid || b.manager_id == uid;
+		});
+	};
+	q.userRisks = function(uid) {
+		return sb.models.rawArray("risks").filter(function(b) {
+			return b.owner_id == uid || b.manager_id == uid;
+		});
+	};
+
+
+	q.userOwnedBlocks = function(uid) { 
+		var cm = q.companyMembership(uid); 
+		return (cm && cm.count_owned_blocks) || 0; 
+	};
+	q.userManagedBlocks = function(uid) { 
+		var cm = q.companyMembership(uid); 
+		return (cm && cm.count_managed_blocks) || 0; 
+	};
+	q.userOwnedKpis = function(uid) { 
+		var cm = q.companyMembership(uid); 
+		return (cm && cm.count_owned_kpis) || 0; 
+	};
+	q.userManagedKpis = function(uid) { 
+		var cm = q.companyMembership(uid); 
+		return (cm && cm.count_managed_kpis) || 0; 
+	};
+	q.userOwnedRisks = function(uid) { 
+		var cm = q.companyMembership(uid); 
+		return (cm && cm.count_owned_risks) || 0; 
+	};
+	q.userManagedRisks = function(uid) { 
+		var cm = q.companyMembership(uid); 
+		return (cm && cm.count_managed_risks) || 0; 
+	};
+
+
 
 	/********************************
 		FOCUS AREAS
@@ -98,11 +192,11 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 
 	q.focusTitle = function(fid) {
 		var f = q.focusArea(fid);
-		return f ? f.title : null;
+		return f ? f.title : "";
 	};
 	q.focusDesc = function(fid) {
 		var f = q.focusArea(fid);
-		return f ? f.description : null;
+		return f ? f.description : "";
 	};
 
 	q.focusList = function(fid) {
@@ -113,14 +207,14 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 			f = q.focusArea(f.parent_id);
 		}
 		return list; 
-	}
+	};
 
 	q.focusPath = function(fid) {
 		var list = q.focusList(fid);
 		return list.reverse().map(function(v,k){
 			return v.title;
 		}).join(" / ");
-	}
+	};
 	
 	/********************************
 		Levels
@@ -130,11 +224,11 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 		var c = ls && ls[id] ? ls[id].color : null; 
 		return c ? sb.ext.to_color(c) : null;
 	};
-	q.levelName = function(fid) {
+	q.levelName = function(id) {
 		var ls = sb.models.raw("levels");
 		return ls && ls[id] ? ls[id].title : null;
 	};
-	q.levelPos = function(fid) {
+	q.levelPos = function(id) {
 		var ls = sb.models.raw("levels");
 		return ls && ls[id] ? ls[id].title : null;
 	};
@@ -202,7 +296,7 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 			return m[id];
 		}
 		return null;
-	}
+	};
 
 	/********************************
 		RISKS
@@ -215,7 +309,7 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 			return m[id];
 		}
 		return null;
-	}
+	};
 
 	/********************************
 		BLOCKS
@@ -313,6 +407,9 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 		return pinfo ? pinfo.level : 0;
 	};
 	
+	q.childPath = function(ppath, id, str/*===false*/) {
+		return q.blockpath(_pathToArray(ppath).push(id), str);
+	};
 	q.childrenPaths = function(bpath, str/*==false*/) {
 		//array, so we can concat
 		bpath = q.blockPath(bpath);
@@ -357,11 +454,27 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 		return q.arePathsEqual(apath, q.currentBlockPath());
 	};
 	
-	
-	q.maxDate = function() {
+
+	q._managerFields = ["title", "body", "start_date", "end_date", "owner_id", "focus_id", 
+						"priority", "days_of_effort", "floating_end_date", "milestone_definition_id", "health_calculation_id"];
+	q._ownerFields = ["progress_value", "progress_comment"];
+
+	q.canEditBlock = function(b) {
+		return b.is_owner || b.is_manager;
+	};
+	q.canManageBlock = function(b, optionalField) {
+		return b.is_manager && !b.closed;
+	};
+	q.canOwnBlock = function(b, optionalField) {
+		return b.is_owner && !b.closed && !b.ownership_state == "new";
+	};
+
+	q.maxDate = function(bpath) {
+		var b = q.block(bpath || q.rootBlock());
 		return sb.ext.date(q.rootBlock().end_date);
 	};
-	q.minDate = function() {
+	q.minDate = function(bpath) {
+		var b = q.block(bpath || q.rootBlock());
 		return sb.ext.date(q.rootBlock().start_date);
 	};
 
@@ -378,10 +491,9 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 	q.blockVariance = function(b) {
 		var p  = q.blockProgress(b);
 		var e  = q.blockTarget(b);
-		return e > 0 ? Math.floor( ((p - e)/e) *100) : 100;
+		return (e > 0) ? (Math.floor( ((p - e)/e) *100)) : 100;
 
-
-	}
+	};
 
 
 
@@ -411,24 +523,25 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 	};
 	
 	
-	q.is_link = function(parent_id, child_id) {
-		return _parent_child_link(parent_id, child_id).linked_parent_id != null;
+	q.is_link = function(parent, child) {
+		var pid = q.blockId(parent);
+		var id = q.blockId(child);
+		return _parent_child_link(pid, id).linked_parent_id != null;
 	};
 	
-	q.custom_progress_weight = function(parent_id, child_id) {
-		return sb.ext.to_i(_parent_child_link(parent_id, child_id).custom_progress_weight);
+	q.custom_progress_weight = function(ppath, cpath) {
+		return sb.ext.to_i(_parent_child_link(ppath, cpath).custom_progress_weight) || 0;
 	};
 	
-	var _parent_child_link = function(parent_id, child_id) {
+	var _parent_child_link = function(ppath, cpath) {
 		var blocks = sb.models.raw("blocks");
-		var parent = blocks[parent_id]; 
-		var child = blocks[child_id];
-		
-		if (parent.children.indexOf(child_id) == -1) {
-			throw new Error("Block(" + child_id + ") is not a parent of block(" + parent_id + ")");
+		var parent = q.block(ppath);
+		var child = q.block(cpath);
+
+		if (parent.children.indexOf(child.id) == -1) {
+			throw new Error("Block(" + child.id + ") is not a parent of block(" + parent.id + ")");
 		}
-		
-		return child.parents.reduce(function(pre, mel) {return mel.parent_id == parent_id ? pre.put(mel) : pre;}, [])[0];
+		return child.parents.findKey("parent_id", parent.id).value;
 	};
 	
 	q.progressVariance = function(bpath) {

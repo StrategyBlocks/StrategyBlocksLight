@@ -31,6 +31,24 @@ define(['sb_light/globals'], function(sb) {
 	controller.changeDefaultCompany = function(id,cb, errCb) {
 		controller.invoke(sb.urls.USERS_CHANGE_DEFAULT_COMPANY, {id:sb.state.state("user_id"),default_company_id:id}, cb,errCb);
 	};
+	controller.changeCompanyMembership = function(changes, cb, errCb) {
+		controller.invoke(sb.urls.USERS_CHANGE_MEMBERSHIP, changes, cb,errCb);
+	};
+	controller.toggleUserGroup = function(id, groupId, selected, cb, errCb) {
+		if(selected) {
+			controller.invoke(sb.urls.USERS_ADD_GROUP, {id:id, group_id:groupId}, cb,errCb);
+		} else {
+			controller.invoke(sb.urls.USERS_REMOVE_GROUP, {id:id, group_id:groupId}, cb,errCb);
+		}
+	};
+
+
+	controller.updateLevels = function(data, cb,errCb) {
+		controller.invoke(sb.urls.LEVELS_UPDATE, data, cb,errCb);
+	};
+	controller.updateFocus = function(data, cb,errCb) {
+		controller.invoke(sb.urls.FOCUS_UPDATE, data, cb,errCb);
+	};
 	
 	controller.invoke = function(urlObj, args, successCb, errorCb, stateCheck) {
 		var url = sb.urls.url(urlObj, args);
@@ -55,7 +73,7 @@ define(['sb_light/globals'], function(sb) {
 				}
 			}
 		}
-		var post = urlObj.post === undefined || urlObj.post || false;
+		var post = (urlObj.post !== undefined && urlObj.post) || false;
 		sb.api.request(url, params, post, successCb, errorCb, stateCheck||null);
 	};
 	
