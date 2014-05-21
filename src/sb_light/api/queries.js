@@ -51,11 +51,11 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 	*********************************/
 	q.fullname = function(uid) {
 		var u = q.user(uid);
-		return u ? u.name : "<removed>";
+		return u ? u.name : "<unknown>";
 	};
 	q.firstname = function(uid) {
 		var u = q.user(uid);
-		return u ? u.first_name : "<removed>";
+		return u ? u.first_name : "<unknown>";
 	};
 	q.user = function(uid /*optional*/) {
 		var sid = sb.state.state("user_id");

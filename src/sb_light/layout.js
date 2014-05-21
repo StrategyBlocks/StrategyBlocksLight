@@ -36,13 +36,19 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 
 	//when we don't need the weight of a widget object for a bunch of children, set a widget to be markup, and it will
 	//get created as html/svg markup instead of a bunch of widget objects. (basically an html templating engine)
-	lo.addMarkup = function(parent, def) {
+	lo.addMarkup = function(parent, def, layout) {
 		var p = d3.select(parent);
 
-		if(!def || !def.markup) {
-			console.log("wtf");
+		if(!def || (!def.markup && !def.widget)) {
+			console.log(["SB_Light::Layout::addMarkup ", JSON.stringify(e), def.id].join(" -- "));
+			throw new Error(["SB_Light::Layout::addMarkup ", JSON.stringify(e), def.id].join(" -- "));
 		}
-		console.log("markup", parent, p, def.markup, Object.keys(def));
+		
+		//switch back to widgets...
+		if(def.widget) {
+			return layout ? lo.createWidget(layout, parent,def) : lo.create(parent,def);
+		}
+
 		try {
 			var c = p.append(def.markup);
 		} catch(e) {
@@ -56,7 +62,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 			} else if(k == "children") {
 				v = E.isArr(v) ? v : [v];
 				E.each(v, function(cdef) {
-					lo.addMarkup(c.node(), cdef)
+					lo.addMarkup(c.node(), cdef, layout)
 				});
 			} else if (k == "style") {
 				v=  E.isStr(v) ? E.fromStr(v) : v;
@@ -130,7 +136,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		//skip out and just create html/svg markup 
 		if(def.markup) {
 			try {
-				return lo.addMarkup(parent.dom||parent, def);
+				return lo.addMarkup(parent.dom||parent, def, layout);
 			} catch(e) {
 				console.log(["SB_Light::Layout::createMarkup ", JSON.stringify(e), def.id].join(" -- "));
 				throw new Error(["SB_Light::Layout::createMArkup ", JSON.stringify(e), def.id].join(" -- "));

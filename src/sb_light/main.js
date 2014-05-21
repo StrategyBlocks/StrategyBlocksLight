@@ -4,6 +4,7 @@
 define([
 	'sb_light/globals',
 	'moment',	
+	'sb_light/utils/polyfills',	
 	'sb_light/utils/ext',	
 	'sb_light/utils/dom',	
 	'sb_light/utils/subman',	
@@ -24,6 +25,7 @@ define([
 ], function(
 	globals,
 	moment,
+	polyfills,
 	ext,
 	dom,	
 	subman,	
@@ -49,6 +51,7 @@ define([
 	globals.moment = moment || this.moment || window.moment;
 	if(!globals.moment && !globals.moment.version) { throw "Moment JS has not been loaded properly."; }
 
+	globals.polyfills = polyfills;
 	globals.ext = ext;
 	globals.dom = dom;
 	globals.subman = subman;

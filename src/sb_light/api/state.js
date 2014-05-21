@@ -160,8 +160,6 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		if(!cb) {
 			throw "Error: callback is not defined: " + group + " " + type;
 		}
-
-
 		_initStorage(group, type, _default);
 
 		var w = watching[group];

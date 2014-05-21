@@ -100,7 +100,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		sel.remove();
 		return sel;
 	});
- 	
+	
 	//basically gets/sets any numeric attribute (dimension).
 	// on set:
 	//		if the element isn't SVG and the value is not a function, add "px" to it
@@ -435,8 +435,8 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 			var pt = S.utils.pt;
 			var ctm = S.utils.ctm;
 
-			pt.x = ext.first(evt.clientX,evt.pageX); 
-			pt.y = ext.first(evt.clientY, evt.pageY);
+			pt.x = E.first(evt.clientX,evt.pageX); 
+			pt.y = E.first(evt.clientY, evt.pageY);
 			var res = pt.matrixTransform(ctm);
 			if(offset) {
 				res.x -= ctm.e;
@@ -455,7 +455,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 					console.log("wtf");
 				}
 				var interpolate = d3.interpolate(arc, d);
-				ext.mixin(arc,d);
+				E.mixin(arc,d);
 				a._prevArc = arc;
 				return function(t) { 
 					return d3.svg.arc()(interpolate(t)); 
@@ -467,14 +467,14 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 				var d = b.call(this, a, i);
 				var border = borders ? borders[i] : a._prevBorder;
 				var interpolate = d3.interpolate(border, d);
-				ext.mixin(border,d);
+				E.mixin(border,d);
 				a._prevBorder = border;
 				return function(t) { 
 					var pd = interpolate(t);
 					var ma = (pd.startAngle + (pd.endAngle - pd.startAngle)/2)
-					var invert = ma > (ext.tau *0.25) && ma < (ext.tau * 0.75);
-					var sa = (invert ? pd.endAngle : pd.startAngle) - ext.rad90;
-					var ea = (invert ? pd.startAngle : pd.endAngle) - ext.rad90;
+					var invert = ma > (E.tau *0.25) && ma < (E.tau * 0.75);
+					var sa = (invert ? pd.endAngle : pd.startAngle) - E.rad90;
+					var ea = (invert ? pd.startAngle : pd.endAngle) - E.rad90;
 					var dir = invert ? 0 : 1;
 					var rad = pd.radius;
 					var start = S.utils.arcPoint(rad, sa);
@@ -492,11 +492,112 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 			}
 		},
 
+		//points are in the form [x,y]
+		distance: function(p1, p2) {
+			var x = E.absDiff(p1[0], p2[0]);
+			var y = E.absDiff(p1[1], p2[1]);
+			return Math.sqrt( (x*x) + (y*y) );
+		},
+
+
+
+		//determine if the two lines overlap and where.
+		overlap: function(a, b, c, d) {
+			var ax = a[0], ay = a[1];
+			var bx = b[0], by = b[1];
+			var cx = c[0], cy = c[1];
+			var dx = d[0], dy = d[1];
+
+			var overlap = [];
+
+			if(S.utils._overlapIntersect(ax,ay,bx,by,cx,cy)) {
+				overlap.push(c);
+			}
+			if(S.utils._overlapIntersect(ax,ay,bx,by,dx,dy)) {
+				overlap.push(d);
+			}
+			if(S.utils._overlapIntersect(cx,cy,dx,dy,bx,by)) {
+				overlap.push(b);
+			}
+			if(S.utils._overlapIntersect(cx,cy,dx,dy,ax,ay)) {
+				overlap.push(a);
+			}
+			return overlap;
+		},
+		//helper for overlap
+
+		_overlapIntersect: function(ax,ay,bx,by,cx,cy) {
+			var ex = (cx - ax);
+			var ey = (cy - ay);
+			var fx = (bx - ax);
+			var fy = (by - ay);
+
+			var cross = E.absDiff( (ex * fy), (ey * fx) );
+			if(cross < 0.1) {
+				if(Math.abs(fx) >= Math.abs(fy)) {
+					return (fx > 0 ) ? 
+						ax <= cx && cx <= bx :
+						bx <= cx && cx <= ax;
+				} else {
+					return (fy > 0 ) ? 
+						ay <= cy && cy <= by :
+						by <= cy && cy <= ay;
+				}
+			}
+
+			return false; 
+		},
+
+
+		findPoint: function(list,p) {
+			if(!list || !list.length) { return null;}
+			return list.find(function(v, i) {
+				return v[0] == p[0] && v[1] == p[1] ? i : -1;
+			}) || null;
+		},
+
 		id: function(prop, prefix, suffix) {
 			var str = (prefix ? (prefix + "_") : "") + "%id%" +  (suffix ? ("_" + suffix) : "");
 			return function(d,i) {
 				return str.replace("%id%", d[prop ? prop : "id"]);
-			}
+			};
+		},
+
+		slope: function(a,b) {
+			return ( (a[1] - b[1]) / (a[0] - b[0]));
+		},
+
+		poly: function(a) {
+			a = a || [];
+			return d3.geom.polygon(S.utils.removeDupes(a));
+		},
+
+		//returns true if different. a = [x,y], b=[x,y]
+		pointsDiffer: function(a,b) {
+			var res = a !=b  && !(a[0] == b[0]  && a[1] == b[1]);
+			return res;
+		},
+
+		removeDupes: function(a) {
+			if(!a || a.length == 1) { return a; }
+
+			var pts = {};
+			E.each(a, function(v) {
+				pts[v.join("_")] = true;
+			});
+			return E.keys(pts).map(function(v) { 
+				return v.split("_").map(function(k) {
+					return E.to_f(k);
+				});
+			})
+		},
+
+		polyClip: function(target,clipper) {
+			var tp = S.utils.removeDupes(target);
+			var cp = S.utils.removeDupes(clipper);
+			if(tp.length < 2 || cp.length < 2) { return []; }
+
+			return S.utils.poly(tp).clip(S.utils.poly(cp));
 		},
 
 		//obolete elsewhere. saving here for posterity.
@@ -528,7 +629,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 								S.l(0.301*size, -0.924*size), 
 								S.l(0.301*size, 0.924*size), "Z");
 			}
- 		
+		
 
 		},
 

@@ -91,7 +91,8 @@ define([
 								 		//normalize to force boolean otherwise .toggle gets odd
 								 		x = x ? true : false;
 								 		if(this._visible != x) {
-								 			this._visible = x; $(this.dom).toggle(x); this.invalidate(); 
+								 			this._visible = x; this.invalidate(); 
+								 			$(this.dom)[x ?"show":"hide"]();
 								 		} 
 								 	}		
 								},
@@ -151,6 +152,8 @@ define([
 			this.createLayout();
 			this.parentDom.appendChild(this._dom);
 			this._created = true;
+
+			$(this.dom).on("resize change", this.bind("dirty"));
 			//E.debug("created", this._name);
 		},
 
