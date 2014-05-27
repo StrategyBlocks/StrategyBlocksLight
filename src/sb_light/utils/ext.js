@@ -822,6 +822,8 @@ define(["sb_light/globals", "moment"], function(sb) {
 	//take a list of "complete" length and merge the sparse "smaller" into it by matching keys
 	//returns an object with "key" as the key
 	ext.mergeLists = function ext_mergeLists(larger,smaller, key) {
+		larger = larger || [];
+		smaller = smaller || [];
 		return larger.reduce(function(prev,curr, i) {
 			var d = smaller.findKey(key, curr[key]).value;
 			prev[curr.id] = ext.merge(curr, d);

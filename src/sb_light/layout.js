@@ -38,12 +38,21 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 	//get created as html/svg markup instead of a bunch of widget objects. (basically an html templating engine)
 	lo.addMarkup = function(parent, def, layout) {
 		var p = d3.select(parent);
-
-		if(!def || (!def.markup && !def.widget)) {
+		var E = sb.ext;
+		var S = sb.svg;
+		console.log("DFEF", def);
+		if(!def || ( !E.isStr(def) && (!def.markup && !def.widget))) {
 			console.log(["SB_Light::Layout::addMarkup ", JSON.stringify(e), def.id].join(" -- "));
 			throw new Error(["SB_Light::Layout::addMarkup ", JSON.stringify(e), def.id].join(" -- "));
 		}
 		
+		if(E.isStr(def)) {
+			var tn = document.createTextNode(def);
+			parent = S.d3(parent).node();
+			parent.appendChild(tn);
+			return;
+		}
+
 		//switch back to widgets...
 		if(def.widget) {
 			return layout ? lo.createWidget(layout, parent,def) : lo.create(parent,def);
@@ -54,7 +63,7 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		} catch(e) {
 			console.log("wtf");
 		}
-		var E = sb.ext;
+
 
 		E.each(def, function(v, k) {
 			if(k == "markup") {

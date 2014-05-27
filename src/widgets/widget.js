@@ -30,6 +30,7 @@ define([
 		_animate:0,
 		_created:false,
 		_visible:false,
+		_ignoreLayout:false,
 		_listeners:null,
 		_watching:null,
 		_layout: null,
@@ -323,6 +324,7 @@ define([
 				"widget": this._noop,
 				"animate": this.bind("prop"),
 				"visible": this.bind("prop"),
+				"ignoreLayout": this.bind("prop"),
 				"widget-name": this.bind("dataProperty"),
 				//"class":this.deprecated.bind(this, 'Please use "klass" instead.'),
 				"klass":this.bind("className"), //class is reserved
@@ -551,6 +553,11 @@ define([
 
 		applyLayout: function() {
 			//E.debug("Applying layout:", this.id, this.name);
+			if(this._ignoreLayout) { 
+				this.className("sb_light_widget", true);
+				return; 
+			} 
+			this.className("sb_light_widget");
 			var d = this.dom;
 			var dim = this.bind("dim");
 			var px = E.px;
@@ -580,9 +587,10 @@ define([
 		_beforeDraw: function() {
 			if(this.canDraw()) {
 				d3.select(this.dom).style("visibility", "visible");
+				d3.select(this.dom).style("display", null);
 				//do this to the local layout, not the parent one
 				//E.debug("Drawing:", this.id, this.name);
-				if(this._layout) {
+				if(this._layout && !this._ignoreLayout) {
 					var rect = this._dom.getBoundingClientRect();
 					this._layout.rootWidth = rect.width;
 					this._layout.rootHeight = rect.height;
@@ -597,6 +605,7 @@ define([
 				this._afterDraw();
 			} else {
 				d3.select(this.dom).style("visibility", "hidden");
+				d3.select(this.dom).style("display", "none");
 			}
 		},
 
