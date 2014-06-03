@@ -432,6 +432,8 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 
 		svgPoint: function(el, evt, offset) {
 			var root= el.ownerSVGElement || el; 
+
+			if(!S.utils.pt) { S.utils.setRoot(root); }
 			var pt = S.utils.pt;
 			var ctm = S.utils.ctm;
 
@@ -567,6 +569,11 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 			return ( (a[1] - b[1]) / (a[0] - b[0]));
 		},
 
+		area: function(a) {
+			if( (a || []).length == 0) { return 0; }
+			return S.utils.poly(a).area() || 0;
+		},
+
 		poly: function(a) {
 			a = a || [];
 			return d3.geom.polygon(S.utils.removeDupes(a));
@@ -583,6 +590,8 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 
 			var pts = {};
 			E.each(a, function(v) {
+				v[0] = E.roundTo(v[0], 3);
+				v[1] = E.roundTo(v[1], 3);
 				pts[v.join("_")] = true;
 			});
 			return E.keys(pts).map(function(v) { 
@@ -593,11 +602,11 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		},
 
 		polyClip: function(target,clipper) {
-			var tp = S.utils.removeDupes(target);
-			var cp = S.utils.removeDupes(clipper);
+			var tp = S.utils.poly(target);
+			var cp = S.utils.poly(clipper);
 			if(tp.length < 2 || cp.length < 2) { return []; }
 
-			return S.utils.poly(tp).clip(S.utils.poly(cp));
+			return S.utils.poly(tp.clip(cp));
 		},
 
 		//obolete elsewhere. saving here for posterity.

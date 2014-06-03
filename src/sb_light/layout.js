@@ -40,7 +40,6 @@ define(['sb_light/globals', 'widgets/widget', "widgets/svg"], function(sb,Widget
 		var p = d3.select(parent);
 		var E = sb.ext;
 		var S = sb.svg;
-		console.log("DFEF", def);
 		if(!def || ( !E.isStr(def) && (!def.markup && !def.widget))) {
 			console.log(["SB_Light::Layout::addMarkup ", JSON.stringify(e), def.id].join(" -- "));
 			throw new Error(["SB_Light::Layout::addMarkup ", JSON.stringify(e), def.id].join(" -- "));

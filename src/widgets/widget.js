@@ -22,7 +22,6 @@ define([
 		_domFuncs:null,
 		_sizeFuncs:null,
 		_sizeDefs:null,
-		_classList:null,
 		_parent: null,
 		_name:null,
 		_binds:null,
@@ -56,7 +55,6 @@ define([
 			this._sizeDefs = {};
 			this._parent = parent;
 			this._def = def;
-			this._classList = {};
 			this._listeners = {};
 			this._watchers = {
 				"state":{},
@@ -306,14 +304,6 @@ define([
 			}
 		},
 
-		replaceClass: function(match, replacement) {
-			delete this._classList[match];
-			if(replacement) {
-				this.className(replacement);
-			}
-			return this;
-		},
-
 
 		_noop: function() {},
 		_propertyOverrides: function() {
@@ -377,6 +367,8 @@ define([
 				var f = this._domFuncs[k] || this._domFuncs["default"];
 				f(k, this._def[k]);
 			}
+
+			this.className("sb_light_widget");
 		},
 
 
@@ -419,22 +411,17 @@ define([
 		//remove is a boolean, which removes the class if true. 
 		className: function(/*class(?), name, remove*/) {
 			var args = E.slice(arguments, arguments[0]=="klass" ? 1 : 0);
-			var dom = this.dom;
+			var sel = d3.select(this.dom);
 			var self = this;
 			if(args.length) {
 				var names = args[0];
 				var remove = args[1]  || false;
 				names.split(" ").forEach(function(n) {
-					if(remove) {
-						delete self._classList[n];
-					} else {
-						self._classList[n] = true;
-					}
+					sel.classed(n, function() { return !remove; });
 				});
-				dom.className = E.keys(this._classList).join(" ");
 				return this;
 			}
-			return dom.className;
+			return sel.attr("class");
 		},
 
 
