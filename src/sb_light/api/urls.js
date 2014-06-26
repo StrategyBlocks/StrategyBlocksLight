@@ -186,7 +186,7 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_RECALC_HEALTH:		{url: "/admin/recalculate_health/%id%.js", 				post:false, normalParams:true, deleteId:true},
 		ADMIN_REGOS:				{url: "/admin/rego_tokens.js", 							post:false, normalParams:true},
 		ADMIN_REPORTS:				{url: "/admin/report.csv", 								post:false, normalParams:true, dataType:"text"},
-		ADMIN_REQUESTS:				{url: "/admin/current_requests.js", 					post:false, normalParams:true},
+		ADMIN_REQUESTS:				{url: "/admin/current_requests.js", 					post:false, normalParams:true, company:"admin_company_id", user:"admin_user_id"},
 		ADMIN_RESET_PASSWORD:		{url: "/admin/generate_new_password.js", 				post:true, normalParams:true},
 		ADMIN_SESSIONS:				{url: "/admin/current_sessions.js", 					post:false, normalParams:true},
 		ADMIN_SETTINGS:				{url: "/admin/settings.js", 							post:false},
