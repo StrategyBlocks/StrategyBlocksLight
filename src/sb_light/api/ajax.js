@@ -49,7 +49,7 @@ define(['sb_light/globals'], function(sb) {
 		var cd = (sb.state.host != window.location.host);
 
 		opts.url = cd ? opts.url.replace(/^(https?:\/\/)/, "//") : opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
-		sb.ext.debug("jquery ajax", opts.type, opts.url);
+		sb.ext.debug("jquery ajax", opts.type, opts.url, opts.dataType);
 		
 
 		jquery.ajax({

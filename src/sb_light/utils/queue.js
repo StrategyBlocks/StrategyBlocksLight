@@ -5,6 +5,7 @@ define(['sb_light/globals'], function(sb) {
 	var high_list = [];
 	var buffer_list = {};
 	var interval = 0;
+	var minEmptyWait = 200;
 
 	var start = function() {
 		queue.next();
@@ -126,10 +127,12 @@ define(['sb_light/globals'], function(sb) {
 		if(!_next(high_list)) { 
 			_next(low_list);
 		}
-		queue.next.bindDelay(queue, interval);
+		queue.next.bindDelay(queue, sb.ext.max(minEmptyWait, interval));
 	};
 
 	var _next = function queue_next_internal(list) {
+		if(!list.length) { return false; }
+
 		var t = sb.ext.time();
 		var len = list.length;
 		var i = 0;

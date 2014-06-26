@@ -148,7 +148,58 @@ define(['sb_light/globals'], function(sb) {
 		PAYMENTS_QUOTE :				{url: "/purchases/quote.js"},
 		PAYMENTS_CREATE: 			{url: "/purchases/create.js"},
 		
-		ADMIN_RAISE: 				{url:"/admin/log_client_error.js"}
+		ADMIN_RAISE: 				{url:"/admin/log_client_error.js"},
+
+		//admintool urls
+		ADMIN_AUDITS:				{url: "/admin/audits.js", 								post:false, normalParams:true, company:"admin_company_id", user:"admin_user_id"},					
+		ADMIN_BACKUP_COMPANY:		{url: "/admin/backup_company/%id%.js", 					post:true, deleteId: true},					
+		ADMIN_BACKUPS:				{url: "/admin/backups.js", 								post:false},					
+		ADMIN_BACKUPS_COMPANY:		{url: "/admin/backups/%id%.js", 						post:false, deleteId: true},					
+		ADMIN_BLOCK_DETAILS:		{url: "/admin/block/%id%.js", 							post:false, deleteId: true},
+		ADMIN_CLONE:				{url: "/admin/clone_company.js",						post:true},
+		ADMIN_COMPANIES:			{url: "/admin/companies.js", 							post:false},
+		ADMIN_COMPANY_DETAILS:		{url: "/admin/company/%id%.js", 						post:false, deleteId:true},
+		ADMIN_DELETE_COMPANY:		{url: "/admin/delete_company/%id%.js", 					post:true, deleteId: true},					
+		ADMIN_EXTEND_TRIAL:			{url: "/admin/extend_trial/%id%.js", 					post:true, deleteId: true, normalParams:true},					
+		
+		ADMIN_BUILDER_USERS:		{url: "/admin/builder_users.js", 						post:false},					
+		ADMIN_HTML5_USERS:			{url: "/admin/html5_users.js", 							post:false},					
+		ADMIN_ENABLE_BUILDER:		{url: "/admin/enable_builder.js", 						post:true, deleteId: true, normalParams:true},					
+		ADMIN_DISABLE_BUILDER:		{url: "/admin/disable_builder.js", 						post:true, deleteId: true, normalParams:true},					
+		ADMIN_ENABLE_HTML5:			{url: "/admin/enable_html5.js", 						post:true, deleteId: true, normalParams:true},					
+		ADMIN_DISABLE_HTML5:		{url: "/admin/disable_html5.js", 						post:true, deleteId: true, normalParams:true},					
+		ADMIN_INVOICES:				{url: "/admin/invoices/%id%.js", 						post:false, deleteId: true},
+		ADMIN_INVOICE_QUOTE:		{url: "/admin/quote_invoice.js", 						post:false, deleteId: false},
+		ADMIN_INVOICE_CREATE:		{url: "/admin/create_invoice.js", 						post:true, deleteId: false},
+		ADMIN_INVOICE_DELETE:		{url: "/admin/delete_invoice/%id%.js", 					post:true, deleteId: true},
+		ADMIN_INVOICE_UPDATE:		{url: "/admin/update_invoice.js", 						post:true, deleteId: false},
+		ADMIN_INVOICE_SENT:			{url: "/admin/mark_invoice_as_sent.js", 				post:true, deleteId: false, normalParams:true},
+		ADMIN_INVOICE_PAID:			{url: "/admin/mark_invoice_as_paid.js", 				post:true, deleteId: false, normalParams:true},
+		ADMIN_LICENSES:				{url: "/admin/license_companies.js", 					post:false, normalParams:true},
+		ADMIN_LICENSE_SUSPEND:		{url: "/admin/suspend_company/%id%.js", 				post:false, normalParams:true, deleteId:true},
+		ADMIN_LOGINS:				{url: "/admin/latest_login_attempts.js", 				post:false, normalParams:true, company:"admin_company_id", user:"admin_user_id"},
+		ADMIN_LOGINS_UNKNOWN:		{url: "/admin/latest_unknown_user_login_attempts.js", 	post:false, normalParams:true},
+		ADMIN_PUBLISH_DEMO:			{url: "/admin/publish_demo/%id%.js", 					post:true, deleteId: true},
+		ADMIN_PURCHASES:			{url: "/admin/purchases/%id%.js", 						post:false, deleteId: true},
+		ADMIN_RANDOMIZE:			{url: "/admin/randomize_progress_values/%id%.js", 		post:false, normalParams:true, deleteId:true},
+		ADMIN_RANDOMIZE_HISTORY:	{url: "/admin/randomize_progress_history/%id%.js",		post:false, normalParams:true, deleteId:true},
+		ADMIN_RECALC_HEALTH:		{url: "/admin/recalculate_health/%id%.js", 				post:false, normalParams:true, deleteId:true},
+		ADMIN_REGOS:				{url: "/admin/rego_tokens.js", 							post:false, normalParams:true},
+		ADMIN_REPORTS:				{url: "/admin/report.csv", 								post:false, normalParams:true, dataType:"text"},
+		ADMIN_REQUESTS:				{url: "/admin/current_requests.js", 					post:false, normalParams:true},
+		ADMIN_RESET_PASSWORD:		{url: "/admin/generate_new_password.js", 				post:true, normalParams:true},
+		ADMIN_SESSIONS:				{url: "/admin/current_sessions.js", 					post:false, normalParams:true},
+		ADMIN_SETTINGS:				{url: "/admin/settings.js", 							post:false},
+		ADMIN_SETTINGS_CHANGE:		{url: "/admin/change_settings.js", 						post:true, normalParams:true},
+		ADMIN_SHIFT_BLOCKS:			{url: "/admin/shift_company_strategy_dates/%id%.js", 	post:true, normalParams:true, deleteId:true},
+		ADMIN_SHIFT_KPIS:			{url: "/admin/shift_company_kpi_dates/%id%.js", 		post:true, normalParams:true, deleteId:true},
+		//generic - TBD
+		ADMIN_POST:					{														post:true, normalParams:true},
+		ADMIN_USERS:				{url: "/admin/users/%admin_company_id%.js", 			post:false, normalParams:true, company:"admin_company_id"},
+		ADMIN_USER_EMAILS:			{url: "/admin/emails.js", 								post:false, normalParams:true},
+		ADMIN_ZERO_PROGRESS:		{url: "/admin/companies_with_no_progress_closed_leaf_blocks.js", 	post:false, normalParams:true},
+
+
 	};
 	
 	

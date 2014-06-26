@@ -48,7 +48,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		// local cache of app data -- stuff that you might store in a cookie. or non-model data that unrelated
 		// objects might need access to
 		data: {
-
+			flashHistory:[]
 		}
 	};
 
@@ -115,7 +115,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		//var list = s[type] || [];
 		var value = state[group](type);
 		var ext= sb.ext;
-		ext.debug("Publish: ", type, value);
+		//ext.debug("Publish: ", type, value);
 		ext.each(s[type], function(v) {
 			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});
@@ -127,6 +127,12 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 
 	var _accessStorage = function(group, type,val, force) {
+		if(!type && sb.debug) {
+			//provide access to the raw object. This may or may not be dangerous....
+			//TODO: investigate benefits beyond debugging
+			return storage[group];
+		}
+
 		var sg = storage[group];
 		if(!sg.hasOwnProperty(type)) {
 			throw "SBLIGHT::State - Trying to access a state property that hasn't been initialized. " + group + "::" + type;
@@ -330,7 +336,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		if(data) {
 			var uid = data.user ? data.user.id : null;
 			var cid = data.company ? data.company.id : null;
-			if(uid != storage.state.user_id || cid != storage.state.company_id) {
+			if(!state.authorized() || uid != storage.state.user_id || cid != storage.state.company_id) {
 				storage.state.user_id = data.user ? data.user.id : null;
 				storage.state.company_id = data.company ? data.company.id : storage.state.company_id;
 				sb.queue.add(state.publish.bind(state, "state", "user_id"), "sb_state_publish_state_user_id", 100);

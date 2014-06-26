@@ -10,29 +10,34 @@ define(['sb_light/globals'], function(sb) {
 	var _requestQueue =  [];
 
 		
-	api.get = function(url, params, success, failure, stateCheck) {
-		api.request(url,params, false, success,failure,stateCheck);
+	api.get = function(url, params, success, failure, stateCheck, overrides) {
+		api.request(url,params, false, success,failure,stateCheck, overrides);
 	};
 	
-	api.post = function(url, params, success, failure, stateCheck) {
-		api.request(url,params, true, success,failure,stateCheck);
+	api.post = function(url, params, success, failure, stateCheck, overrides) {
+		api.request(url,params, true, success,failure,stateCheck, overrides);
 	};
 
-	api.request =  function(url, params, post, success,failure, stateCheck) {
+	api.request =  function(url, params, post, success,failure, stateCheck, overrides) {
 		var stateFunc = (stateCheck || sb.state.authorized);
 		if(stateFunc.call(sb.state)) {
-			_request(url, params, post, success, failure); 
-		} 
+			_request(url, params, post, success, failure, overrides); 
+		} else if(failure) {
+			failure(null);
+		} else if (success) {
+			success(null);
+		}
 	};
 	
-	function _request (url, params, post, success, failure) {
+	function _request (url, params, post, success, failure, overrides) {
 		sb.ext.debug("Sending request to ", url, post, JSON.stringify(params));
 		if(!api.ajax) {
 			throw "Error: sb.api.ajax has not been inititalized. Please set this value to one of the functions available in sb.ajax";
 		}
 		params = params || {};
 		sb.state.addTimestamps(params);
-		api.ajax({
+
+		var opts = {
 			url: url,
 			type: (post ? "POST" : "GET"),
 			data:params,
@@ -40,15 +45,26 @@ define(['sb_light/globals'], function(sb) {
 			context: api,
 			success: _success.bind(null, sb.ext.slice(arguments)),
 			error: _failure.bind(null, sb.ext.slice(arguments))
-		});
+		};
+
+		api.ajax(sb.ext.merge(opts, overrides||{}));
 	}
 
 	function _success(reqArray, data) {
-		sb.ext.debug("SUCCESS: SB_Api", reqArray, data);
+		sb.ext.debug("SUCCESS: SB_Api", reqArray.join(" "));
 		_errorTimeout = _errorTimeoutDefault;
 		
 		var wasValid = sb.state.authorized();
 		
+		var opts = reqArray && reqArray[5];
+
+		//skip post-processing if we're dealing with non-json responses
+		if(opts && opts.dataType != "json") {
+			reqArray[3](data);
+			_popQueue();
+			return;
+		}
+
 		if (sb.state.update(data) ) {
 			//success function in the original call
 			var errors = sb.ext.getResultMessages(data).errors;
@@ -73,7 +89,7 @@ define(['sb_light/globals'], function(sb) {
 	}
 	
 	function _failure (reqArray, data) {
-		sb.ext.debug("FAILURE SB_Api", JSON.stringify(data));
+		sb.ext.debug("FAILURE SB_Api", reqArray.join(" "), JSON.stringify(data));
 		sb.state.context("session", sb.state.session_disconnected);
 	}
 	

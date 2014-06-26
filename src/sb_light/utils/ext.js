@@ -26,6 +26,8 @@ define(["sb_light/globals", "moment"], function(sb) {
 	ext.noop = function(){};
 	ext.true = function(){ return true; };
 	ext.false = function(){ return false; };
+	ext.identity = function(x){ return x; }; // return the first argument (identity function)
+	ext.fidentity = function(x){ return (function() { return x;}); }; // return a function that returns x
 	ext.global = function(str) {
 		if(typeof window !== "undefined") {
 			return window[str] !== undefined;
@@ -176,7 +178,13 @@ define(["sb_light/globals", "moment"], function(sb) {
 		var k;
 		for(k in map) { return k; }
 	};	
-	
+
+	//simplify array join syntax for when I need to create the array as well
+	ext.join = function ext_join(ch /*, arguments:an array or a list of arguments to join */) {
+		var arr =  ext.slice(arguments,1);
+		arr = (arr.length == 1 && ext.isArr(arr[0])) ? arr[0] : arr;
+		return arr.join(ch);
+	};
 
 	ext.cloneArray = function(arr) {
 		return arr.map(function(v) { return ext.merge(v); });
@@ -271,32 +279,40 @@ define(["sb_light/globals", "moment"], function(sb) {
 	ext.parseDate = function ext_moment(d) {
 		ext.deprecated("ext.parseDate", "ext.moment");
 	};
-	ext.moment = function ext_moment(d) { return moment(d);	};
-	ext.dateNumber = function ext_dateNumber(d) { return ext.moment(d).valueOf();	};
-	ext.date = function ext_date(d) { return ext.moment(d).toDate();	};
+	ext.moment = function ext_moment(d, format) { return moment(d, format);	};
+	ext.dateNumber = function ext_dateNumber(d, format) { return ext.moment(d, format).valueOf();	};
+	ext.date = function ext_date(d, format) { return ext.moment(d, format).toDate();	};
 
 	//number is positive when db is earlier than da
 	ext.daysDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"days");};
+	ext.weeksDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"weeks");};
+	ext.monthsDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"months");};
+	ext.yearsDiff = function ext_daysDiff(da, db) {return ext.moment(da).diff(ext.moment(db),"years");};
 	ext.daysFrom = function ext_daysDiff(da, db, noPrefix) {return ext.moment(db).from(da, noPrefix||false); };
 	ext.today = function ext_today() { return new Date(); };
 	ext.minDate = function ext_minDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate)[0]); };
 	ext.maxDate = function ext_maxDate() { return ext.moment(ext.slice(arguments).sort(ext.sortDate).last()); };
 	ext.serverFormat = "YYYY/MM/DD";
+	ext.unixFormat = undefined;
 	ext.userFormat = function ext_userFormat() { 
 		var u = sb.queries.user();
 		var udf = u ? u.date_format : ext.serverFormat;
 		//ext.debug("User date format: ", udf);
 		return udf;
 	};
-	ext.serverDate = function ext_serverDate(d) { return moment(d||new Date()).format(ext.serverFormat); };
-	ext.userDate = function ext_userDate(d) { return moment(d||new Date()).format( ext.userFormat()); };
+	ext.serverDate = function ext_serverDate(d,format) { return ext.moment(d,format).format(ext.serverFormat); };
+	ext.month = function ext_date(d, format) { return ext.moment(d,format).format("MMM (YYYY)");	};
+	ext.userDate = function ext_userDate(d, format) { return ext.moment(d,format).format( ext.userFormat()); };
 	ext.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
 		if(reverse) {
 			return "(" + moment(d).fromNow() + ")&nbsp;" + moment(d).format(format || ext.userFormat());
 		} 
 		return moment(d).format(format || ext.userFormat()) + "&nbsp;(" + moment(d).fromNow() + ")";
 	};
-	ext.fromNow = function ext_fromNow(d) {		return moment(d).fromNow();	};
+	ext.fromNow = function ext_fromNow(d, format) {		return moment(d, format).fromNow();	};
+
+	//return a standard format for searching via dates
+	ext.filterDateString = function ext_fromNow(d) {		return moment(d).format("YYYY MMMM DD");	};
 
 
 		/************  REGEXPS ***************************/
@@ -320,13 +336,14 @@ define(["sb_light/globals", "moment"], function(sb) {
 	ext.sortTime = function ext_sortTime(a,b) { return ext.sortNumbers(ext.parseDate(a).getTime(), ext.parseDate(b).getTime()); }; 
 	ext.sortNumber = function ext_sortNumber(a,b){ return a-b; };
 	ext.sortNumbers = ext.sortNumber;
+	ext.sortNumStr = function ext_sortNumber(a,b){ return ext.to_f(a)-ext.to_f(b); };
 	ext.sortDay = function ext_sortDate(a,b){ return ext.daysDiff(a,b); }; 
 	ext.sortDays = ext.sortDay;
 	ext.sortDate = function ext_sortDate(a,b){ return ext.sortNumber(ext.dateNumber(a), ext.dateNumber(b)); }; 
 	ext.sortDates = ext.sortDate;
 	ext.sortString = function ext_sortString(a,b){ return String(a).localeCompare(String(b)); };
 	ext.sortStrings = ext.sortString;
-	ext.sortBool = function ext_sortBool(a,b) { return ext.sortNumber(a?1:0, b?1:0); };
+	ext.sortBool = function ext_sortBool(a,b) { return ext.sortNumber(ext.bool(a)?1:0, ext.bool(b)?1:0); };
 	ext.sortBoolean = ext.sortBool;
 	 
 	ext.sortDateValue = function ext_sortDateValue(a,b) { return ext.sortDate(a.date,b.date); };
@@ -357,12 +374,18 @@ define(["sb_light/globals", "moment"], function(sb) {
 		return ext.sortNumbers( (a.percent_progress/aep), (b.percent_progress/bep) );
 	};
 
+	ext.bool = function ext_bool(b){ 
+		return ext.isStr(b) ? (b === "true") : b;
+	};
 		
 		/************  CSS ***************************/
 	ext.px = function ext_px(number) {		return [number,"px"].join("");	};
 	ext.pc = function ext_pc(number) {		return [number,"%"].join("");	};
 		
 		//************  Math ***************************/
+
+
+
 	ext.roundTo = function ext_roundTo(number, dec) {
 		var val = Math.pow(10,ext.number(dec,0));
 		return Math.round(number * val)/val;
@@ -375,7 +398,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 		var val = Math.pow(10,ext.number(dec,0));
 		return Math.ceil(number * val)/val;
 	};
-	
+
 	ext.to_i = function ext_to_i(str, base, def/*=0*/) {
 		var i = parseInt(str, base||10);
 		return isNaN(i) ? ext.number(def,0) : i; 
@@ -399,15 +422,27 @@ define(["sb_light/globals", "moment"], function(sb) {
 		//str is a string
 		str = str.replace("#", "0x");
 		return ext.to_i(str, 16);
-	}
+	};
 	
+	//quick version of ext.number for just strings. 
+	ext.to_num = function ext_to_num(str) {
+		return +str;
+	};
+
 	// The argument [n] can be:
 	//		literal numbers (e.g., 24)
 	//		a function that returns a number n==foo, where foo() returns 24
 	//		an array with a function as the first argument, so n=[foo, "bar", "stuff"] and foo("bar", "stuff") returns 24
+	//		a string that can be converted to number by coercing it
 	ext.number = function ext_number(n,def/*==0*/) {
-		n = ext.isFunc(n) ? n() : n;
-		n = ext.isArr(n) && ext.isFunc(n[0]) ? n[0].apply(null, n.slice(1)) : n;
+		n = ext.isStr(n) ? +n : (
+				ext.isFunc(n) ? n() : (
+					ext.isArr(n) && ext.isFunc(n[0]) ? 
+						n[0].apply(null, n.slice(1)) : 
+						n		
+				)
+			)
+		;
 		return isNaN(n) ? (def||0) : n;
 	};
 	ext.max = function ext_max(/*etc....*/) {
@@ -780,7 +815,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 	//WARNING: Multiple objects to be combined should be passed in as an array. The second argument is a list of
 	//properties to ignore. 
 	ext.combine = function ext_combine( /*Object or array*/ props, /*object or array*/ ignore) {
-		props = ext.isArray(props) ? props.concat(ext.slice(arguments,1)) : ext.slice(arguments);
+		props = ext.isArray(props) ? props : [props];
 		var res = props.reduce(function ext_combine_reduce(newObj, v) {
 			var mixed = ext.mixin(newObj, v, ignore);
 			return mixed;
@@ -788,6 +823,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 		return res;
 	};		
 	//same as combine but only takes two properties.
+	//A takes precedence over A when overlaps occur
 	ext.merge = function ext_merge(a, b, ignore) {
 		return ext.combine([a||{},b||{}], ignore);	
 	};
@@ -814,7 +850,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 			if(orig[k] != v) {
 				res[k] = v;
 			}
-		})
+		});
 		return res;
 	};
 

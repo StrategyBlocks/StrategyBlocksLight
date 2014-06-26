@@ -45,7 +45,6 @@ define([
 	widgets
 ) {
 	//globals.version = "0.0.1";
-	globals.debug = true;
 
 	//sometimes the way moment.js gets loaded is different. If it's not loaded properly via AMD, check the global context (this, window).
 	globals.moment = moment || this.moment || window.moment;
@@ -71,10 +70,8 @@ define([
 	globals.widgets = widgets;
 	
 
+	globals.debug = false;
 	state.host = "https://app.strategyblocks.com";
-
-	globals.ext.debug("Loaded SB: ", globals.state.host);
-
 
 	return globals;
 });

@@ -50,9 +50,32 @@ define(['sb_light/globals'], function(sb) {
 		controller.invoke(sb.urls.FOCUS_UPDATE, data, cb,errCb);
 	};
 	
-	controller.invoke = function(urlObj, args, successCb, errorCb, stateCheck) {
+
+
+	controller.admin = function(urlObj, args, successCb, errorCb, stateCheck, overrides) {
+		args = args || {};
+		var c = sb.state.context("selectedCompany");
+		var u = sb.state.context("selectedUser");
+		if(urlObj.company && c) {
+			args[urlObj.company] = c;
+		}
+		if(urlObj.user && u) {
+			args[urlObj.user] = u;
+		} 
+		controller.invoke(urlObj, args, successCb, errorCb,stateCheck,overrides);
+	};
+
+	/*****
+	* urlObj: a constant url from sb.urls
+	* args: arguments for the request (e.g. form items)
+	* successCB / errorCB : callbacks on response
+	* stateCheck: prevents making the request unless we're in a specific sb.state like "authorized" (default)
+	* overrides: placeholder for extra options to override the default ajax settings (like passing "text" instead of "json" for csv data)
+	********************/
+	controller.invoke = function(urlObj, args, successCb, errorCb, stateCheck, overrides) {
 		var url = sb.urls.url(urlObj, args);
 		var params = {};
+		overrides = sb.ext.merge({}, overrides);
 		
 		if (urlObj.deleteId) {
 			delete args.id;
@@ -74,9 +97,15 @@ define(['sb_light/globals'], function(sb) {
 			}
 		}
 		var post = (urlObj.post !== undefined && urlObj.post) || false;
-		sb.api.request(url, params, post, successCb, errorCb, stateCheck||null);
+
+		
+		if(urlObj.dataType) {
+			overrides.dataType = urlObj.dataType;
+		}
+
+		sb.api.request(url, params, post, successCb, errorCb, stateCheck||null, overrides);
 	};
-	
+
 	
 	
 	return controller;
