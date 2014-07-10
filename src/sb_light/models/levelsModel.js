@@ -1,19 +1,19 @@
 
-/*globals define*/
+/*globals define */
 
-define(['sb_light/models/_abstractModel'], function( _Model ) {
-
+define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
 	'use strict';
+
 	var Model = _Model.extend({
 
-		init: function(sb) {
-			this._super(sb, "levels", sb.urls.MODEL_LEVELS);
+		init: function() {
+			this._super("levels", sb.urls.MODEL_LEVELS);
 		},
 
 		_massageUpdatedModel: function() {
 			this._super();
 
-			var E = this._sb.ext;
+			var E = sb.ext;
 
 			this._modelArray.sort(E.sortFactory("position", E.sortNumber));
 			this._modelArray.forEach(function(v) {

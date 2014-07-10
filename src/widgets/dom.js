@@ -11,6 +11,8 @@ define([
 	'use strict';
 
 	var E, ST, M;
+	var DOM_REGISTER = {};
+
 
 	var Dom = Class.extend({
 
@@ -26,6 +28,7 @@ define([
 		__created:false,
 		__delay:50,
 		__canDrawDelay:-1,
+		__beforeDrawList:null,
 
 		//do not override
 		init:function(opts) {
@@ -34,9 +37,27 @@ define([
 			ST = sb.state;
 			M = sb.models;
 
-			this.__opts = this.initOpts(opts);
-			this.__id = this.__opts.id || ("dom_widget_" + E.unique());
-			this.__root = this.__opts.appendTo || this.__opts.root || "body";
+			var o = this.__opts = this.initOpts(opts);
+
+			this.__root = o.appendTo || o.root || "body";
+
+						//set inside the options take priority
+			this.__id = o.id || 
+						//next use a different property in the options
+						(o.idKey && o[o.idKey]) || 
+						//next try the DOM element itself
+						$(this.__root).attr("id") || 
+						//next just make one up							
+						("dom_widget_" + E.unique())
+			;
+
+			if(!DOM_REGISTER[this.__id]) {
+				DOM_REGISTER[this.__id] = this;
+				$(this.__root).attr("id", this.__id);
+			} else {
+				throw new Error("DOM Widget with the same id already exists", this.__id);
+			}
+
 
 			//children dom widgets that were parsed
 			this.__children = [];
@@ -59,6 +80,8 @@ define([
 
 			this.__data = {};
 
+			this.__beforeDrawList = [];
+
 			Object.defineProperties(this, {
 				//jQuery 
 				"$": 		{get: function() { 	return $(this.__root); 			}},
@@ -70,32 +93,49 @@ define([
 			});
 
 			if(this.__opts.templatePath) {
-				this.loadTemplate();
+				this.addBeforeDraw(this.loadTemplate.bind(this));
+				this.addBeforeDraw(this.parseChildren.bind(this));
+				this.addBeforeDraw(this.postCreate.bind(this));
+				this.create();
 			} else {
 				this.create();
+				this.postCreate.bindDelay(this, this.__delay);
 			}
 		},
 
 		//override this for startup stuff
 		//this._super() should be called last generally
 		create: function() {
-			this.addParser("require", this.requireChildren.bind(this));
-			this.parseChildren();
+			this.addParser("require", this.createChildren.bind(this));
 
 			this.__created = true;
 
-			//queue drawing so we don't end up calling it repeatedly from different events
-			sb.queue.buffer(this.postCreate.bind(this), "_buffer_postcreate" + this.id, this.__delay, true);
-
 			this.dirty();
+
+			//console.log("create", this.id);
 		},
 
+		domById: function(id) {
+			return DOM_REGISTER[id] || null;
+		}, 
+
+
+		//This function is called after creation when "canDraw" is true, but postCreate hasn't been called yet.
+		//it generally signals the loading of the html templates
 		postCreate:function() {
+			// console.log("postCreate", this.id);
+			//create the html and do other stuff as defined by subclasses
+			this.parseChildren();
+
 			//override for one-off post-creation stuff
 			this.$.find("input[type='checkbox']").bootstrapSwitch();
+			this.dirty.bindDelay(this, this.__delay);
 		},
 
 		destroy: function() {
+			if(DOM_REGISTER[this.__id]) {
+				delete DOM_REGISTER[this.__id];
+			}
 
 			var w = this.__watchers;
 			var state = sb.state;
@@ -130,6 +170,10 @@ define([
 		},
 
 
+		addBeforeDraw: function(f) {
+			this.__beforeDrawList.push(f);
+		},
+
 		//which models this widget subscribes to
 		models: function(/*string list...*/) {
 			var args = E.slice(arguments, 0);
@@ -163,7 +207,7 @@ define([
 		//case: (id, data) set the data part of the object, return "this"
 		data: function(id, opt) {
 			var full = E.isBool(opt) ? opt : false; 
-			var d = (opt && !E.isBool(opt)) || null;
+			var d = (!E.isBool(opt) && opt) || null;
 			if(d) {
 				this.__data[id].data  = d;
 				return this;
@@ -220,17 +264,25 @@ define([
 		},
 
 		loadTemplate: function() {
+			var self = this; 
+
+			// console.log("DOM:LoadingTemplate", this.id, this.__opts.templatePath);
+
 			var path = [SB_OPTIONS.path, "/templates/", this.__opts.templatePath, ".html"].join("");
-			$(this.__root).load(path, this.create.bind(this));
+			this.$.load(path, function() {
+				// console.log("DOM:Parsing done", this.id);
+				self.dirty.bindDelay(self, self.__delay);
+			});
 		},
 
 		addParser: function(k,func) {
 			this.__parsers[k] = func;
 		},
 
-		parseChildren: function() {
+		parseChildren: function(node) {
+//			console.log("DOM:parseChildren", this.id);
 			//parse the resulting HTML for data-template elements.
-			var cel = this.$;
+			var cel = node || this.$;
 
 			E.each(this.__parsers, function(func,k) {
 				cel.find("[data-"+k+"]").each(function() {
@@ -238,25 +290,34 @@ define([
 					func($(this), el.data());
 				});
 			});
+			sb.queue.buffer(this.dirty.bind(this), "_buffer" + this.id, this.__delay, true);
 		},
 
-		requireChildren:function(el, opts) {
+		createChildren:function(el, opts) {
+			var self = this; 
 			var c = this.__children;
 			opts = E.merge(opts, {root:el});
 
 			var src = opts.require; 
 			el.data("require", null);
+			el.removeAttr("data-require");
 			delete opts.require;
 
-			//alert("Require src" + src);
-			require([src], function(El) {
-				//no guarantee of order this happens
-				if(El) {
-					c.push(new El(opts));
-				} else {
-					console.log("Cannot load SRC:", src);
-				}
-			});
+			if(src) {
+//				console.log("DOM:CREATECHILDREN: Trying to load: ", this.id, src);
+				require([src], function(El) {
+					//no guarantee of order this happens
+					if(El) {
+//						console.log("DOM Create children: ", self.id);
+						c.push(new El(opts));
+					} else {
+//						console.log("Cannot load SRC:", self.id, src);
+					}
+					sb.queue.buffer(self.dirty.bind(self), "_buffer" + self.id, self.__delay, true);
+				});
+			} else {
+				sb.queue.buffer(this.dirty.bind(this), "_buffer" + this.id, this.__delay, true);
+			}
 		},
 
 		dirty: function(delay) {
@@ -267,11 +328,11 @@ define([
 			//queue drawing so we don't end up calling it repeatedly from different events
 			sb.queue.buffer(this.__beforeDraw.bind(this), "_buffer" + this.id, delay, true);
 
-			//console.log("DOM WIDGET dirtying: ", this.id)
+//			console.log("DOM WIDGET dirtying: ", this.id)
 		},
 
 		fetchData: function() {
-			console.log("Fetch Data: ", this.id);
+			// console.log("Fetch Data: ", this.id);
 			var ctrl = this.sb.controller;
 			var self = this;
 			E.each(this.__data, function(d) {
@@ -285,7 +346,7 @@ define([
 		},
 
 		clearData:function(id) {
-			console.log("Clear data: ", this.id, id);
+			// console.log("Clear data: ", this.id, id);
 			id = this.__data[id] ? id : null;
 			if(id && this.__data[id]) {
 				this.__data[id].data = null;
@@ -310,13 +371,18 @@ define([
 		},
 
 		canDraw:function() {
-			return this.__created && !this._busy && this.modelsValid() && !this.needsData();
+//			console.log("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this.__beforeDrawList.length);			
+			return this.__created && !this.__busy && this.modelsValid() && !this.needsData();
 		},
 
 		//sanity before drawing
 		__beforeDraw:function() {
 			if(this.canDraw()) {
-				this.draw();
+				if(this.__beforeDrawList.length) {
+					this.__beforeDrawList.shift()();
+				} else {
+					this.draw();
+				}
 			} else if (this.needsData()) {
 				this.fetchData();
 			} else if(this.__busy) {
@@ -324,7 +390,7 @@ define([
 			} else {
 				//if the delay is -1, we don't keep calling "dirty"
 				if(this.__canDrawDelay >= 0) {
-					console.log("Queueing " + this.id);
+//					console.log("Queueing " + this.id);
 					this.__canDrawDelay = E.max(5000/*5 seconds*/,this.__canDrawDelay);
 					sb.queue.buffer(this.__beforeDraw.bind(this), "_buffer" + this.id, this.__delay, true);		
 				}

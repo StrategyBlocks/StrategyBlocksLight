@@ -188,17 +188,6 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		}
 		return {r:this.dim("r"), cx:this.dim("cx"), cy:this.dim("cy")};
 	});
-	//get/sets the points on a line
-	S.extendD3("line", function(x1,y1,x2,y2) {
-		if(arguments.length) {
-			this.dim("x1", x1);
-			this.dim("x2", x2);
-			this.dim("y1", y1);
-			this.dim("y2", y2);
-			return this;
-		}
-		return {x1:this.dim("x1"), y1:this.dim("y1"),x2:this.dim("x2"), y2:this.dim("y2")};
-	});
 
 	S.d3 = function(el) {
 		// console.log("Checking el", el);

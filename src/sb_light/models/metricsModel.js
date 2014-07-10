@@ -7,19 +7,21 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 	var E;
 
 	var Model = _Model.extend({
-
 		init: function() {
-			this._super("kpis", sb.urls.MODEL_KPIS);
+			this._super("metrics", sb.urls.MODEL_METRICS);
 			E = sb.ext;
 		},
 
 		_massageUpdatedModel: function() {
 			this._super();
-			E.each(this._model, function(v,k) {
-				//legacy stuff -- just don't want/need to rewrite yet
-				E.massageKpi(v);
-			});
+
+			var t = E.moment();
+			//E.each(this._model, this._massageMetric.bind(this));
+
+			console.log("Massage: ", E.moment().diff(t));
+
 		},
+
 
 	});
 	return Model;	

@@ -1,9 +1,14 @@
 
-define(['sb_light/models/_abstractModel'], function( _Model ) {
+/*globals define */
+
+define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
+	'use strict';
+
+	var E;
 
 	var Model = _Model.extend({
-		init: function(sb) {
-			this._super(sb, "milestone_definitions", sb.urls.MODEL_MILESTONES);
+		init: function() {
+			this._super("milestone_definitions", sb.urls.MODEL_MILESTONES);
 		},
 		
 

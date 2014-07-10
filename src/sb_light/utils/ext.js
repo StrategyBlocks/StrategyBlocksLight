@@ -2,11 +2,13 @@
 /*jslint passfail: false */
 
 
-define(["sb_light/globals", "moment"], function(sb) {
+define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	"use strict";
 
 	//console.log("ext", sb.version);
 	var ext = {};
+
+	ext._ = ext.ld = _;
 
 	ext.pi = Math.PI;
 	ext.tau = ext.pi * 2;
@@ -39,7 +41,7 @@ define(["sb_light/globals", "moment"], function(sb) {
 	};
 
 	ext.deprecated = function(oldF, newF, message) {
-		console.log("Warning: ", oldF, " is deprecated. Please use ", newF, " instead.");
+		conso
 		if(message) {
 			console.log("Warning(2): ", message);
 		}
@@ -165,6 +167,16 @@ define(["sb_light/globals", "moment"], function(sb) {
 		}
 		return a;
 	};
+
+	//sets a property if default is specified and its value coerces to false
+	//returns the value; 
+	ext.prop = function(o, prop, def) {
+		if(!o[prop]) {
+			o[prop] = def;
+		}
+		return o[prop];
+	};
+
 
 	//alias for Object.keys
 	ext.keys = function ext_keys(map) {
@@ -541,6 +553,24 @@ define(["sb_light/globals", "moment"], function(sb) {
 	};
 
 
+	ext.domain = function ext_domain(type,min,max, pc) {
+		pc = ext.first(pc, 0);
+
+		if(type === "date") {
+			min = ext.moment(min);
+			max = ext.moment(max);
+			var pad = ext.daysDiff(max, min) * pc;
+			min = min.subtract(pad, "days").toDate();
+			max = max.add(pad, "days").toDate();
+		} else { 
+			//(!type || type === "number") {
+			var pad = (max - min) * pc;
+			min -= pad;
+			max += pad;
+		}
+		return [min,max];
+	};
+
 	ext.fixRect = function(rect) {
 		return {
 			x: ext.first(rect.x, rect.left),
@@ -580,6 +610,8 @@ define(["sb_light/globals", "moment"], function(sb) {
 			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		,["#999", "#aaa"]  ];
 		}
 	};
+
+
 
 
 
@@ -700,6 +732,8 @@ define(["sb_light/globals", "moment"], function(sb) {
 
 	
 	ext.massageKpi = function ext_massageKpi(data) {
+		//fix legacy code issue
+		data.values = data.values || data.actuals;
 		data = ext.massageTA(data);
 
 		var vd = data.values;
@@ -768,7 +802,8 @@ define(["sb_light/globals", "moment"], function(sb) {
 		data.minY -= offset;
 		data.maxY += offset;
 
-		
+		//fix legacy code issue
+		data.actuals = data.values;
 		return data;		
 	};
 		

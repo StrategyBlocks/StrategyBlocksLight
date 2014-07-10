@@ -27,7 +27,8 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		state: {
 			block:null,		//normally block path
 			news:null,		//news item id		
-			kpi:null,		//kpi  id		
+			//kpi:null,		//kpi  id		
+			metric:null,	//metric  id		
 			risk:null,		//risk id		
 			tag:null,		//tag id		
 
@@ -349,7 +350,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 			//if we have a block id in the response and there's no block defined in the state, OR 
 			//	 we have the  blocks model but the currentBlock is returning null
-			if(data.block && (!storage.state.block || (sb.models.raw("blocks") && !sb.queries.currentBlock()))) {
+			if(data.block && (!storage.state.block || (sb.models.raw("blocks") && !sb.queries.block()))) {
 				storage.state.block = String(data.block);
 				//delay so notification happens after the session is valid
 				sb.queue.add(state.publish.bind(state, "state", "block"), "sb_state_publish_state_block", 100);

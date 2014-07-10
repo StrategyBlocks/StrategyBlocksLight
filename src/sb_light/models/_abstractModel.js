@@ -1,59 +1,76 @@
+/*globals define*/
 
+define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 
-define(['sb_light/utils/Class'], function( Class ) {
+	'use strict';
+
+	var E, ST;
 
 	var Abstract = Class.extend({
 		name: null,
-		_sb:null,
 		_model: null,
 		_modelArray: null,
 		_urlDef: null,
 		_selectQueue: null,
 		_subscriptions:null,
+		_timestamp:null,
+		_sb:null,
 	
-		init: function(sb, name, urlDef) {
-			if(!name) { throw new Error("AbstractModel: Model name must be declared"); }
-			if(!urlDef) { throw new Error("AbstractModel: Model urlDef must be declared"); }
+		init: function(name, urlDef) {
+			if(!name) { 
+				throw new Error("AbstractModel: Model name must be declared"); 
+			}
+			if(!urlDef) { 
+				console.log("wtf", arguments);
+				throw new Error("AbstractModel: Model urlDef must be declared"); 
+			}
 			
-			this._sb = sb;
+			E = sb.ext;
+			ST = sb.state;
+
 			this.name = name;
 			this._urlDef = urlDef;
 			this._selectQueue = [];
 			this._subscriptions = {};
 			
-			this._sb.state.registerModel(this, this._urlDef, this._handleUpdate.bind(this));
-			this._sb.state.watchContext("session", this._handleSession.bind(this));
+			ST.registerModel(this, this._urlDef, this._handleUpdate.bind(this));
+			ST.watchContext("session", this._handleSession.bind(this));
 		},
 	
 		reset: function(publish) {
 			this._model = null;
 			this._modelArray = null;
-			this._sb.state.resetTimestamp(this.name);
+			ST.resetTimestamp(this.name);
 			if(publish) {
 				this._publish();
 			}
 		},
+
+		timestamp: function() {
+			return this._timestamp;
+		},
 		
 		isValid: function() {
-			return this.get() != null;
+			//coerce into a boolean
+			return !!this.get();
 		},
 	
 		get: function() {
 			if(!this._model) {
-				this._sb.ext.debug("Getting the " + this.name + " model.");
-				if(this._sb.state.authorized() ) {
-					this._sb.ext.debug("Forcing the update");
-					this._sb.state.forceModelUpdate(this);
+				E.debug("Getting the " + this.name + " model.");
+				if(ST.authorized() ) {
+					E.debug("Forcing the update");
+					ST.forceModelUpdate(this);
 				} else {
 					var me = this;
-					var subid = this._sb.state.watchContext("session", function() {
-						me._sb.state.unwatchContext("session", subid);
+					var subid = ST.watchContext("session", function() {
+						ST.unwatchContext("session", subid);
 						me.get();
 					});
 				}
 				return null;
 			} 
-			return this._modelArray;
+			return this.rawArray()
 		},
 		
 		raw: function() {
@@ -62,20 +79,31 @@ define(['sb_light/utils/Class'], function( Class ) {
 		rawArray: function() {
 			return this._modelArray;
 		},
-	
+
+		//find a single element
+		find:function(id) {
+			if(E.isStr(id)) {
+				return this._model ? this._model[id] : null;
+			} else {
+				//if ID is an object
+				return id.id ? this._model[id.id] : null; 
+			}
+		},
+
+
 		subscribe: function(cb, domNode/*=null*/) {
-			var id = "Sub_" + this.name + "_" + this._sb.ext.unique();
+			var id = "Sub_" + this.name + "_" + E.unique();
 			this._subscriptions[id] = cb;
 			var m = this.get();
 			if(m) {
-				this._sb.queue.add(cb, id, 0);
+				sb.queue.add(cb, id, 0);
 			}
 			return id;
 		},
 	
 		//unsubnscribe unsing a callback or an id
 		unsubscribe:function(remove) {
-			var ext = this._sb.ext;
+			var ext = E;
 			var del = [];
 			var subs= this._subscriptions;
 			//collect matches
@@ -86,14 +114,13 @@ define(['sb_light/utils/Class'], function( Class ) {
 			});
 			del.forEach(function(el) {
 				delete subs[el];
-			})
-
+			});
 		},
 		
 		_publish: function() {
 			var m = this.get();
-			var q = this._sb.queue;
-			this._sb.ext.each(this._subscriptions, function(cb,k) {
+			var q = sb.queue;
+			E.each(this._subscriptions, function(cb,k) {
 				q.add(cb, k, 0);
 			});	
 		},
@@ -105,7 +132,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		},	
 
 		_handleSession: function() {
-			if(this._sb.state.authorized()) {
+			if(ST.authorized()) {
 				//force model to fetch itself
 				this.get();
 			} else {
@@ -152,7 +179,7 @@ define(['sb_light/utils/Class'], function( Class ) {
 		_processResponse: function(data) {
 			this._model = this._model || {};
 			
-			this._sb.ext.debug("Processing Model", this.name);
+			E.debug("Processing Model", this.name);
 			
 			//The following order assumes a faulty server and ensures we don't update  or delete missing
 			//items.
@@ -162,10 +189,9 @@ define(['sb_light/utils/Class'], function( Class ) {
 			
 			this._deleteItems(data.deleted);
 			
-			this._resetArrayCache();
 			
 			this._massageUpdatedModel();
-			
+
 		},
 	
 		
@@ -198,19 +224,24 @@ define(['sb_light/utils/Class'], function( Class ) {
 		//usually override by the model subclasses to provide some post-processing on the model elements before consumption 
 		//by a view
 		_massageUpdatedModel: function() {
-			var ts = this._sb.state.getTimestamp(this.name);
-			this._modelArray.forEach(function(v) {
+			var ts = ST.getTimestamp(this.name);
+
+			this._timestamp = ts;
+
+			E.map(this._model, (function(v) {
 				//this can be used for performance reasons to check whether a model has been updated
 				v.__timestamp = ts;
-			});
-			
+			}));
+
+			//do this last because massage will cause changes			
+			this._resetArrayCache();
 		},
 		
 		//build an array cache of the model to make list-fetches / iterations / sorting quicker. 
 		//but preserve the model as a map for key-value queries
 		_resetArrayCache:function() {
-			this._modelArray = this._sb.ext.map(this._model, function(v, k) { return v; });
-			//this._sb.ext.debug(this.name, this._modelArray.length);
+			this._modelArray = E.map(this._model, function(v, k) { return v; });
+			//E.debug(this.name, this._modelArray.length);
 		}
 	});
 	return Abstract;

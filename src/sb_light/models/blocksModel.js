@@ -1,8 +1,21 @@
 
+/*globals define */
 
-define(['sb_light/models/_abstractModel'], function( _Model ) {
+define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
+	'use strict';
+
+	var E, Q;
 
 	var Model = _Model.extend({
+
+		//default response for models returns the id model
+		//but you can ask for the pathmodel by calling (rawArray("path"))
+		//path model has keys based on the block path
+		_idModel:null,
+		_idArray:null,
+		_pathModel:null,
+		_pathArray:null,
+
 		_progress: null,
 		_health: null,
 		_npv: null,
@@ -13,21 +26,49 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 		_properties: null,
 		_propertiesList: ["comments","news","tags","documents", "context", "watching_users"],
 	
-		init: function(sb) {
+		init: function() {
 			this._npv_queue = [];
 			this._progress_queue = [];
 			this._health_queue = [];
 			this._properties = {};
 
+			E = sb.ext;
+			Q = sb.queries;
+
 			this._dataHandlers = {
 				"_health": 	this._massageHealth,
 				"_progress": 	this._massageProgress,
 				"_npv": 	this._massageNpv
-			}
+			};
 			
-			this._super(sb, "blocks", sb.urls.MODEL_BLOCKS);
+			this._super("blocks", sb.urls.MODEL_BLOCKS);
 		},
 		
+		//override the get function to handle a type. Path model or id model.
+		get: function(type) {
+			var array = this._super();
+			if(array) {
+				return this.rawArray(type);
+			}
+			return null;
+		},
+
+		rawArray: function(type) {
+			return type === "path" ? this._pathArray : this._super();
+		},
+		raw: function(type) {
+			return type === "path" ? this._pathModel : this._super();
+		},
+
+		find: function(id) {
+			if(E.isStr(id) && id.match("_")) {
+				return this._pathModel ? this._pathModel[id] : null;
+			} else {
+				return this._super(id);
+			}
+		},
+
+
 		_handleUpdate: function(update) {
 			this._progress = null;
 			this._health = null;
@@ -41,48 +82,29 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 		//by a view
 		_massageUpdatedModel: function() {
 			this._super();
-			var root = this._model[this._sb.queries.rootBlockId()];
+			var root = this._model[Q.rootBlock("id")];
 			if(!root) {
-				root = this._modelArray.filter(function(v,k){
+				root = this._modelArray.filter(function(v){
 					return !v.parents || !v.parents.length;
 				})[0];
 			}
-			this._massage(root, null, 0, (new Date()).getTime());
+			this._massage(root, null, 0, 0, (new Date()).getTime());
 
-			if(!this._sb.queries.currentBlock()) {
-				this._sb.state.state("block", root.id);
+			if(!Q.block()) {
+				sb.state.state("block", root.id);
 			}
-
-			this._sb.ext.debug("Finished massaging blocks");
 		},
 		
 
-		//return the raw object map, but use the paths as keys
-		rawPaths: function() {
-			var bl = this.rawArray() || [];
-			var paths = {};
-			bl.forEach(function(b) {
-				b.paths.forEach(function(bp) {
-					paths[bp] = b;
-				});
-			});
-			return paths;
-		},
-		//return an array of all the paths + blocks from rawPaths
-		rawArrayPaths: function() {
-			return this._sb.ext.map(this.rawPaths(), function(v,k) {
-				return {path:k, block:v};
-			});
-		},
 		
 		progress: function(cb) {
-			this._data(cb, "_progress", this._sb.urls.BLOCKS_PROGRESS);
+			this._data(cb, "_progress", sb.urls.BLOCKS_PROGRESS);
 		},
 		health: function(cb) {
-			this._data(cb, "_health", this._sb.urls.BLOCKS_HEALTH);
+			this._data(cb, "_health", sb.urls.BLOCKS_HEALTH);
 		},
 		npv: function(cb) {
-			this._data(cb, "_npv", this._sb.urls.BLOCKS_NPV);
+			this._data(cb, "_npv", sb.urls.BLOCKS_NPV);
 		},
 			
 		comments: function(id, cb, force) {	this._property(cb, "comments", id, force);		},
@@ -103,7 +125,7 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 					this._properties[type+"_queue"][id] =  this._properties[type+"_queue"][id] || [];
 					this._properties[type+"_queue"][id].push(cb);
 					
-					this._sb.controller.invoke(this._sb.urls.BLOCKS_PROPERTIES, {id:id, type:type}, this._handleProperty.bind(this, type,id));
+					sb.controller.invoke(sb.urls.BLOCKS_PROPERTIES, {id:id, type:type}, this._handleProperty.bind(this, type,id));
 				} else if ( this._properties[type][id] == "waiting") {
 					this._properties[type+"_queue"][id].push(cb);
 				} else {
@@ -121,7 +143,7 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 			
 			if (!this[name]) {
 				if(this[name+"_queue"].length == 1) {
-					this._sb.controller.invoke(url, null, func);
+					sb.controller.invoke(url, null, func);
 				}
 			} else {
 				func();
@@ -152,15 +174,15 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 		},
 		
 		_massageHealth: function(d) {
-			var f = this._sb.ext.massageHealth;
-			this._sb.ext.each(d, function(dv,dk) {
+			var f = E.massageHealth;
+			E.each(d, function(dv) {
 				f(dv);
 			});
 
 		},
 		_massageProgress: function(d) {
-			var f = this._sb.ext.massageTA;
-			this._sb.ext.each(d, function(dv,dk) {
+			var f = E.massageTA;
+			E.each(d, function(dv) {
 				f(dv);
 			});			
 		},
@@ -168,50 +190,62 @@ define(['sb_light/models/_abstractModel'], function( _Model ) {
 
 		},
 		
-		_massage: function(b, ppath, depth, schema) {
-			var cleanup = b._schema != schema;
-			b._schema = cleanup ? schema : b._schema;
-			
-			b.paths = (!cleanup && b.paths) || [];
-			b.children = b.children || [];
-			
-			var p = ppath ? this._model[ppath.last()] : null;
-			if(p) {
-				var pel =  b.parents.findKey("parent_id", p.id).value;
-				var dpel = b.parents.findKey("linked_parent_id", null).value;
-				pel.position = p.children.indexOf(b.id);
-				pel.level = depth;
-				
-				b.paths.put(ppath.concat([b.id]));
-				if(p.id == dpel.parent_id) {
-					b.default_path = b.paths.last();
-					b.default_parent = p.id;
-					b.default_level = depth;
-					b.default_position = pel.position;
-				} 
-				if(p.is_owner) {
-					pel.can_move_left = pel.position > 0;
-					pel.can_move_right = pel.position < (p.children.length-1) && p.children.length > 1;
-					pel.can_delete = true;
-				}
-			} else {
-				b.default_path = [b.id];
-				b.default_parent = null;
-				b.paths.put([b.id]);
-				b.default_position = 0;
-				b.default_level = 0;
+		_massage: function(b, ppath, depth, pos, schema) {
+			var recurse = this._massage.bind(this);
+
+			if(!ppath) {
+				this._idModel = {};
+				this._pathModel = {};
 			}
-			
-			var bpath = b.paths.last();
-	
-			for (var i = 0; i < b.children.length; ++i) {
-				this._massage(this._model[b.children[i]], bpath, depth+1, schema);
+
+			b = Q.block(b);
+			var bpath = ppath ? [ppath, b.id].join("_") : b.id;
+			var p = Q.block(ppath);
+			var pinfo = p ? b.parents.findKey("id", p.id).value : {};
+
+			this._pathModel[bpath] = E.merge({}, E.merge(b, pinfo), {
+				path:bpath,
+				level: depth,
+				is_link: (pinfo && pinfo.linked_parent_id !== null),
+				level_sort: (p ? (p.levelPath + "." + pos) : "L1"),
+				can_move_left: (b.is_owner && (pos> 0)),
+				can_move_right: (b.is_owner && p && (pos < p.children.length-1) && p.children.length > 1),
+				can_delete: (b.is_owner && !b.closed),
+				progress_status_class: (b.closed ? "closed" : (b.ownership_state == "new" ? "private" : b.progress_color)),
+				parent_title: (p ? p.title : ""),
+				schema:schema,
+				children:(b.children || [])
+			});
+			b = this._pathModel[bpath];
+
+			//recurse each child and add their path to the model
+			E.each(b.children, function(cb, i) {
+				recurse(cb, bpath, depth+1, i, schema);
+			});	
+
+			//map the children ids to child paths
+			b.children = E.map(b.children, function(c) {
+				return Q.block(c);
+			});
+
+			if(!b.is_link) {
+				this._idModel[b.id] = b;
 			}
+
+
 		},
 		_resetArrayCache:function() {
 			this._super();
-			this._modelArray.sort(this._sb.ext.sortBlocksByProgress);
-			//this._sb.ext.debug(this.name, this._modelArray.length);
+			
+			//
+			this._pathArray = this._modelArray;
+
+			//
+			this._idArray = this._modelArray = E.values(this._idModel);
+
+			this._pathArray.sort(E.sortFactory("level_sort", E.sortString));
+
+			//E.debug(this.name, this._modelArray.length);
 		}
 	});
 	

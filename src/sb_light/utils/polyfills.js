@@ -479,7 +479,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb, ext) {
 
 //from:https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Storage
 //if local storage doesn't exist
-if (!window.localStorage) {
+if (typeof window !=="undefined" && !window.localStorage) {
 	 Object.defineProperty(window, "localStorage", new (function () {
 		var aKeys = [], oStorage = {};
 		Object.defineProperty(oStorage, "getItem", {

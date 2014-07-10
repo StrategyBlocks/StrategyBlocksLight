@@ -11,7 +11,7 @@
 	nature of the models. 
 ************************/
 
-define(['sb_light/globals', "moment"], function(sb, moment) {
+define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment, E) {
 	
 	'use strict';
 	var q = {};
@@ -56,6 +56,10 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 	q.firstname = function(uid) {
 		var u = q.user(uid);
 		return u ? u.first_name : "<unknown>";
+	};
+	q.lastname = function(uid) {
+		var u = q.user(uid);
+		return u ? u.last_name : "<unknown>";
 	};
 	q.user = function(uid /*optional*/) {
 		var sid = sb.state.state("user_id");
@@ -148,6 +152,11 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 			return b.owner_id == uid || b.manager_id == uid;
 		});
 	};
+	q.userMetrics = function(uid) {
+		return sb.models.rawArray("metrics").filter(function(b) {
+			return b.owner_id == uid || b.manager_id == uid;
+		});
+	};
 	q.userRisks = function(uid) {
 		return sb.models.rawArray("risks").filter(function(b) {
 			return b.owner_id == uid || b.manager_id == uid;
@@ -219,18 +228,14 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 	/********************************
 		Levels
 	*********************************/
-	q.levelColor = function(id) {
-		var ls = sb.models.raw("levels");
-		var c = ls && ls[id] ? ls[id].color : null; 
-		return c ? sb.ext.to_color(c) : null;
+	q.level = function(depth) {
+		var lvls = sb.models.rawArray("levels");
+		return (lvls && lvls.length > depth) ? lvls[depth] : null;
 	};
-	q.levelName = function(id) {
-		var ls = sb.models.raw("levels");
-		return ls && ls[id] ? ls[id].title : null;
-	};
-	q.levelPos = function(id) {
-		var ls = sb.models.raw("levels");
-		return ls && ls[id] ? ls[id].title : null;
+
+	q.levelName = function(depth) {
+		var lvl = q.level(depth);
+		return lvl ? lvl.title : "";
 	};
 	
 
@@ -287,16 +292,188 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 	};
 	
 	/********************************
-		KPIS
+		METRICS
 	*********************************/
-	q.kpi = function(id) {
-		id = id || sb.state.state("kpi");
-		var m = sb.models.raw("kpis");
+	q.metric = function(id) {
+		id = id || sb.state.state("metric");
+		var m = sb.models.raw("metrics");
 		if(id && m) {
-			return m[id];
+			//return the original kpi if we've passed the real object
+			return E.isStr(id) ? m[id] : m[id.id];
 		}
 		return null;
 	};
+
+	//DISPLAY purposes
+	q.metricActual = function(id) {
+		var m = q.metric(id);
+		return m ? 
+			(m.unit_before ? E.join("", m.unit, m.last_actual_value) : E.join(" ", m.last_actual_value, m.unit) ) : 
+			"--"
+		;
+	};
+
+	//DISPLAY purposes
+	q.metricTarget = function(id) {
+		var m = q.metric(id);
+		return m ? 
+			(m.unit_before ? E.join("", m.unit, m.last_target_value) : E.join(" ", m.last_target_value, m.unit) ) : 
+			"--"
+		;
+	};
+	q._trendMap = {
+		"Down": "fa fa-arrow-circle-down",
+		"Up": "fa fa-arrow-circle-up",
+		"Flat": "fa fa-arrow-circle-right"
+	};
+	//DISPLAY purposes
+	q.metricTrendClass = function(id) {
+		var m = q.metric(id);
+		return "<i class='" + (q._trendMap[m.trend]) + "'></i>";
+
+	};
+
+	q._statusMap = {
+		"Good": "statusGood",
+		"Warning": "statusWarn",
+		"Bad": "statusBad",
+	};
+
+	//DISPLAY purposes
+	q.metricStatusClass = function(id) {
+		var m = q.metric(id);
+		if(!m) { return ""; }
+
+		return "<i class='" + (q._trendMap[m.trend] + " " + q._statusMap[m.status]) + "'></i>";
+	};
+
+	q.metricChartData = function(id) {
+		var timer = E.moment();
+
+		var m = q.metric(id);
+		var percent = m.tolerance.percentage ? true : false;
+		var btg = m.tolerance.below_target_good ? true : false;
+		var start = E.min(m.tolerance.range_start, m.tolerance.range_end);
+		var end = E.max(m.tolerance.range_start, m.tolerance.range_end);
+		var today = E.serverDate();
+		var targets  = (m.target && m.target.length) ? E._.cloneDeep(m.target) : [{date:E.serverDate(), value:0}];
+		var actuals  = (m.actuals && m.actuals.length) ? E._.cloneDeep(m.actuals) : [{date:E.serverDate(), value:0}];
+		targets.push({date:today, value:(m.last_target_value||0)});
+		actuals.push({date:today, value:(m.last_actual_value||0), comment:"Current Actual"});
+
+		
+		targets.sort(E.sortFactory("date", E.sortDate));
+		actuals.sort(E.sortFactory("date", E.sortDate));
+
+		var targetDates = E.values(targets, "date");
+		var actualDates = E.values(actuals, "date");
+
+		var targetValues = E.values(targets, "value");
+		var actualValues = E.values(actuals, "value");
+
+
+		start = percent ? start/100 : start;
+		end = percent ? end/100 : end;
+
+		var upperValues = targetValues.map(function(v) {
+			return v + (percent ? (v*end) : end );
+		});
+		var lowerValues = targetValues.map(function(v) {
+			return v + (percent ? (v*start) : start );
+		});
+		var sv = E._.union(targetValues,actualValues,upperValues,lowerValues).sort(E.sortNumber);
+
+		var actualsMap = E.toObject(actuals, "date");
+		//ceate a unique, sorted list of dates. 
+		var dates = E._.union([today], targetDates, actualDates).sort(E.sortDate);
+
+		//convert date strings to date objects for the time scales
+		var dm = function(v) { return E.date(v); };
+		var td = targetDates.map(dm);
+		var ad = actualDates.map(dm);
+
+		var ascale = d3.time.scale().domain(ad).range(actualValues);
+		var tscale = d3.time.scale().domain(td).range(targetValues);
+		var upperScale = d3.time.scale().domain(td).range(upperValues);
+		var lowerScale = d3.time.scale().domain(td).range(lowerValues);
+
+		var res = {
+			td:targetDates,				tv:targetValues,
+			ad:actualDates,				av:actualValues,
+			as:ascale,					ts:tscale,
+			us:upperScale,				ls:lowerScale,
+			uv:upperValues,				lv:lowerValues,
+		};
+
+		res.series = E.map(dates, function(ds) {
+			var d = E.date(ds);
+			var t = tscale(d);
+			var a = ascale(d);
+			var v = (a ? ((a-t)/a) : Number.POSITIVE_INFINITY);
+			var u = upperScale(d);
+			var l = lowerScale(d);
+			var uv = (u ? ((u-t)/u) : Number.POSITIVE_INFINITY);
+			var lv = (l ? ((l-t)/l) : Number.POSITIVE_INFINITY);
+
+			return {
+				date:d,
+				_dateStr: ds,
+				target:t,
+				actual:a,
+				upper:u,
+				lower:l,
+				variance:v,
+				upperVariance:uv,
+				lowerVariance:lv,
+				comment:(actualsMap[ds] ? actualsMap[ds].comment : "")
+			};
+		});
+
+		console.log("MetricsChart Timer: ", E.moment().diff(timer));
+		return res;
+	}
+
+
+	// q.metricData = function(id) {
+	// 	var m = q.metric(id);
+	// 	// if(m.metricData) {
+	// 	// 	return m.metricData();
+	// 	// } else {
+	// 		var percent = m.tolerance.percentage ? true : false;
+	// 		var btg = m.tolerance.below_target_good ? true : false;
+	// 		var ts = E.min(m.tolerance.range_start, m.tolerance.range_end);
+	// 		var te = E.max(m.tolerance.range_start, m.tolerance.range_end);
+	// 		ts = percent ? ts/100 : ts;
+	// 		te = percent ? te/100 : ts;
+
+	// 		var targetDates = E.values(m.target, "date");
+	// 		var actualDates = E.values(m.actuals, "date");
+	// 		var targetValues = E.values(m.target, "value");
+	// 		var actualValues = E.values(m.actuals, "value");
+	// 		var comments = E.toObject(m.actuals, "date");
+
+	// 		var ascale = d3.time.scale().domain(actualDates).range(actualValues);
+	// 		var tscale = d3.time.scale().domain(targetDates).range(targetValues);
+	// 		var upperScale = d3.time.scale().domain(targetDates).range(targetValues.map(function(v) {
+	// 			return v + (percent ? (v*te) : te )
+	// 		}));
+	// 		var lowerScale = d3.time.scale().domain(targetDates).range(targetValues.map(function(v) {
+	// 			return v + (percent ? (v*te) : te )
+	// 		}));
+
+	// 		//force today
+	// 		return E.map(E._.union([E.serverDate()], targetDates, actualDates), function(v) {
+	// 			return {
+	// 				data:v,
+	// 				target:tscale(v),
+	// 				actual:ascale(v),
+	// 				upper:upperScale(v),
+	// 				lower:lowerScale(v),
+	// 				comment:(comments[v].comment)
+	// 			}
+	// 		});
+	// 	// }
+	// };
 
 	/********************************
 		RISKS
@@ -314,391 +491,403 @@ define(['sb_light/globals', "moment"], function(sb, moment) {
 	/********************************
 		BLOCKS
 	*********************************/
-	q.currentBlock = function() {
-		var bpath = q.currentBlockPath();
-		return bpath ? q.block(bpath) : null; 
-	};
-	q.previousBlock = function() {
-		var bpath = q.previousBlockPath();
-		return bpath ? q.block(bpath) : null; 
-	};
-	q.rootBlock = function() {
-		var rbid = q.rootBlockId();
-		return rbid ? q.block(rbid) : null; 
-	};
-	q.rootBlockId = function() {
+
+	q.rootBlock = function(prop) {
 		var c = q.company();
-		return c && c.root_block ? c.root_block.id : null; 
-	};
-	q.currentBlockId = function() {
-		var p = q.currentBlockPath(); 
-		return (p && p.length) ? p.last() : null;
-	};
-	q.previousBlockId = function() {
-		var p = q.previousBlockPath(); 
-		return (p && p.length) ? p.last() : null;
-	};
-	q.currentBlockPath = function(str/*==false*/) {
-		return q.blockPath(sb.state.state("block"), str);
-	};
-	q.currentBlockLevel = function() {
-		return q.blockLevel(q.currentBlockPath());		
-	};
-	q.previousBlockPath = function(str/*==false*/) {
-		var pbs =sb.state.context("previousBlocks"); 
-		var rb = q.rootBlock();
-		var pp = (pbs && pbs.length && pbs[0]) || (rb && rb.id) || null;
-		return pp ? q.blockPath(pp, str) : null;
-	};
-	q.previousBlockLevel = function() {
-		return q.blockLevel(q.previousBlockPath());		
-	};
-	q.managedBlocks = function() {
-		return sb.models.rawArray("blocks").reduce(function(pre, el) {
-			if(el.is_manager) {
-				return pre.put(el);
-			} 
-			return pre;
-		}, []);
-	};
-	q.parentPath = function(bpath, str/*==false*/) {
-		bpath = q.blockPath(bpath);
-		return bpath ? q.blockPath(bpath.slice(0,-1), str) : null;
-	};
-	q.blockParentInfo = function(bpath) {
-		bpath = q.blockPath(bpath);
-		var b = bpath ? q.block(bpath) : null;
-		if(b && b.parents && b.parents.length) {
-			return b.parents.findKey("parent_id", bpath.last(1)).value;
-		}
-		return null;	
-	};
-	
-	q.blockPath = function(bpath, str/*==false*/) {
-		if(!bpath)  {return null; }
- 		bpath = _pathToArray(bpath);
-		var b = q.block(bpath);
-		if(b && bpath.length < 2 && b.parents.length > 0) {
-			bpath = b.default_path;
-		}
-		return str ? bpath.join("_") : bpath;
+		var ba = sb.models.get("blocks").rawArray();
+		var rb = c ? c.root_block : (ba? ba[0]: null);
+		return rb ? q.block(rb.id, prop) : null;
 	};
 
-	var _pathToArray = function(bpath) {
-		if(typeof bpath == "array") { return bpath; }
-		if(typeof bpath == "number") { return [String(bpath)]; }
-		if(typeof bpath == "string") { return bpath.split("_"); }
-		return bpath;
+	q.block = function(b, prop) {
+		var bm = sb.models.get("blocks");
+		b = b || sb.state.state("block");
+		b = bm.find(b);
+		return b ? (prop ? b[prop] : b) : null;
 	};
+
+
+	// q.block = function(b) {
+	// 	//b can be a path, id, or the actual object
+	// 	var blocks = sb.models.raw("blocks");
+	// 	if(!blocks) { return null; }
+	// 	if(E.isStr(b)) {
+	// 		b = b.split("_").last(); 
+	// 		b = blocks[b];
+	// 	} else {
+	// 		b = blocks[b.path];
+	// 	}
+	// 	return b;
+	// };
+
+	// q.currentBlock = function() {
+	// 	return q.block(sb.state.state("block"));
+	// };
+	// q.rootBlock = function() {
+	// 	var rbid = q.rootBlockId();
+	// 	return rbid ? q.block(rbid) : null; 
+	// };
+	// q.rootBlockId = function() {
+	// 	var c = q.company();
+	// 	return c && c.root_block ? c.root_block.id : null; 
+	// };
+	// q.currentBlockId = function() {
+	// 	var b = q.currentBlock();
+	// 	return b ? b.id : null; 
+	// };
+	// q.currentBlockPath = function() {
+	// 	return q.currentBlock().path;
+	// };
+	// q.currentBlockLevel = function() {
+	// 	return q.currentBlock().level;
+	// };
+	// q.managedBlocks = function() {
+	// 	return sb.models.rawArray("blocks").reduce(function(pre, el) {
+	// 		if(el.is_manager) {
+	// 			return pre.put(el);
+	// 		} 
+	// 		return pre;
+	// 	}, []);
+	// };
+	// q.parentPath = function(bpath, str/*==false*/) {
+	// 	bpath = q.blockPath(bpath);
+	// 	return bpath ? q.blockPath(bpath.slice(0,-1), str) : null;
+	// };
+	// q.blockParentInfo = function(bpath) {
+	// 	bpath = q.blockPath(bpath);
+	// 	var b = bpath ? q.block(bpath) : null;
+	// 	if(b && b.parents && b.parents.length) {
+	// 		return b.parents.findKey("parent_id", bpath.last(1)).value;
+	// 	}
+	// 	return null;	
+	// };
 	
-	q.blockId = function(bpath) {
-		bpath = bpath ? _pathToArray(bpath) : null;
-		return (bpath && bpath.length) ? bpath.last() : null;
-	};
+	// q.blockPath = function(bpath, str/*==false*/) {
+	// 	if(!bpath)  {return null; }
+ // 		bpath = _pathToArray(bpath);
+	// 	var b = q.block(bpath);
+	// 	if(b && bpath.length < 2 && b.parents.length > 0) {
+	// 		bpath = b.default_path;
+	// 	}
+	// 	return str ? bpath.join("_") : bpath;
+	// };
+
+	// var _pathToArray = function(bpath) {
+	// 	if(E.isArr(bpath)) { return bpath; }
+	// 	if(E.isNum(bpath)) { return [String(bpath)]; }
+	// 	if(E.isStr(bpath)) { return bpath.split("_"); }
+	// 	return bpath;
+	// };
 	
-	q.block = function(bpath) {
-		var bid = q.blockId(bpath);
-		var blocks = sb.models.raw("blocks");
-		return bid && blocks && blocks[bid] ? blocks[bid] : null;
-	};
+	// q.blockId = function(bpath) {
+	// 	bpath = bpath ? _pathToArray(bpath) : null;
+	// 	return (bpath && bpath.length) ? bpath.last() : null;
+	// };
 	
-	q.blockLevel = function(bpath) {
-		var pinfo = q.blockParentInfo(bpath||q.currentBlockPath());
-		return pinfo ? pinfo.level : 0;
-	};
 	
-	q.childPath = function(ppath, id, str/*===false*/) {
-		return q.blockpath(_pathToArray(ppath).push(id), str);
-	};
-	q.childrenPaths = function(bpath, str/*==false*/) {
-		//array, so we can concat
-		bpath = q.blockPath(bpath);
-		var b= q.block(bpath);
-		//concat each child id to the bpath array and return using internal blockPath function, passing the "str" option. 
-		return b ? 
-				b.children.map(function(el) { return q.blockPath(bpath.concat([el]), str); }) :
-				null; 
+	// q.blockLevel = function(bpath) {
+	// 	var b = q.block(bpath);
+	// 	return b ? b.level : -1;
+	// };
+	
+	// q.childPath = function(ppath, id, str/*===false*/) {
+	// 	var path = _pathToArray(ppath) || [];
+	// 	return q.blockPath(path.push(id), str);
+	// };
+	// q.childrenPaths = function(bpath, str/*==false*/) {
+	// 	//array, so we can concat
+	// 	bpath = q.blockPath(bpath);
+	// 	var b= q.block(bpath);
+	// 	//concat each child id to the bpath array and return using internal blockPath function, passing the "str" option. 
+	// 	return b ? 
+	// 			b.children.map(function(el) { return q.blockPath(bpath.concat([el]), str); }) :
+	// 			null; 
 		
-	};
-	q.parentPaths = function(bpath, str/*==false*/) {
-		var b= q.block(bpath);
-		return b.paths.reduce(function(prev,el) {
-					var pp =  sb.queries.parentPath(el, str);
-					return pp && pp.length  ? prev.put(pp) : prev;
-		}, []);
-	};
+	// };
+	// q.parentPaths = function(bpath, str/*==false*/) {
+	// 	var b= q.block(bpath);
+	// 	return b.paths.reduce(function(prev,el) {
+	// 				var pp =  sb.queries.parentPath(el, str);
+	// 				return pp && pp.length  ? prev.put(pp) : prev;
+	// 	}, []);
+	// };
 	
-	//includes siblings from *ALL* parents
-	q.siblingPaths = function(bpath, str/*==false*/) {
-		var b= q.block(bpath);
-		return b.paths.reduce(function(prev,el) {
-			var cp = sb.queries.childrenPaths(sb.queries.parentPath(el), str);
-			if(cp) {
-				cp = cp.filter(function(el) { 
-					return sb.queries.blockPath(el,true) != sb.queries.blockPath(bpath,true); 
-				});  
-				return prev.concat(cp);
-			} 
-			return prev;
-		}, []);
-	};
+	// //includes siblings from *ALL* parents
+	// q.siblingPaths = function(bpath, str/*==false*/) {
+	// 	var b= q.block(bpath);
+	// 	return b.paths.reduce(function(prev,el) {
+	// 		var cp = sb.queries.childrenPaths(sb.queries.parentPath(el), str);
+	// 		if(cp) {
+	// 			cp = cp.filter(function(el) { 
+	// 				return sb.queries.blockPath(el,true) != sb.queries.blockPath(bpath,true); 
+	// 			});  
+	// 			return prev.concat(cp);
+	// 		} 
+	// 		return prev;
+	// 	}, []);
+	// };
 	
 	
-	q.arePathsEqual = function(apath, bpath) {
-		return q.blockPath(apath, true) == q.blockPath(bpath, true);
-	};
-	q.isCenterPath = function(apath) {
-		return q.currentBlockPath(true).indexOf(q.blockPath(apath,true)) > -1;
-	};
-	q.isCurrentPath = function(apath) {
-		return q.arePathsEqual(apath, q.currentBlockPath());
-	};
+	// q.arePathsEqual = function(apath, bpath) {
+	// 	return q.blockPath(apath, true) == q.blockPath(bpath, true);
+	// };
+	// q.isCenterPath = function(apath) {
+	// 	return q.currentBlockPath(true).indexOf(q.blockPath(apath,true)) > -1;
+	// };
+	// q.isCurrentPath = function(apath) {
+	// 	return q.arePathsEqual(apath, q.currentBlockPath());
+	// };
 	
 
-	q._managerFields = ["title", "body", "start_date", "end_date", "owner_id", "focus_id", 
-						"priority", "days_of_effort", "floating_end_date", "milestone_definition_id", "health_calculation_id"];
-	q._ownerFields = ["progress_value", "progress_comment"];
+	// q._managerFields = ["title", "body", "start_date", "end_date", "owner_id", "focus_id", 
+	// 					"priority", "days_of_effort", "floating_end_date", "milestone_definition_id", "health_calculation_id"];
+	// q._ownerFields = ["progress_value", "progress_comment"];
 
-	q.canEditBlock = function(b) {
-		return b.is_owner || b.is_manager;
-	};
-	q.canManageBlock = function(b, optionalField) {
-		return b.is_manager && !b.closed;
-	};
-	q.canOwnBlock = function(b, optionalField) {
-		return b.is_owner && !b.closed && !b.ownership_state == "new";
-	};
+	// q.canEditBlock = function(b) {
+	// 	return b.is_owner || b.is_manager;
+	// };
+	// q.canManageBlock = function(b, optionalField) {
+	// 	return b.is_manager && !b.closed;
+	// };
+	// q.canOwnBlock = function(b, optionalField) {
+	// 	return b.is_owner && !b.closed && b.ownership_state != "new";
+	// };
 
-	q.maxDate = function(bpath) {
-		var b = q.block(bpath || q.rootBlock());
-		return sb.ext.date(q.rootBlock().end_date);
-	};
-	q.minDate = function(bpath) {
-		var b = q.block(bpath || q.rootBlock());
-		return sb.ext.date(q.rootBlock().start_date);
-	};
+	// q.maxDate = function(bpath) {
+	// 	var b = q.block(bpath || q.rootBlock());
+	// 	return sb.ext.date(q.rootBlock().end_date);
+	// };
+	// q.minDate = function(bpath) {
+	// 	var b = q.block(bpath || q.rootBlock());
+	// 	return sb.ext.date(q.rootBlock().start_date);
+	// };
 
-	q.blockTarget = function(b) {
-		b = (sb.ext.isStr(b) || sb.ext.isArr(b)) ? block(b) : b;
-		if(!b || b.ownership_state == "new") { return 0; }
-		return b.expected_progress;
-	},
-	q.blockProgress = function(b) {
-		b = (sb.ext.isStr(b) || sb.ext.isArr(b)) ? block(b) : b;
-		if(!b || b.ownership_state == "new") { return 0; }
-		return b.percent_progress;
-	},
-	q.blockVariance = function(b) {
-		var p  = q.blockProgress(b);
-		var e  = q.blockTarget(b);
-		return (e > 0) ? (Math.floor( ((p - e)/e) *100)) : 100;
-
-	};
-
+	// q.blockTarget = function(b) {
+	// 	b = (sb.ext.isStr(b) || sb.ext.isArr(b)) ? q.block(b) : b;
+	// 	if(!b || b.ownership_state == "new") { return 0; }
+	// 	return b.expected_progress;
+	// },
+	// q.blockProgress = function(b) {
+	// 	b = (sb.ext.isStr(b) || sb.ext.isArr(b)) ? q.block(b) : b;
+	// 	if(!b || b.ownership_state == "new") { return 0; }
+	// 	return b.percent_progress;
+	// },
+	// q.blockVariance = function(b) {
+	// 	var p  = q.blockProgress(b);
+	// 	var e  = q.blockTarget(b);
+	// 	return (e > 0) ? (Math.floor( ((p - e)/e) *100)) : 100;
+	// };
 
 
-	//returns the available range of dates for the date picker on this block
-	// 1. Block cannot START earlier than its parent blocks
-	// 2. Block cannot START later than its earliest child start date, or the parent's end date
-	// 3. Block cannot  END before its parent's start date or it's latest child's end date.
-	// 4. Block cannot END after its parent unless that parent it floating
-	q.dateRange = function(b) {
-		var dates = {
-			minStart: moment(new Date(1980,1,1)),	
-			maxStart: moment(new Date(2038,12,31)),	
-			minEnd: moment(new Date(1980,1,1)),	
-			maxEnd: moment(new Date(2038,12,31))	
-		};
+	// q.blockProgressRatioLabel = function(b) {
+	// 	var p = q.blockProgress(b);
+	// 	var t = q.blockTarget(b);
+	// 	return [p,"/",t].join("");
+	// };
+
+
+	// //returns the available range of dates for the date picker on this block
+	// // 1. Block cannot START earlier than its parent blocks
+	// // 2. Block cannot START later than its earliest child start date, or the parent's end date
+	// // 3. Block cannot  END before its parent's start date or it's latest child's end date.
+	// // 4. Block cannot END after its parent unless that parent it floating
+	// q.dateRange = function(b) {
+	// 	var dates = {
+	// 		minStart: moment(new Date(1980,1,1)),	
+	// 		maxStart: moment(new Date(2038,12,31)),	
+	// 		minEnd: moment(new Date(1980,1,1)),	
+	// 		maxEnd: moment(new Date(2038,12,31))	
+	// 	};
 		
-		var p = q.block(b.default_parent);
-		var maxsd = b.children.map(function(cid) { return q.block(cid).start_date; }).put(p ? p.end_date : dates.maxStart);
-		var mined = b.children.map(function(cid) { return q.block(cid).end_date; }).put(p ? p.start_date : dates.minEnd);
+	// 	var p = q.block(b.default_parent);
+	// 	var maxsd = b.children.map(function(cid) { return q.block(cid).start_date; }).put(p ? p.end_date : dates.maxStart);
+	// 	var mined = b.children.map(function(cid) { return q.block(cid).end_date; }).put(p ? p.start_date : dates.minEnd);
 		
 		
-		dates.maxStart = sb.ext.minDate.apply(null, maxsd);
-		dates.minStart =  p ? p.start_date : dates.minStart;
-		dates.maxEnd = p && !p.floating_end_date ? p.end_date : dates.maxEnd;
-		dates.minEnd = sb.ext.maxDate.apply(null, mined);
-		return dates;
-	};
+	// 	dates.maxStart = sb.ext.minDate.apply(null, maxsd);
+	// 	dates.minStart =  p ? p.start_date : dates.minStart;
+	// 	dates.maxEnd = p && !p.floating_end_date ? p.end_date : dates.maxEnd;
+	// 	dates.minEnd = sb.ext.maxDate.apply(null, mined);
+	// 	return dates;
+	// };
 	
 	
-	q.is_link = function(parent, child) {
-		var pid = q.blockId(parent);
-		var id = q.blockId(child);
-		return _parent_child_link(pid, id).linked_parent_id != null;
-	};
+	// q.is_link = function(parent, child) {
+	// 	var pid = q.blockId(parent);
+	// 	var id = q.blockId(child);
+	// 	return _parent_child_link(pid, id).linked_parent_id != null;
+	// };
 	
-	q.custom_progress_weight = function(ppath, cpath) {
-		return sb.ext.to_i(_parent_child_link(ppath, cpath).custom_progress_weight) || 0;
-	};
+	// q.custom_progress_weight = function(ppath, cpath) {
+	// 	return sb.ext.to_i(_parent_child_link(ppath, cpath).custom_progress_weight) || 0;
+	// };
 	
-	var _parent_child_link = function(ppath, cpath) {
-		var blocks = sb.models.raw("blocks");
-		var parent = q.block(ppath);
-		var child = q.block(cpath);
+	// var _parent_child_link = function(ppath, cpath) {
+	// 	var blocks = sb.models.raw("blocks");
+	// 	var parent = q.block(ppath);
+	// 	var child = q.block(cpath);
 
-		if (parent.children.indexOf(child.id) == -1) {
-			throw new Error("Block(" + child.id + ") is not a parent of block(" + parent.id + ")");
-		}
-		return child.parents.findKey("parent_id", parent.id).value;
-	};
+	// 	if (parent.children.indexOf(child.id) == -1) {
+	// 		throw new Error("Block(" + child.id + ") is not a parent of block(" + parent.id + ")");
+	// 	}
+	// 	return child.parents.findKey("parent_id", parent.id).value;
+	// };
 	
-	q.progressVariance = function(bpath) {
-		var b = q.block(bpath);
-		if(b) {
-			var a = b.percent_progress || 100;
-			var t = b.expected_progress || 0;
-			return t > 0 ? Math.round((a-t)/t*100) : 100;
-		}
-		return 0;
-	};
+	// q.progressVariance = function(bpath) {
+	// 	var b = q.block(bpath);
+	// 	if(b) {
+	// 		var a = b.percent_progress || 100;
+	// 		var t = b.expected_progress || 0;
+	// 		return t > 0 ? Math.round((a-t)/t*100) : 100;
+	// 	}
+	// 	return 0;
+	// };
 	
-	//recursive function -- no arguments are required on initial call
-	//1. If you supply arguments, you can build a subtree
-	//2. This function is designed to build trees for the map layout using D3.js
-	//3. Linked nodes are duplicated in the structure. 
-	//4. If cpath is not passed, cpath is set to the actual root. 
-	//5. If ppath is not passed, "cpath" is considered the current root: this is useful
-	//			for re-orienting the tree around the currently selected block
-	//6. If cpath and ppath is passsed on the initial call, the tree returned will be a branch
-	//		
-	//6. Blocks is only passed to simplify the recursion -- should never be necessary to pass it
-	//			unless you want a tree using a subset of data (
+	// //recursive function -- no arguments are required on initial call
+	// //1. If you supply arguments, you can build a subtree
+	// //2. This function is designed to build trees for the map layout using D3.js
+	// //3. Linked nodes are duplicated in the structure. 
+	// //4. If cpath is not passed, cpath is set to the actual root. 
+	// //5. If ppath is not passed, "cpath" is considered the current root: this is useful
+	// //			for re-orienting the tree around the currently selected block
+	// //6. If cpath and ppath is passsed on the initial call, the tree returned will be a branch
+	// //		
+	// //6. Blocks is only passed to simplify the recursion -- should never be necessary to pass it
+	// //			unless you want a tree using a subset of data (
 			
-	q.blockFullTree = function(cpath,ppath, blocks) {
-		blocks = blocks || sb.models.raw("blocks");
-		if(!blocks) { return; }
+	// q.blockFullTree = function(cpath,ppath, blocks) {
+	// 	blocks = blocks || sb.models.raw("blocks");
+	// 	if(!blocks) { return; }
 		
-		if(sb.ext.isStr(cpath) && sb.ext.isArr(ppath)) {
-			cpath = ppath.concat([cpath]);
-		}
+	// 	if(sb.ext.isStr(cpath) && sb.ext.isArr(ppath)) {
+	// 		cpath = ppath.concat([cpath]);
+	// 	}
 
 
-		cpath = q.blockPath(cpath || q.rootBlock().default_path);
-		ppath = ppath ||[];
-		//var ppath = ppath ||cpath.slice(0,-1);                                        
-		var b = blocks[cpath.last()];
+	// 	cpath = q.blockPath(cpath || q.rootBlock().default_path);
+	// 	ppath = ppath ||[];
+	// 	//var ppath = ppath ||cpath.slice(0,-1);                                        
+	// 	var b = blocks[cpath.last()];
 		
-		var d = {
-			name: b.title,
-			data: b,
-			path: cpath,
-			children: []
-		};
+	// 	var d = {
+	// 		name: b.title,
+	// 		data: b,
+	// 		path: cpath,
+	// 		children: []
+	// 	};
 
-		var children = b.children.cloneExcept(ppath.last());
-		children.map(function(el) { return cpath.concat([el]); });
-		var rp = cpath.last(1);
-		if( rp && ppath.last() != rp) {
-			children.unshift(cpath.slice(0,-1));
-		}
+	// 	var children = b.children.cloneExcept(ppath.last());
+	// 	children.map(function(el) { return cpath.concat([el]); });
+	// 	var rp = cpath.last(1);
+	// 	if( rp && ppath.last() != rp) {
+	// 		children.unshift(cpath.slice(0,-1));
+	// 	}
 				
-		var size = 1;
-		var leaves = 0;
-		var height= 1;
-		var child;
-		d.height = height;
+	// 	var size = 1;
+	// 	var leaves = 0;
+	// 	var height= 1;
+	// 	var child;
+	// 	d.height = height;
 		
-		children.forEach(function(el) {
-			var child = q.blockFullTree(el, cpath, blocks);
-			size += child.size;
-			d.children.put(child);
-			leaves += child.leaves || 1;
-			height = Math.max(d.height+1, child.height+1);
-		});
-		d.height = height;
-		d.size  = size;
-		d.leaves = leaves;
-		d.depth = cpath.length -1;
-		return d;
-	};
+	// 	children.forEach(function(el) {
+	// 		var child = q.blockFullTree(el, cpath, blocks);
+	// 		size += child.size;
+	// 		d.children.put(child);
+	// 		leaves += child.leaves || 1;
+	// 		height = Math.max(d.height+1, child.height+1);
+	// 	});
+	// 	d.height = height;
+	// 	d.size  = size;
+	// 	d.leaves = leaves;
+	// 	d.depth = cpath.length -1;
+	// 	return d;
+	// };
 
 
 
-	//linear function that builds the center list from the current block to the root. 
-	//1. takes the previous block id so that the position of the children can reflect
-	//		where we've come from. 
+	// //linear function that builds the center list from the current block to the root. 
+	// //1. takes the previous block id so that the position of the children can reflect
+	// //		where we've come from. 
 	
-	q.buildStrategyTree = function(prevBlockId) {
+	// q.buildStrategyTree = function(prevBlockId) {
 
-		var bpath = q.currentBlockPath();
-		var b = q.currentBlock();
-		var blocks = sb.models.raw("blocks"); 
-		if(!bpath || !b || !blocks) { return null; }
+	// 	var bpath = q.currentBlockPath();
+	// 	var b = q.currentBlock();
+	// 	var blocks = sb.models.raw("blocks"); 
+	// 	if(!bpath || !b || !blocks) { return null; }
 		
-		var centerList = bpath.reduce(function(prev, el) {
-			var last  = prev.last() || [];
-			prev.put(last.concat([el]));
-			return prev;
-		},[]);
+	// 	var centerList = bpath.reduce(function(prev, el) {
+	// 		var last  = prev.last() || [];
+	// 		prev.put(last.concat([el]));
+	// 		return prev;
+	// 	},[]);
 		
-		var dy = -(centerList.length-1);
+	// 	var dy = -(centerList.length-1);
 		
-		if(b.children.length) {
-			var cidx = b.children.indexOf(prevBlockId);
-			var cid = b.children[cidx < 0 ? 0 : cidx];
-			centerList.push(centerList.last().concat([cid]));
-		}
+	// 	if(b.children.length) {
+	// 		var cidx = b.children.indexOf(prevBlockId);
+	// 		var cid = b.children[cidx < 0 ? 0 : cidx];
+	// 		centerList.push(centerList.last().concat([cid]));
+	// 	}
 		
-		//temp super parent to our root object to simplify the special cases
-		var superRoot = {};
-		var pnode = superRoot;
+	// 	//temp super parent to our root object to simplify the special cases
+	// 	var superRoot = {};
+	// 	var pnode = superRoot;
 		
 
-		//walk down the center
-		centerList.forEach(function(cpath) {
-			var ppath = sb.ext.slice(cpath,0,-1);
-			var pid = ppath.last();
-			var cid  = cpath.last();
+	// 	//walk down the center
+	// 	centerList.forEach(function(cpath) {
+	// 		var ppath = sb.ext.slice(cpath,0,-1);
+	// 		var pid = ppath.last();
+	// 		var cid  = cpath.last();
 			
-			var siblings = pid ? blocks[pid].children : [cid];
-			var cidx = siblings.indexOf(cid);
+	// 		var siblings = pid ? blocks[pid].children : [cid];
+	// 		var cidx = siblings.indexOf(cid);
 			
-			pnode.children = siblings.map(function(el, idx) {
-				var path = ppath.concat([el]).join("_");
-				var vt = q.blockType(path);
+	// 		pnode.children = siblings.map(function(el, idx) {
+	// 			var path = ppath.concat([el]).join("_");
+	// 			var vt = q.blockType(path);
 
 				
-				return {
-					path:path,
-					dy:dy,
-					dx:(idx - cidx),
-					data: blocks[el],
-					viewType: vt
-				};
-			});
+	// 			return {
+	// 				path:path,
+	// 				dy:dy,
+	// 				dx:(idx - cidx),
+	// 				data: blocks[el],
+	// 				viewType: vt
+	// 			};
+	// 		});
 			
-			dy += 1;
-			pnode = pnode.children[cidx];
-		});
-		return superRoot.children[0];
-	};
+	// 		dy += 1;
+	// 		pnode = pnode.children[cidx];
+	// 	});
+	// 	return superRoot.children[0];
+	// };
 
 
-	q.defaultBlockType = function(type) {
-		var kn = type || null;
-		var types = sb.consts.blockTypes();
-		var val = types.findKey("key", sb.state.state("blockType")).value;
-		val = val || types[0];
-		return kn ? val[kn] : val;
+	// q.defaultBlockType = function(type) {
+	// 	var kn = type || null;
+	// 	var types = sb.consts.blockTypes();
+	// 	var val = types.findKey("key", sb.state.state("blockType")).value;
+	// 	val = val || types[0];
+	// 	return kn ? val[kn] : val;
 		
-	};
+	// };
 
-	q.blockType = function(path) {
-		//make sure this property exists before we use it. 
-		sb.state.initState("blockType", "status");
-		sb.state.initState("blockSettings", "");
+	// q.blockType = function(path) {
+	// 	//make sure this property exists before we use it. 
+	// 	sb.state.initState("blockType", "status");
+	// 	sb.state.initState("blockSettings", "");
 
-		var types = sb.consts.blockTypes({key:"shortkey"});
+	// 	var types = sb.consts.blockTypes({key:"shortkey"});
 
-		var defaultType = q.defaultBlockType("shortkey");
-		var localType = sb.state.getStateKey("blockSettings", path);
-		if(localType) {
-			localType = localType.match(/b\w/)[0];
-		}
-		return localType || defaultType;
-	}
+	// 	var defaultType = q.defaultBlockType("shortkey");
+	// 	var localType = sb.state.getStateKey("blockSettings", path);
+	// 	if(localType) {
+	// 		localType = localType.match(/b\w/)[0];
+	// 	}
+	// 	return localType || defaultType;
+	// }
 
 	return q;
 });

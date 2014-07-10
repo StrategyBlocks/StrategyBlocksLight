@@ -1,9 +1,12 @@
 
-define(['sb_light/models/_abstractModel'], function( _Model ) {
+/*globals define */
+
+define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
+	'use strict';
 
 	var Model = _Model.extend({
-		init: function(sb) {
-			this._super(sb, "risks", sb.urls.MODEL_RISKS);
+		init: function() {
+			this._super("risks", sb.urls.MODEL_RISKS);
 		}
 	});
 	return Model;	
