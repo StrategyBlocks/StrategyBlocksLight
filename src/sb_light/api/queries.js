@@ -500,12 +500,28 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 	};
 
 	q.block = function(b, prop) {
-		var bm = sb.models.get("blocks");
 		b = b || sb.state.state("block");
-		b = bm.find(b);
+		//takes an object or string
+		b = sb.models.find("blocks", b);
 		return b ? (prop ? b[prop] : b) : null;
 	};
 
+
+	q.blockStatusClass= function(b) {
+		b = q.block(b);
+		return "status" + E.caps(b.status);
+		// return b.ownership_state == "new" ? "statusPrivate" : 
+		// 		(b.closed ? "statusClosed" : 
+		// 			("status" + E.caps(b.progress_color))
+		// 		)
+		// ;
+	};
+
+	q.isCenterPath = function(b) {
+		b = q.block(b);
+		var cb = q.block();
+		return cb.path.match(b.path) ? true : false;
+	}
 
 	// q.block = function(b) {
 	// 	//b can be a path, id, or the actual object

@@ -52,6 +52,11 @@ define([
 		var m = _verifyModel(modelName);
 		return m.model;
 	};
+
+	models.find = function(modelName, id) {
+		var m = _verifyModel(modelName);
+		return m.model.find(id);
+	};
 	
 	//adds a callback watcher. 
 	//returns whether the model is valid or not. 
@@ -66,17 +71,20 @@ define([
 		return m.model.unsubscribe(remove);
 	};
 	
-	models.rawArray = function(modelName) {
+
+	//type is optional depending on the model
+	models.rawArray = function(modelName, type) {
 		var m = _verifyModel(modelName);
 		if(m.model) {
-			return m.model.rawArray();
+			return m.model.rawArray(type);
 		}
 	};
 	
-	models.raw = function(modelName) {
+	//type is optional depending on the model
+	models.raw = function(modelName, type) {
 		var m = _verifyModel(modelName);
 		if(m.model) {
-			return m.model.raw();
+			return m.model.raw(type);
 		}
 	};
 	

@@ -92,6 +92,23 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		return sel;
 	});
 
+	S.extendD3("transformMatrix", function(matrix) {
+		if(arguments.length > 0) {
+			var ms = "matrix(" + matrix + ")";
+			if( S.isSvg(this.node()) ) {
+				this.attr("transform", ms);
+			} else {
+				this.style("transform", ms);
+				this.style("-moz-transform", ms);
+				this.style("-webkit-transform", ms);
+				this.style("-o-transform", ms);
+			}
+			return this;
+		} 
+
+		return S.isSvg(this.node()) ? this.attr("transform") : this.style("transform");
+	});
+
 	S.extendD3("cleanup", function() {
 		var sel = this;
 		sel.each(function(d,i) {
@@ -106,20 +123,33 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 	//		if the element isn't SVG and the value is not a function, add "px" to it
 	// on get:
 	//		parse a  float from the string.
+
+	var dim_map = {
+		x: "left", left:"left", l:"left",
+		y: "top", top:"top", t:"top",
+		width:"width", w:"width",
+		height:"height", h:"height"
+	};
+
 	S.extendD3("dim", function(name, value) {
 		if(arguments.length > 1) {
 			if( S.isSvg(this.node()) )  {
 				this.attr(name, value);
 			} else {
-				if(name == "x") { name = "left"; }
-				if(name == "y") { name = "top"; }
+				name = dim_map[name];
 				this.style(name, (E.isFunc(value) || E.isString(value)) ? value : E.px(value));
 			}
 			//this.attr(name, S.isSvg(this.node() || E.isFunc(value)) ? value : E.px(value)) 
 
 			return this;
-		} 
-		return E.to_f( S.isSvg(this.node()) ? this.attr(name) : this.style(name) );
+		}
+		//return the value 
+		if(S.isSvg(this.node())) {
+			return this.attr(name);
+		} else {
+			name = dim_map[name];
+			return E.to_f(this.style(name));
+		}
 	});
 
 	//get/set the corners on a rect, for instance. (rx/ry)
@@ -372,21 +402,6 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		
 
 
-		//selection comes last so you can bind the function with args first, then use it in the d3 selection "call"
-		//e.g., S.selectAll("rect").call(sb.S.dims.bind(null, 0,0,100,100));
-	S.dims = function(x,y,w,h, selection) {
-		selection.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
-		return selection;
-	};
-
-	S.dim = function(sel, dim, value) {
-		if(arguments.length == 3) {
-			return sel.attr(dim, value);
-		}
-		return E.to_f(sel.attr(dim));
-	};
-
-
 	//quick style
 	S.style = function(selection/*, arguments*/) {
 		for(var i = 1; i < arguments.length; i+=2) {
@@ -480,7 +495,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 			return {
 				x: (radius * Math.cos(radians)),
 				y: (radius * Math.sin(radians))
-			}
+			};
 		},
 
 		//points are in the form [x,y]

@@ -192,6 +192,10 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			
 			this._massageUpdatedModel();
 
+			//do this last because massage will cause changes			
+			this._resetArrayCache();
+
+
 		},
 	
 		
@@ -228,19 +232,18 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 
 			this._timestamp = ts;
 
+			console.log("Model Timestamp", this.name, this._timestamp);
 			E.map(this._model, (function(v) {
 				//this can be used for performance reasons to check whether a model has been updated
 				v.__timestamp = ts;
 			}));
 
-			//do this last because massage will cause changes			
-			this._resetArrayCache();
 		},
 		
 		//build an array cache of the model to make list-fetches / iterations / sorting quicker. 
 		//but preserve the model as a map for key-value queries
 		_resetArrayCache:function() {
-			this._modelArray = E.map(this._model, function(v, k) { return v; });
+			this._modelArray =E.values(this._model);
 			//E.debug(this.name, this._modelArray.length);
 		}
 	});

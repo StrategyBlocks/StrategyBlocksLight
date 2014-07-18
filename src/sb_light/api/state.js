@@ -1,7 +1,7 @@
 
 /*globals define */
 
-define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], function(sb,consts,ext) {
+define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], function(sb,consts,E) {
 	//console.log("State:",sb.version);
 	'use strict';
 
@@ -115,13 +115,12 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		var s = watching[group];
 		//var list = s[type] || [];
 		var value = state[group](type);
-		var ext= sb.ext;
-		//ext.debug("Publish: ", type, value);
-		ext.each(s[type], function(v) {
+		//E.debug("Publish: ", type, value);
+		E.each(s[type], function(v) {
 			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});
 		//notify all the global subs
-		ext.each(s["*"], function(v) {
+		E.each(s["*"], function(v) {
 			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});
 	};
@@ -172,7 +171,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		var w = watching[group];
 		w[type] = w[type] || {};
 		
-		var id = ["watch_state",group, type, sb.ext.unique()].join("_");
+		var id = ["watch_state",group, type, E.unique()].join("_");
 		w[type][id] = {callback:cb, urgent:(_urgent||false)};
 
 		return id;
@@ -183,7 +182,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		var w = watching[group];
 		//collect matches
 
-		ext.each(w[type], function(v,k) {
+		E.each(w[type], function(v,k) {
 			//"remove" can be the key or the cb func
 			if(v.callback == remove || k == remove) {
 				del.push(k);
@@ -326,7 +325,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 	
 	state.addTimestamps = function(params) {
-		sb.ext.debug("Adding timestamp for ", Object.keys(models).join(","));
+		E.debug("Adding timestamp for ", Object.keys(models).join(","));
 		
 		for (var m in models) {
 			params[m+"_timestamp"] = models[m].timestamp;
@@ -359,17 +358,17 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			storage.state.user_id = null;
 		}
 		if(!storage.state.user_id) {
-			sb.ext.debug("setting session to unauthorized");
+			E.debug("setting session to unauthorized");
 			if(state.unknown() || state.startup()) {
 				data.flash = {notice:"Please enter your login credentials."};
 			}
 			storage.context.session =  state.session_invalid;
 		} else {
 			if (data.company && data.company.license && data.company.license.status =="expired") {
-				sb.ext.debug("setting session to payment");
+				E.debug("setting session to payment");
 				storage.context.session =  state.session_payment;
 			} else {
-				sb.ext.debug("setting session to normal");
+				E.debug("setting session to normal");
 				storage.context.session =  state.session_normal;
 			}
 		}
@@ -398,15 +397,22 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		var m = res[model.name] || res;
 		
 		if(model.raw() === null && m) {
-			if(sb.ext.isArray(m)) {
+			if(E.isArray(m)) {
 				m = m.reduce( (function(prev,el) {
 					prev[el.id] = el;
 					return prev;
 				}), {});
 			}
-			model._handleUpdate({added:m});
+
+			var data = {};
+			data[model.name] = {
+				"added": m,
+				"timestamp": (res[model.name+"_timestamp"] || String(E.dateNumber()))
+			}
+
+			//this cleans up the timestamps and the force request buffers
+			_updateModels(data);
 		}
-		_forceUpdateBusy[model.name] = false;
 	}
 
 	return state;

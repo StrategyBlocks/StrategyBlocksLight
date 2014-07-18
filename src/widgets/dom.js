@@ -191,6 +191,9 @@ define([
 			var args = E.slice(arguments, 2);
 			var s = sb.state;
 			var ss = this.__watchers[type];
+			if(!ss) {
+				console.log("DOM:WATCH", type, this.id, ss);
+			}
 			var df = this.bind(funcName);
 			args.forEach(function(v) {
 				if(ss[v]) { 
@@ -325,10 +328,10 @@ define([
 			//reset the delay
 			this.__canDrawDelay = this.__canDrawDelay >= 0 ? E.max(50, delay) : -1;
 
+			// console.log("DOM WIDGET dirtying: ", this.id);
 			//queue drawing so we don't end up calling it repeatedly from different events
 			sb.queue.buffer(this.__beforeDraw.bind(this), "_buffer" + this.id, delay, true);
 
-//			console.log("DOM WIDGET dirtying: ", this.id)
 		},
 
 		fetchData: function() {

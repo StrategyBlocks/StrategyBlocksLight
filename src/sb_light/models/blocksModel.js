@@ -84,9 +84,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			this._super();
 			var root = this._model[Q.rootBlock("id")];
 			if(!root) {
-				root = this._modelArray.filter(function(v){
-					return !v.parents || !v.parents.length;
-				})[0];
+				root = E._.find(this._model, function(v) {
+					return !v.parents || v.parents.length === 0;
+				});
 			}
 			this._massage(root, null, 0, 0, (new Date()).getTime());
 
@@ -190,6 +190,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 		},
 		
+
+		//returns the path of the current block
 		_massage: function(b, ppath, depth, pos, schema) {
 			var recurse = this._massage.bind(this);
 
@@ -197,16 +199,29 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				this._idModel = {};
 				this._pathModel = {};
 			}
+			var pm = this._pathModel;
 
 			b = Q.block(b);
 			var bpath = ppath ? [ppath, b.id].join("_") : b.id;
 			var p = Q.block(ppath);
-			var pinfo = p ? b.parents.findKey("id", p.id).value : {};
+			var pinfo = p ? b.parents.findKey("id", p.id).value : null;
 
-			this._pathModel[bpath] = E.merge({}, E.merge(b, pinfo), {
+
+			var csize = 0;
+
+			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				path:bpath,
+				parentPath:ppath,
+				parent:(ppath||""),
 				level: depth,
-				is_link: (pinfo && pinfo.linked_parent_id !== null),
+				size:1,
+				status: ((b.ownership_state == "new") ? "new" : (
+							b.closed? "closed" : (
+								b.progress_color == "red" ? "bad" : (b.progress_color == "yellow" ? "warning" : "good")
+							)
+						)),
+				is_root:(depth===0),
+				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
 				level_sort: (p ? (p.levelPath + "." + pos) : "L1"),
 				can_move_left: (b.is_owner && (pos> 0)),
 				can_move_right: (b.is_owner && p && (pos < p.children.length-1) && p.children.length > 1),
@@ -214,36 +229,36 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				progress_status_class: (b.closed ? "closed" : (b.ownership_state == "new" ? "private" : b.progress_color)),
 				parent_title: (p ? p.title : ""),
 				schema:schema,
-				children:(b.children || [])
+
+				//map children ids to paths
+				children: E.map(b.children, function(cpath, i) {
+					return recurse(cpath, bpath, depth+1, i, schema);
+				})
 			});
-			b = this._pathModel[bpath];
 
-			//recurse each child and add their path to the model
-			E.each(b.children, function(cb, i) {
-				recurse(cb, bpath, depth+1, i, schema);
-			});	
-
-			//map the children ids to child paths
-			b.children = E.map(b.children, function(c) {
-				return Q.block(c);
+			E.each(b.children, function(cpath) {
+				b.size += pm[cpath].size;
 			});
 
 			if(!b.is_link) {
+				//THIS IS BEING MADE WRONG AND I DON"T KNOW WHY
 				this._idModel[b.id] = b;
 			}
 
-
+			return bpath;
 		},
 		_resetArrayCache:function() {
 			this._super();
-			
-			//
-			this._pathArray = this._modelArray;
 
-			//
+
+			// //
 			this._idArray = this._modelArray = E.values(this._idModel);
 
+			this._pathArray = E.values(this._pathModel);
+
 			this._pathArray.sort(E.sortFactory("level_sort", E.sortString));
+
+			this._model = this._idModel;
 
 			//E.debug(this.name, this._modelArray.length);
 		}
