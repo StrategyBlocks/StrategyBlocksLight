@@ -1,4 +1,4 @@
-
+/*globals define*/
 
 
 define([
@@ -21,7 +21,10 @@ define([
 	'sb_light/api/urls',	
 	'sb_light/api/api',
 	'sb_light/api/ajax',
-	'widgets/main'
+	'widgets/main',
+
+	//ignore
+	'sb_light/utils/jqueryPlugins',	
 ], function(
 	globals,
 	moment,
@@ -44,6 +47,8 @@ define([
 	ajax,
 	widgets
 ) {
+	'use strict';
+
 	//globals.version = "0.0.1";
 
 	//sometimes the way moment.js gets loaded is different. If it's not loaded properly via AMD, check the global context (this, window).
