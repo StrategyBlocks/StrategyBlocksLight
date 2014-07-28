@@ -96,12 +96,15 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		if(arguments.length > 0) {
 			var ms = "matrix(" + matrix + ")";
 			if( S.isSvg(this.node()) ) {
+				console.log("TransformSVG:", ms)
 				this.attr("transform", ms);
 			} else {
+				console.log("TransformDIV:", ms)
 				this.style("transform", ms);
 				this.style("-moz-transform", ms);
 				this.style("-webkit-transform", ms);
 				this.style("-o-transform", ms);
+				this.style("-ms-transform", ms);
 			}
 			return this;
 		} 

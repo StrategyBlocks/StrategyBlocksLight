@@ -89,7 +89,8 @@ define([
 				"dom": 		{get: function() { 	return this.$.get(0); 			}},
 				//D3 selection
 				"sel": 		{get: function() { 	return d3.select(this.dom); 	}},
-				"id": 		{get: function() { 	return this.__id; 	}}
+				"id": 		{get: function() { 	return this.__id; 	}},
+				"delay": 	{set: function(x) { this.__delay = x; }}
 			});
 
 			if(this.__opts.templatePath) {
@@ -300,6 +301,7 @@ define([
 			var self = this; 
 			var c = this.__children;
 			opts = E.merge(opts, {root:el});
+
 
 			var src = opts.require; 
 			el.data("require", null);

@@ -21,6 +21,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		return prev;
 	}, state);
 
+
 	//storage of application data. The properties can be extended simply by "watch"ing them.
 	var storage = {
 		//current application state (e.g., which page, block, tag, user....) -- stuff that can go into a url for bookmarking
@@ -153,9 +154,9 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		var sg = storage[group];
 		if(type !== "*") {
 			if(!sg.hasOwnProperty(type)) {
-				sg[type] = _default || null;
+				sg[type] = arguments.length == 3 ? _default :  null;
 			}
-			if(_default !== undefined) {
+			if(arguments.length == 3) {
 				sg["_default_"+type] = _default;
 			}
 		}

@@ -11,7 +11,7 @@
 	nature of the models. 
 ************************/
 
-define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment, E) {
+define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'], function(sb, moment, E, ST) {
 	
 	'use strict';
 	var q = {};
@@ -22,11 +22,11 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 	q.company = function(cid /*optional*/) {
 
 		var cs = sb.models.raw("companies");
-		var sid = sb.state.state("company_id");
+		var sid = ST.state("company_id");
 		cid = cid || sid;
 		//use the company returned in the JSON 
 		if(cid == sid) {
-			return sb.state.context("company") || null;
+			return ST.context("company") || null;
 		}
 
 		//fall back on the companies model
@@ -62,13 +62,13 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 		return u ? u.last_name : "<unknown>";
 	};
 	q.user = function(uid /*optional*/) {
-		var sid = sb.state.state("user_id");
+		var sid = ST.state("user_id");
 		uid = uid || sid;
 
 		var us = sb.models.raw("users");
 
 		//try the model, then the state, then null
-		return (us && uid && us[uid]) || (uid == sid && sb.state.context("user")) || null;
+		return (us && uid && us[uid]) || (uid == sid && ST.context("user")) || null;
 
 	};
 	q.companyMembership = function(uid) {
@@ -94,7 +94,7 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 	};
 	
 	q.authors  = function() {
-		var cid = sb.state.state("company_id");
+		var cid = ST.state("company_id");
 		return sb.models.rawArray("users").filter(function(el) {
 			
 												//TODO: Remove legacy API support
@@ -245,7 +245,7 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 	*********************************/
 	
 	q.currentNewsItem = function() {
-		var id = sb.state.state("news");
+		var id = ST.state("news");
 		var model = sb.models.raw("news");
 		
 		return model && id ? model[id] : null;	
@@ -295,7 +295,7 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 		METRICS
 	*********************************/
 	q.metric = function(id) {
-		id = id || sb.state.state("metric");
+		id = id || ST.state("metric");
 		var m = sb.models.raw("metrics");
 		if(id && m) {
 			//return the original kpi if we've passed the real object
@@ -480,7 +480,7 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 	*********************************/
 	
 	q.risk = function(id) {
-		id = id || sb.state.state("risk");
+		id = id || ST.state("risk");
 		var m = sb.models.raw("risks");
 		if(id && m) {
 			return m[id];
@@ -500,7 +500,7 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 	};
 
 	q.block = function(b, prop) {
-		b = b || sb.state.state("block");
+		b = b || ST.state("block");
 		//takes an object or string
 		b = sb.models.find("blocks", b);
 		return b ? (prop ? b[prop] : b) : null;
@@ -523,6 +523,33 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 		return cb.path.match(b.path) ? true : false;
 	}
 
+	q.defaultBlockType = function(type) {
+		ST.initState("blockType", "status");
+		
+		var kn = type || null;
+		var types = sb.consts.blockTypes();
+		var val = types.findKey("key", ST.state("blockType")).value;
+		val = val || types[0];
+		return kn ? val[kn] : val;
+		
+	};
+
+	q.blockType = function(path) {
+		//make sure this property exists before we use it. 
+		ST.initState("blockType", "status");
+		ST.initState("blockSettings", "");
+
+		var types = sb.consts.blockTypes({key:"shortkey"});
+
+		var defaultType = q.defaultBlockType("shortkey");
+		var localType = ST.getStateKey("blockSettings", path);
+		if(localType) {
+			localType = localType.match(/b\w/)[0];
+		}
+		return localType || defaultType;
+	}
+
+
 	// q.block = function(b) {
 	// 	//b can be a path, id, or the actual object
 	// 	var blocks = sb.models.raw("blocks");
@@ -537,7 +564,7 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 	// };
 
 	// q.currentBlock = function() {
-	// 	return q.block(sb.state.state("block"));
+	// 	return q.block(ST.state("block"));
 	// };
 	// q.rootBlock = function() {
 	// 	var rbid = q.rootBlockId();
@@ -884,7 +911,7 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 	// q.defaultBlockType = function(type) {
 	// 	var kn = type || null;
 	// 	var types = sb.consts.blockTypes();
-	// 	var val = types.findKey("key", sb.state.state("blockType")).value;
+	// 	var val = types.findKey("key", ST.state("blockType")).value;
 	// 	val = val || types[0];
 	// 	return kn ? val[kn] : val;
 		
@@ -892,13 +919,13 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext"], function(sb, moment
 
 	// q.blockType = function(path) {
 	// 	//make sure this property exists before we use it. 
-	// 	sb.state.initState("blockType", "status");
-	// 	sb.state.initState("blockSettings", "");
+	// 	ST.initState("blockType", "status");
+	// 	ST.initState("blockSettings", "");
 
 	// 	var types = sb.consts.blockTypes({key:"shortkey"});
 
 	// 	var defaultType = q.defaultBlockType("shortkey");
-	// 	var localType = sb.state.getStateKey("blockSettings", path);
+	// 	var localType = ST.getStateKey("blockSettings", path);
 	// 	if(localType) {
 	// 		localType = localType.match(/b\w/)[0];
 	// 	}

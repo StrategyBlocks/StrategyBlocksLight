@@ -10,7 +10,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			this._super("levels", sb.urls.MODEL_LEVELS);
 		},
 
-		_massageUpdatedModel: function() {
+		_resetArrayCache: function() {
 			this._super();
 
 			var E = sb.ext;
