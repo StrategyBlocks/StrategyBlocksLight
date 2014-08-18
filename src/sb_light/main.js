@@ -6,7 +6,6 @@ define([
 	'moment',	
 	'sb_light/utils/polyfills',	
 	'sb_light/utils/ext',	
-	'sb_light/utils/dom',	
 	'sb_light/utils/subman',	
 	'sb_light/utils/svg',	
 	'sb_light/utils/queue',	
@@ -30,7 +29,6 @@ define([
 	moment,
 	polyfills,
 	ext,
-	dom,	
 	subman,	
 	svg,
 	queue,
@@ -57,7 +55,6 @@ define([
 
 	globals.polyfills = polyfills;
 	globals.ext = ext;
-	globals.dom = dom;
 	globals.subman = subman;
 	globals.svg = svg;
 	globals.queue = queue;

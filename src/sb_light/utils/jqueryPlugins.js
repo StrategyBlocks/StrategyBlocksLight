@@ -9,10 +9,13 @@ define(["sb_light/globals", "sb_light/utils/ext", "jquery"], function(sb, E) {
 
 	(function ( $ ) {
 		$.fn.rect = function() {
-			return E.merge(this.position, {
+			var x =  E.merge(this.position(), {
 				width:this.outerWidth(),
 				height:this.outerHeight()
 			});
+			x.x = x.left;
+			x.y = x.top;
+			return x;
 		};
 
 	}( jQuery ));

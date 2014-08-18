@@ -17,7 +17,7 @@ define([
 	'sb_light/models/timezonesModel',
 	'sb_light/models/healthsModel',
 	'sb_light/models/milestonesModel',
-	'sb_light/models/capabilities'
+	'sb_light/models/capabilitiesModel'
 ], function(sb, tags,news,users,blocks,levels,focus,risks,kpis, metrics, companies, groups,timezones,healths, milestones, capabilities) {
 
 	'use strict';

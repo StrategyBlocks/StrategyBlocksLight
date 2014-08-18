@@ -27,7 +27,7 @@ define(['sb_light/globals'], function(sb) {
 	//If update is true, unstarted functions will be reset and started functions will have to be run a 2nd time.   
 	queue.buffer = function queue_buffer(func, name, delay, update) {
 		update = update || false;
-
+//console.log("QUEUE: Buffering: ", name, func);
 		var b = buffer_list[name];
 		if(!b) {
 			//create the initial entry
@@ -79,7 +79,7 @@ define(['sb_light/globals'], function(sb) {
 		name = name || ("queued_" + sb.ext.unique());
 		var val = low_list.findKey("name", name).value;
 		if(!val) {
-			//sb.ext.debug("QUEUE: Adding: ", name);
+// console.log("QUEUE: Adding: ", name, func);
 			low_list.push({name:name, func:func, time:sb.ext.time(), delay:delay});
 			start();
 		} else if (update) {

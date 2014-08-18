@@ -1,4 +1,4 @@
-/* globals define, $, d3, SB_PATH */
+/* globals define, $, d3, SB_OPTIONS, require */
 
 define([
 	'sb_light/utils/Class', 
@@ -12,7 +12,11 @@ define([
 
 	var E, ST, M;
 	var DOM_REGISTER = {};
-
+	var OPTS = {
+		appendTo: 		null,
+		idKey:			null,
+		stateFunction: 	null
+	};
 
 	var Dom = Class.extend({
 
@@ -22,6 +26,7 @@ define([
 		__children:null,
 		__watchers:null,
 		__models:null,
+		__skipModels:null,
 		__data:null,
 		__parsers:null,
 		__root:null,
@@ -36,7 +41,6 @@ define([
 			E = sb.ext;
 			ST = sb.state;
 			M = sb.models;
-
 			var o = this.__opts = this.initOpts(opts);
 
 			this.__root = o.appendTo || o.root || "body";
@@ -50,6 +54,7 @@ define([
 						//next just make one up							
 						("dom_widget_" + E.unique())
 			;
+			// console.log("ID", this.__id, o.id, o.idKey, this.__root, $(this.__root).attr("id"), OPTS, this.__opts);
 
 			if(!DOM_REGISTER[this.__id]) {
 				DOM_REGISTER[this.__id] = this;
@@ -93,10 +98,10 @@ define([
 				"delay": 	{set: function(x) { this.__delay = x; }}
 			});
 
-			if(this.__opts.templatePath) {
-				this.addBeforeDraw(this.loadTemplate.bind(this));
-				this.addBeforeDraw(this.parseChildren.bind(this));
-				this.addBeforeDraw(this.postCreate.bind(this));
+			if(o.templatePath) {
+				this.addBeforeDraw(this.bind("loadTemplate"));
+				this.addBeforeDraw(this.bind("parseChildren"));
+				this.addBeforeDraw(this.bind("postCreate"));
 				this.create();
 			} else {
 				this.create();
@@ -109,11 +114,22 @@ define([
 		create: function() {
 			this.addParser("require", this.createChildren.bind(this));
 
+
+			//override any opts we have based on HTML data properties
+			var d = this.$.data();
+			var opts = this.__opts;
+			E.each(d, function(v,k) {
+				if(opts.hasOwnProperty(k)) { 
+					opts[k] = v; 
+				}
+			})
+
+
 			this.__created = true;
 
 			this.dirty();
 
-			//console.log("create", this.id);
+			// console.log("create", this.id);
 		},
 
 		domById: function(id) {
@@ -125,8 +141,6 @@ define([
 		//it generally signals the loading of the html templates
 		postCreate:function() {
 			// console.log("postCreate", this.id);
-			//create the html and do other stuff as defined by subclasses
-			this.parseChildren();
 
 			//override for one-off post-creation stuff
 			this.$.find("input[type='checkbox']").bootstrapSwitch();
@@ -139,7 +153,6 @@ define([
 			}
 
 			var w = this.__watchers;
-			var state = sb.state;
 			var ms = sb.models;
 			var m = this.__models;
 
@@ -150,7 +163,7 @@ define([
 			E.each(w, function(type) {
 				var list = w[type];
 				E.each(list,function(v,k) {
-					state.unwatch(type, w[type], v);
+					ST.unwatch(type, w[type], v);
 				});
 			});
 
@@ -167,13 +180,18 @@ define([
 				if(k.match(/^__/)) {
 					this[k] = null;
 				}
-			})
+			});
 		},
-
 
 		addBeforeDraw: function(f) {
-			this.__beforeDrawList.push(f);
+			//don't add twice
+			//shouldn't cause problems, but there's no reason to run twice+
+			if(!E._.find(this.__beforeDrawList, f)) {
+				this.__beforeDrawList.push(f);
+			}
 		},
+
+
 
 		//which models this widget subscribes to
 		models: function(/*string list...*/) {
@@ -182,18 +200,26 @@ define([
 			var ms = this.__models;
 			var df = this.bind("dirty");
 			args.forEach(function(v,i) {
-				ms[v] = m.subscribe(v, df);
+				if(!ms[v]) {
+					ms[v] = m.subscribe(v, df);
+				}
 			});
+		},
+
+		skipModels: function(/*string list*/) {
+			var args = E.slice(arguments, 0);
+			this.__skipModels = (this.__skipModels || []).concat(args);
+			//add the models to watch, even though we skip them
+			this.models.apply(this, args);
 		},
 
 		//watch a list of state properties
 		watch: function(funcName, type /*, string list*/) {
 			var self = this;
 			var args = E.slice(arguments, 2);
-			var s = sb.state;
 			var ss = this.__watchers[type];
 			if(!ss) {
-				console.log("DOM:WATCH", type, this.id, ss);
+				// console.log("DOM:WATCH", type, this.id, ss);
 			}
 			var df = this.bind(funcName);
 			args.forEach(function(v) {
@@ -201,7 +227,7 @@ define([
 					sb.ext.warn("DOM::Watch:You are already watching this " +  v + " " +  type + " " + self.id);
 					return;
 				}
-				ss[v] = s.watch(type, v, df);
+				ss[v] = ST.watch(type, v, df);
 			});
 		},
 
@@ -236,12 +262,25 @@ define([
 			this.__data[opts.id] = opts;
 		},
 
+		stateValid:function() {
+			//everything needs a state function. The default is "all" which allows any state
+			if(!this.__opts.stateFunction) {
+				throw new Error("DOM:Error (id:"  + this.id + ") has no defined stateFunction.");
+			}
+			return this.__opts.stateFunction();
+		},
 
 		modelsValid: function() {
+			var sm = this.__skipModels || [];
 			var ms = sb.models;
+
+			//reverse intersection to filter out the skipped models
+			//remaining keys are checked against sb.models for validity;
+			var mk = E._.xor(sm, E.keys(this.__models));
+
 			var valid= true;
-			E.each(this.__models, function(v,k) {
-				var m = ms.get(k);
+			E.each(mk, function(v) {
+				var m = ms.get(v);
 				//"m.get" will force a fetch if it's not valid. 
 				valid = valid && m && m.get() !== null;
 			});
@@ -263,7 +302,8 @@ define([
 
 		//done first after init. This allows the caller and subclass to override / add properties
 		initOpts: function(opts) {
-			var opts = E.merge({}, opts);
+			var opts = E.merge(OPTS, opts);
+			opts.stateFunction = opts.stateFunction || ST.any;
 			return opts;
 		},
 
@@ -272,8 +312,13 @@ define([
 
 			// console.log("DOM:LoadingTemplate", this.id, this.__opts.templatePath);
 
-			var path = [SB_OPTIONS.path, "/templates/", this.__opts.templatePath, ".html"].join("");
-			this.$.load(path, function() {
+			var templateOpts = this.__opts.templatePath.split("#");
+
+			var opts = [SB_OPTIONS.path, "/templates/", templateOpts[0], ".html"];
+			if(templateOpts[1]) {
+				opts.put(" #", templateOpts[1]);
+			}
+			this.$.load(opts.join(""), function() {
 				// console.log("DOM:Parsing done", this.id);
 				self.dirty.bindDelay(self, self.__delay);
 			});
@@ -284,14 +329,14 @@ define([
 		},
 
 		parseChildren: function(node) {
-//			console.log("DOM:parseChildren", this.id);
+			// console.log("DOM:parseChildren", this.id);
 			//parse the resulting HTML for data-template elements.
 			var cel = node || this.$;
 
 			E.each(this.__parsers, function(func,k) {
 				cel.find("[data-"+k+"]").each(function() {
 					var el = $(this);
-					func($(this), el.data());
+					func(el, el.data());
 				});
 			});
 			sb.queue.buffer(this.dirty.bind(this), "_buffer" + this.id, this.__delay, true);
@@ -309,14 +354,14 @@ define([
 			delete opts.require;
 
 			if(src) {
-//				console.log("DOM:CREATECHILDREN: Trying to load: ", this.id, src);
+				//console.log("DOM:CREATECHILDREN: Trying to load: ", this.id, src);
 				require([src], function(El) {
 					//no guarantee of order this happens
 					if(El) {
-//						console.log("DOM Create children: ", self.id);
+						// console.log("DOM Create children: ", self.id);
 						c.push(new El(opts));
 					} else {
-//						console.log("Cannot load SRC:", self.id, src);
+						// console.log("Cannot load SRC:", self.id, src);
 					}
 					sb.queue.buffer(self.dirty.bind(self), "_buffer" + self.id, self.__delay, true);
 				});
@@ -371,13 +416,13 @@ define([
 
 		needsData: function() {
 			return E.reduce(this.__data, function(prev, curr) {
-				return prev || curr.data === null
+				return prev || curr.data === null;
 			},false);
 		},
 
 		canDraw:function() {
-//			console.log("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this.__beforeDrawList.length);			
-			return this.__created && !this.__busy && this.modelsValid() && !this.needsData();
+			// console.log("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this.__beforeDrawList.length,  this.stateValid());			
+			return this.__created && !this.__busy && this.stateValid() && this.modelsValid() && !this.needsData();
 		},
 
 		//sanity before drawing
@@ -388,16 +433,24 @@ define([
 				} else {
 					this.draw();
 				}
-			} else if (this.needsData()) {
-				this.fetchData();
-			} else if(this.__busy) {
-				this.drawBusy();
-			} else {
-				//if the delay is -1, we don't keep calling "dirty"
-				if(this.__canDrawDelay >= 0) {
-//					console.log("Queueing " + this.id);
-					this.__canDrawDelay = E.max(5000/*5 seconds*/,this.__canDrawDelay);
-					sb.queue.buffer(this.__beforeDraw.bind(this), "_buffer" + this.id, this.__delay, true);		
+			} else { 
+				if (this.needsData()) {
+					this.fetchData();
+				}
+				if(this.__busy) {
+					this.drawBusy();
+				} else {
+					//THIS IS INVALID -- REMOVE ALL ITEMS
+					this.cleanup();
+					
+					//if the delay is -1, we don't keep calling "dirty"
+					if(this.__canDrawDelay >= 0) {
+		//					console.log("Queueing " + this.id);
+						this.__canDrawDelay = E.max(5000/*5 seconds*/,this.__canDrawDelay);
+						sb.queue.buffer(this.__beforeDraw.bind(this), "_buffer" + this.id, this.__delay, true);		
+					} else {
+
+					}
 				}
 			}
 		},
@@ -407,6 +460,10 @@ define([
 		},
 
 		drawBusy: function() {
+
+		},
+
+		cleanup: function() {
 
 		}
 

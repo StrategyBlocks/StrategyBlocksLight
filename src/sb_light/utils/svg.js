@@ -54,7 +54,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 					sel.dim(dim, args[i]);
 				}
 			});
-			return sel;
+			return sel;	
 		}
 
 		return ["x","y","width","height"].reduce(function(prev, el) {

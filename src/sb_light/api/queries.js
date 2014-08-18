@@ -500,6 +500,8 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 	};
 
 	q.block = function(b, prop) {
+		//get the string or use path in the "b" object
+		b = E.isStr(b) ? b : (b ? (b.path || b.id) : "" );
 		b = b || ST.state("block");
 		//takes an object or string
 		b = sb.models.find("blocks", b);
@@ -547,7 +549,20 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 			localType = localType.match(/b\w/)[0];
 		}
 		return localType || defaultType;
-	}
+	};
+
+	q.canEditBlock = function(b) {
+		return q.canManageBlock() || q.canUpdateProgress();
+	};
+	q.canManageBlock = function(b, optionalField) {
+		b = q.block(b);
+		return b.is_manager && !b.closed;
+	};
+	q.canUpdateProgress = function(b, optionalField) {
+		b = q.block(b); 
+		return b.is_owner && !b.closed && b.ownership_state != "new";
+	};
+
 
 
 	// q.block = function(b) {
@@ -852,60 +867,65 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 	// //1. takes the previous block id so that the position of the children can reflect
 	// //		where we've come from. 
 	
-	// q.buildStrategyTree = function(prevBlockId) {
-
-	// 	var bpath = q.currentBlockPath();
-	// 	var b = q.currentBlock();
-	// 	var blocks = sb.models.raw("blocks"); 
-	// 	if(!bpath || !b || !blocks) { return null; }
-		
-	// 	var centerList = bpath.reduce(function(prev, el) {
-	// 		var last  = prev.last() || [];
-	// 		prev.put(last.concat([el]));
-	// 		return prev;
-	// 	},[]);
-		
-	// 	var dy = -(centerList.length-1);
-		
-	// 	if(b.children.length) {
-	// 		var cidx = b.children.indexOf(prevBlockId);
-	// 		var cid = b.children[cidx < 0 ? 0 : cidx];
-	// 		centerList.push(centerList.last().concat([cid]));
-	// 	}
-		
-	// 	//temp super parent to our root object to simplify the special cases
-	// 	var superRoot = {};
-	// 	var pnode = superRoot;
+	q.buildStrategyTree = function(prevBlockId) {
+		var b = q.block();
+		var blocks = sb.models.raw("blocks", "path"); 
+		if(!b || !blocks) { return null; }
 		
 
-	// 	//walk down the center
-	// 	centerList.forEach(function(cpath) {
-	// 		var ppath = sb.ext.slice(cpath,0,-1);
-	// 		var pid = ppath.last();
-	// 		var cid  = cpath.last();
-			
-	// 		var siblings = pid ? blocks[pid].children : [cid];
-	// 		var cidx = siblings.indexOf(cid);
-			
-	// 		pnode.children = siblings.map(function(el, idx) {
-	// 			var path = ppath.concat([el]).join("_");
-	// 			var vt = q.blockType(path);
+		//walk up the tree from current block
+		var centerList = [];
+		var cb = b;
+		do {
+			centerList.unshift(cb.path);
+			cb = blocks[cb.parent];
+		} while(cb);
 
-				
-	// 			return {
-	// 				path:path,
-	// 				dy:dy,
-	// 				dx:(idx - cidx),
-	// 				data: blocks[el],
-	// 				viewType: vt
-	// 			};
-	// 		});
+		//add the child 
+		var dy = -(centerList.length-1);
+		if(b.children.length) {
+			var cidx = b.children.indexOf(prevBlockId);
+			var cpath = b.children[cidx < 0 ? 0 : cidx];
+			centerList.push(cpath);
+		}
+		
+		//temp super parent to our root object to simplify the special cases
+		//list is a flat collection of the same nodes
+
+		var superRoot = {list:[]};
+		var pnode = superRoot;
+		
+
+		//walk down the center
+		centerList.forEach(function(cpath) {
+			var b = q.block(cpath);
+			var p = b.parent ? q.block(b.parent) : null;
 			
-	// 		dy += 1;
-	// 		pnode = pnode.children[cidx];
-	// 	});
-	// 	return superRoot.children[0];
-	// };
+			var siblings = p ? p.children : [cpath];
+			var cidx = siblings.indexOf(cpath);
+			
+			pnode.children = siblings.map(function(path, idx) {
+				var cb = blocks[path];
+				return {
+					_parsed:true,
+					id:path,
+					path:path,
+					parent:cb.parent,
+					name:cb.title,
+					dy:dy,
+					dx:(idx - cidx),
+					data: cb,
+				};
+			});
+			//
+			superRoot.list = superRoot.list.concat(pnode.children);
+
+			dy += 1;
+			pnode = pnode.children[cidx];
+		});
+		// return superRoot.children[0];
+		return superRoot.list;
+	};
 
 
 	// q.defaultBlockType = function(type) {

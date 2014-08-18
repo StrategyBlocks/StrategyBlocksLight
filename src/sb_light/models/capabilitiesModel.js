@@ -5,12 +5,16 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 	'use strict';
 
 	var E;
-
 	var Model = _Model.extend({
 		init: function() {
-			this._super("timezones", sb.urls.MODEL_CAPABILITIES);
+			this._authStateCheck = this._authStateCheck || sb.state.authorized;
+			this._super("capabilities", sb.urls.MODEL_CAPABILITIES);
 		},
 		
+
+		_addTimestamp: function() {
+			//ignore this. Not relevant to capabilities
+		},
 	});
 	
 	return Model;	

@@ -15,6 +15,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		_subscriptions:null,
 		_timestamp:null,
 		_sb:null,
+		_authStateCheck:null,
 	
 		init: function(name, urlDef) {
 			if(!name) { 
@@ -28,6 +29,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			E = sb.ext;
 			ST = sb.state;
 
+			this._authStateCheck = this._authStateCheck || ST.normal;
 			this.name = name;
 			this._urlDef = urlDef;
 			this._selectQueue = [];
@@ -57,8 +59,8 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 	
 		get: function() {
 			if(!this._model) {
-				E.debug("Getting the " + this.name + " model.");
-				if(ST.authorized() ) {
+				// E.debug("Getting the " + this.name + " model.");
+				if(this._authStateCheck() ) {
 					E.debug("Forcing the update");
 					ST.forceModelUpdate(this);
 				} else {
@@ -132,7 +134,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		},	
 
 		_handleSession: function() {
-			if(ST.authorized()) {
+			if(this._authStateCheck()) {
 				//force model to fetch itself
 				this.get();
 			} else {
@@ -228,16 +230,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		//usually override by the model subclasses to provide some post-processing on the model elements before consumption 
 		//by a view
 		_massageUpdatedModel: function() {
-			var ts = ST.getTimestamp(this.name);
-
-			this._timestamp = ts;
-
-			console.log("Model Timestamp", this.name, this._timestamp);
-			E.map(this._model, (function(v) {
-				//this can be used for performance reasons to check whether a model has been updated
-				v.__timestamp = ts;
-			}));
-
+			this._addTimestamp();
 		},
 		
 		//build an array cache of the model to make list-fetches / iterations / sorting quicker. 
@@ -245,7 +238,23 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		_resetArrayCache:function() {
 			this._modelArray =E.values(this._model);
 			//E.debug(this.name, this._modelArray.length);
+		},
+		
+		_addTimestamp: function() {
+			var ts = ST.getTimestamp(this.name);
+
+			this._timestamp = ts;
+
+			// console.log("Model Timestamp", this.name, this._timestamp);
+			E.map(this._model, (function(v) {
+				if(!v) {
+					console.log("wtf?");
+				}
+				//this can be used for performance reasons to check whether a model has been updated
+				v.__timestamp = ts;
+			}));
 		}
+
 	});
 	return Abstract;
 });

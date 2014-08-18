@@ -8,12 +8,12 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	var state = {};
 	
 	state.stateKeys = [
-		"session_unknown",
-		"session_normal",
-		"session_payment",
-		"session_invalid",
-		"session_disconnected",
-		"session_startup"
+		/*0*/"session_unknown",
+		/*1*/"session_normal",
+		/*2*/"session_payment",
+		/*3*/"session_invalid",
+		/*4*/"session_disconnected",
+		/*5*/"session_startup"
 	];
 	//create a map
 	state.stateKeys.reduce(function(prev,el,i) {
@@ -244,6 +244,9 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		sb.api.post(sb.urls.url(sb.urls.LOGOUT));
 		state.reset();
 	};
+	state.persistSession = function() {
+		sb.api.post(sb.urls.urls(sb.urls.LOGIN_REMEMBER_ME));
+	};
 	
 	state.changeCompany = function(cid) {
 		state.reset(cid);
@@ -287,6 +290,11 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	state.invalid = function() {	return  storage.context.session == state.session_invalid;	};
 	//has user/company
 	state.authorized = function() {	return storage.context.session == state.session_normal || storage.context.session == state.session_payment; };
+
+	//has user/company
+	state.normal = function() {		return storage.context.session == state.session_normal  };
+	state.payment = function() {	return storage.context.session == state.session_payment  };
+
 
 	//failed server response
 	state.disconnected = function() { return storage.context.session == state.session_disconnected; };
@@ -360,8 +368,11 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		}
 		if(!storage.state.user_id) {
 			E.debug("setting session to unauthorized");
-			if(state.unknown() || state.startup()) {
-				data.flash = {notice:"Please enter your login credentials."};
+			if(state.unknown() ) {
+				data.flash = {
+					notice:"Please enter your login credentials.",
+					devInfo: "This flash message has been overriden by the state controller for initial login check" 
+				};
 			}
 			storage.context.session =  state.session_invalid;
 		} else {
@@ -374,9 +385,6 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			}
 		}
 		
-		if(!state.authorized()) {
-			sb.models.reset();
-		}
 		state.context("flash", data.flash);
 		state.context("errors", data.errors);
 	}
