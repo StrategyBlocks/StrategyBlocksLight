@@ -18,6 +18,8 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.rad90 = E.pi /2;
 	E.rad180 = E.pi;
 	E.rad270 = E.rad180 + E.rad90;
+
+	E.nbsp = '\u00A0';
 	
 
 	E._unique = 0;

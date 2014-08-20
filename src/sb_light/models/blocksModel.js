@@ -82,12 +82,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		//by a view
 		_massageUpdatedModel: function() {
 			this._super();
-			var root = this._model[Q.rootBlock("id")];
-			if(!root) {
-				root = E._.find(this._model, function(v) {
-					return !v.parents || v.parents.length === 0;
-				});
-			}
+			var root = E._.find(this._model, function(v) {
+				return !v.parents || v.parents.length === 0;
+			});
 			this._massage(root, null, 0, 0, (new Date()).getTime());
 
 			if(!Q.block()) {
@@ -201,10 +198,13 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			}
 			var pm = this._pathModel;
 
-			b = Q.block(b);
+			if(E.isStr(b)) {
+				b = this._model[b.split("_").last()];
+			}
+
 			var bpath = ppath ? [ppath, b.id].join("_") : b.id;
-			var p = Q.block(ppath);
-			var pinfo = p ? b.parents.findKey("id", p.id).value : null;
+			var p = ppath ? this._model[ppath.split("_").last()] : null;
+			var pinfo = p ? E._.find(b.parents, {parent_id:p.id}) : null;
 
 
 			var csize = 0;

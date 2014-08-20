@@ -554,15 +554,16 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 	q.canEditBlock = function(b) {
 		return q.canManageBlock() || q.canUpdateProgress();
 	};
-	q.canManageBlock = function(b, optionalField) {
+	q.canManageBlock = function(b) {
 		b = q.block(b);
 		return b.is_manager && !b.closed;
 	};
-	q.canUpdateProgress = function(b, optionalField) {
+	q.canUpdateProgress = function(b) {
 		b = q.block(b); 
 		return b.is_owner && !b.closed && b.ownership_state != "new";
 	};
-
+	q.isOwner = q.canUpdateProgress;
+	q.isManager = q.canManageBlock;
 
 
 	// q.block = function(b) {
