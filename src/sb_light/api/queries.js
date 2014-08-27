@@ -502,11 +502,19 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 	q.block = function(b, prop) {
 		//get the string or use path in the "b" object
 		b = E.isStr(b) ? b : (b ? (b.path || b.id) : "" );
-		b = b || ST.state("block");
+		b = b === undefined ? null :  (b || ST.state("block"));
 		//takes an object or string
 		b = sb.models.find("blocks", b);
 		return b ? (prop ? b[prop] : b) : null;
 	};
+
+	q.parentBlock = function(b) {
+		b = q.block(b);
+		if(b && b.parent) {
+			return q.block(b.parent);
+		}
+		return null;
+	}
 
 
 	q.blockStatusClass= function(b) {
@@ -560,10 +568,55 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 	};
 	q.canUpdateProgress = function(b) {
 		b = q.block(b); 
-		return b.is_owner && !b.closed && b.ownership_state != "new";
+		return b.is_owner && !b.closed && b.ownership_state != "new" && b.leaf;
 	};
 	q.isOwner = q.canUpdateProgress;
 	q.isManager = q.canManageBlock;
+
+
+	q.progressRollupMethod = function(parent, companyFallback/*true*/) {
+		return (parent.progress_weight_method < 0 && companyFallback) ? q.companyRollup() : parent.progress_weight_method;
+	};
+
+	q.linkedRollupMethod = function(parent, companyFallback/*true*/) {
+		return (parent.linked_rollup_method < 0 && companyFallback) ? q.companyLinkedRollup() : parent.linked_rollup_method;
+	};
+
+	//PARENT NEEDS TO BE AN OBJECT, as do CHILDREN
+	q.progessWeights = function(parent, children) {
+		var idx = parent.progress_weight_method < 0 ? q.companyRollup() : parent.progress_weight_method;
+		return E.map(children, function(c) {
+			return q._blockProgressWeightMethods[idx](c, children);
+		});
+	};
+
+	q._blockProgressWeightCustom = function(block, siblings) {
+		return block.custom_progress_weight || 0;
+	};
+
+	q._blockProgressWeightDuration = function(block, siblings) {
+		var total = E.reduce(siblings, function(prev, curr) {
+			return prev + E.daysDiff(E.moment(curr.end_date), E.moment(curr.start_date));
+		}, 0);
+		return (E.daysDiff(E.moment(block.end_date), E.moment(block.start_date)) / total) * 100;
+	};
+
+	q._blockProgressWeightEffort = function(block, siblings) {
+		return block.days_of_effort || 0;
+	};
+
+	q._blockProgressWeightPriority = function(block, siblings) {
+		return block.priority || 0;
+	};
+
+	q._blockProgressWeightMethods = [
+		q._blockProgressWeightCustom,
+		q._blockProgressWeightDuration,
+		q._blockProgressWeightEffort,
+		q._blockProgressWeightPriority	
+	];
+
+
 
 
 	// q.block = function(b) {

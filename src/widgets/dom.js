@@ -31,9 +31,12 @@ define([
 		__parsers:null,
 		__root:null,
 		__created:false,
+		__dirty: false,
+		__busy:false,
 		__delay:50,
 		__canDrawDelay:-1,
 		__beforeDrawList:null,
+		__beforeDrawWaiting:"",
 
 		//do not override
 		init:function(opts) {
@@ -95,18 +98,12 @@ define([
 				//D3 selection
 				"sel": 		{get: function() { 	return d3.select(this.dom); 	}},
 				"id": 		{get: function() { 	return this.__id; 	}},
-				"delay": 	{set: function(x) { this.__delay = x; }}
+				"delay": 	{set: function(x) { this.__delay = x; }},
+				"busy": 	{set: function(x) { this.__busy = x; }}
 			});
 
-			if(o.templatePath) {
-				this.addBeforeDraw(this.bind("loadTemplate"));
-				this.addBeforeDraw(this.bind("parseChildren"));
-				this.addBeforeDraw(this.bind("postCreate"));
-				this.create();
-			} else {
-				this.create();
-				this.postCreate.bindDelay(this, this.__delay);
-			}
+			this.cleanup();
+			this.create();
 		},
 
 		//override this for startup stuff
@@ -139,12 +136,15 @@ define([
 
 		//This function is called after creation when "canDraw" is true, but postCreate hasn't been called yet.
 		//it generally signals the loading of the html templates
-		postCreate:function() {
-			// console.log("postCreate", this.id);
+		postCreate:function(cb) {
+		 	console.log("postCreate", this.id, cb);
 
-			//override for one-off post-creation stuff
-			this.$.find("input[type='checkbox']").bootstrapSwitch();
-			this.dirty.bindDelay(this, this.__delay);
+
+			if(cb) {
+				cb();
+			} else {
+				console.log("wtf?");
+			}
 		},
 
 		destroy: function() {
@@ -319,8 +319,7 @@ define([
 				opts.put(" #", templateOpts[1]);
 			}
 			this.$.load(opts.join(""), function() {
-				// console.log("DOM:Parsing done", this.id);
-				self.dirty.bindDelay(self, self.__delay);
+				self.beforeDrawDone();
 			});
 		},
 
@@ -328,7 +327,11 @@ define([
 			this.__parsers[k] = func;
 		},
 
-		parseChildren: function(node) {
+		parseChildren: function(node ,cb) {
+			if(arguments.length == 1) {
+				cb = node;
+				node = null;
+			}
 			// console.log("DOM:parseChildren", this.id);
 			//parse the resulting HTML for data-template elements.
 			var cel = node || this.$;
@@ -339,7 +342,7 @@ define([
 					func(el, el.data());
 				});
 			});
-			sb.queue.buffer(this.dirty.bind(this), "_buffer" + this.id, this.__delay, true);
+			this.beforeDrawDone();
 		},
 
 		createChildren:function(el, opts) {
@@ -368,6 +371,11 @@ define([
 			} else {
 				sb.queue.buffer(this.dirty.bind(this), "_buffer" + this.id, this.__delay, true);
 			}
+		},
+
+		beforeDrawDone: function() {
+			this.__beforeDrawWaiting = "";
+			this.dirty();
 		},
 
 		dirty: function(delay) {
@@ -422,14 +430,24 @@ define([
 
 		canDraw:function() {
 			// console.log("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this.__beforeDrawList.length,  this.stateValid());			
-			return this.__created && !this.__busy && this.stateValid() && this.modelsValid() && !this.needsData();
+			return this.__created && !this.__busy && !this.__beforeDrawWaiting && 
+					this.stateValid() && this.modelsValid() && !this.needsData();
 		},
 
 		//sanity before drawing
 		__beforeDraw:function() {
 			if(this.canDraw()) {
 				if(this.__beforeDrawList.length) {
-					this.__beforeDrawList.shift()();
+					this.__beforeDrawWaiting = true;
+					var df = this.__beforeDrawList.shift();
+					if(E.isStr(df)) {
+						this[df].call(this, this.bind("_handleDoneBeforeDraw"));
+					} else if (E.isFunc(df)) {
+						df(this.bind("_handleDoneBeforeDraw"));
+					} else {
+						//not a valid function
+						this._handleDoneBeforeDraw();
+					}
 				} else {
 					this.draw();
 				}
@@ -441,7 +459,9 @@ define([
 					this.drawBusy();
 				} else {
 					//THIS IS INVALID -- REMOVE ALL ITEMS
-					this.cleanup();
+					if(this.__dirty) {
+						this.cleanup();
+					}
 					
 					//if the delay is -1, we don't keep calling "dirty"
 					if(this.__canDrawDelay >= 0) {
@@ -455,7 +475,13 @@ define([
 			}
 		},
 
+		_handleDoneBeforeDraw: function() {
+			this.__beforeDrawWaiting = false;
+			this.dirty();
+		},
+
 		draw: function() {
+			this.__dirty = true;
 
 		},
 
@@ -464,7 +490,13 @@ define([
 		},
 
 		cleanup: function() {
-
+			this.sel.html("");
+			if(this.__opts.templatePath) {
+				this.addBeforeDraw("loadTemplate");
+				this.addBeforeDraw("parseChildren");
+			}
+			this.addBeforeDraw("postCreate");
+			this.__dirty = false;
 		}
 
 	});

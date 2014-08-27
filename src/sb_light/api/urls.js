@@ -1,6 +1,8 @@
 
 
 define(['sb_light/globals'], function(sb) {
+	'use strict';
+
 	//console.log("urls", sb.version);
 	var _regExprs = {};
 
@@ -28,19 +30,19 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_TIMEZONES: 	{url: "/companies/timezones.js", 		post:false},
 		MODEL_DASHBOARD: 	{url: "/reports/dashboard_layout.js", 	post:false},
 			
-		BLOCKS_CONTEXT:					{url: "/blocks/context/%id%.js"},
-		BLOCKS_CLOSE: 					{url: "/blocks/close/%id%.js", deleteId: true},
-		BLOCKS_MANAGE_CHILDREN: 		{url: "/blocks/manage_children/%id%.js", deleteId: true},
-		BLOCKS_DELETE :					{url: "/blocks/%type%/%id%.js", normalParams:true},
-		BLOCKS_DOCUMENTS: 				{url: "/blocks/documents/%id%.js"},
-		BLOCKS_IMPORT 	:				{url: "/blocks/import/%id%.js"},
+		BLOCKS_CONTEXT:					{url: "/blocks/context/%id%.js", 				post:false},
+		BLOCKS_CLOSE: 					{url: "/blocks/close/%id%.js", 					post:true,		deleteId: true},
+		BLOCKS_MANAGE_CHILDREN: 		{url: "/blocks/manage_children/%id%.js", 		post:true,		deleteId: true},
+		BLOCKS_DELETE :					{url: "/blocks/%type%/%id%.js", 				post:true,		normalParams:true},
+		BLOCKS_DOCUMENTS: 				{url: "/blocks/documents/%id%.js",				post:false},
+		BLOCKS_IMPORT 	:				{url: "/blocks/import/%id%.js",					post:true},
 		BLOCKS_INVITE 	:				{url: "/blocks/invite/%id%.js"},
 		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/make_public/%id%.js", normalParams:true},
 		//BLOCKS_MOVE_POSITION 			{url: "/blocks/move_position_%dir%/%id%.js"},
 		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true},
 		BLOCKS_PROPERTIES: 				{url: "/blocks/%type%/%id%.js"},
 		BLOCKS_RELOCATE: 				{url: "/blocks/reassign_parent/%id%.js", normalParams:true},
-		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", deleteId: true},
+		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", 				post:true,		deleteId: true},
 		BLOCKS_UNWATCH: 				{url: "/blocks/unwatch/%id%.js"},
 		BLOCKS_WATCHING_USERS: 			{url: "/blocks/watching_users/%id%.js"},
 		BLOCKS_TAGGED: 					{url: "/blocks_for_tag/%name%.js"},

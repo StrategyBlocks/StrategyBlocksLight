@@ -7,8 +7,13 @@ define(['sb_light/globals'], function(sb) {
 		controller.invoke(sb.urls.LOGIN_FORGOT_PASSWORD, {username:email}, cb,errCb, sb.state.invalid);
 	};
 
+
+
 	controller.blockUpdate = function( changes, cb) {
 		controller.invoke(sb.urls.BLOCKS_UPDATE,changes, cb,cb);
+	};
+	controller.blockManageChildren = function( changes, cb) {
+		controller.invoke(sb.urls.BLOCKS_MANAGE_CHILDREN,changes, cb,cb);
 	};
 	controller.blockClose = function(id, closeObj, cb) {
 		//{"rating":[0-5], "comment":String}

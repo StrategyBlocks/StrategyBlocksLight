@@ -39,6 +39,8 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 		//"uncontrolled" event data, like authentication state, flash message, errors, etc...
 		//stuff that doesn"t belong in a url, but reflects the current state of the app
+		//This stuff is unlikely to be preserved in url / localstorage. A reload of the webpage
+		//should remove all this stuff.
 		context: {
 			flash:null,
 			session: state.session_startup,

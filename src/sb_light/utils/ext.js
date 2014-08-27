@@ -315,6 +315,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		return udf;
 	};
 	E.serverDate = function ext_serverDate(d,format) { return E.moment(d,format).format(E.serverFormat); };
+	E.serverMoment = function ext_serverDate(d) { return E.moment(d,E.serverFormat); };
 	E.month = function ext_date(d, format) { return E.moment(d,format).format("MMM (YYYY)");	};
 	E.userDate = function ext_userDate(d, format) { return E.moment(d,format).format( E.userFormat()); };
 	E.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
@@ -880,15 +881,28 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	};
 
 	//return the number of differences from diff to orig
-	E.changes = function ext_changes(diff,orig) {
+	E.changes = function ext_changes(diff,orig, keys) {
+		keys = keys || [];
 		var res = {};
 		orig = orig || {};
 		E.each(diff, function(v,k) {
-			if(orig[k] != v) {
+			if( (!keys.length || keys.indexOf(k) >-1) &&  orig[k] != v) {
 				res[k] = v;
 			}
 		});
 		return res;
+	};
+	//return the number of differences from diff to orig
+	E.hasChanges = function ext_changes(diff,orig, keys) {
+		keys = keys || [];
+		var res = {};
+		orig = orig || {};
+		return E._.some(diff, function(v,k) {
+			if( (!keys.length || keys.indexOf(k) >-1) &&  orig[k] != v) {
+				return true;
+			}
+			return false;
+		});
 	};
 
 

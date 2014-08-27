@@ -2,6 +2,8 @@
 
 
 define(['sb_light/globals'], function(sb) {
+	'use strict';
+
 	var api = {};
 
 	var _errorData = null;
@@ -37,30 +39,32 @@ define(['sb_light/globals'], function(sb) {
 		params = params || {};
 		sb.state.addTimestamps(params);
 
-		var opts = {
+		var opts = sb.ext.merge({
 			url: url,
 			type: (post ? "POST" : "GET"),
 			data:params,
 			dataType: 'json',
 			context: api,
-			success: _success.bind(null, sb.ext.slice(arguments)),
-			error: _failure.bind(null, sb.ext.slice(arguments))
-		};
+		}, overrides);
+
+		var args = {url:url, params:params, post:post, opts:opts, success:success, failure:failure};
+		opts.success = _success.bind(null, args)
+		opts.error = _failure.bind(null, args)
 
 		api.ajax(sb.ext.merge(opts, overrides||{}));
 	}
 
-	function _success(reqArray, data) {
-		sb.ext.debug("SUCCESS: SB_Api", reqArray.join(" "));
+	function _success(reqArgs, data) {
+		sb.ext.debug("SUCCESS: SB_Api", reqArgs.url);
 		_errorTimeout = _errorTimeoutDefault;
 		
 		var wasValid = sb.state.authorized();
 		
-		var opts = reqArray && reqArray[5];
+		var opts = reqArgs.opts;
 
 		//skip post-processing if we're dealing with non-json responses
 		if(opts && opts.dataType != "json") {
-			reqArray[3](data);
+			reqArgs.success(data);
 			_popQueue();
 			return;
 		}
@@ -69,12 +73,12 @@ define(['sb_light/globals'], function(sb) {
 			//success function in the original call
 			var errors = sb.ext.getResultMessages(data).errors;
 			
-			if(!errors && reqArray[3]) {
-				reqArray[3](data);
+			if(!errors && reqArgs.success) {
+				reqArgs.success(data);
 				_popQueue();
 			}
-			if(errors && reqArray[4]) {
-				reqArray[4](data);
+			if(errors && reqArgs.failure) {
+				reqArgs.failure(data);
 				_popQueue();
 			}
 		} else {
@@ -82,8 +86,8 @@ define(['sb_light/globals'], function(sb) {
 				//clear the queue
 				_requestQueue.length = 0;
 			}
-			if(reqArray[4]) {
-				reqArray[4](data);	
+			if(reqArgs.failure) {
+				reqArgs.failure(data);	
 			}	
 		}
 	}
@@ -96,7 +100,7 @@ define(['sb_light/globals'], function(sb) {
 	function _pushQueue (data) {
 		var key = data.url + (JSON.stringify(data.params) || "");
 		sb.ext.debug("Pushing request on the queue: ", key);
-		if(_requestQueue.filter(function(el) { return el.key == key; } ).length == 0) {
+		if(_requestQueue.filter(function(el) { return el.key == key; } ).length === 0) {
 			_requestQueue.push({key:key, data:data});
 		}
 	}
