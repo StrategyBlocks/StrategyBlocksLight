@@ -13,7 +13,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		
 
 		_processResponse: function(data) {
-			this._super(data);
+			return this._super(data);
 		}
 	});
 	

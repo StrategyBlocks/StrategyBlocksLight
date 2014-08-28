@@ -11,7 +11,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			this._super("health_calculations", sb.urls.MODEL_HEALTHS);
 		},
 		_processResponse: function(data) {
-			this._super(data);
+			return this._super(data);
 		}
 		
 	});

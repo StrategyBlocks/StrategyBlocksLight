@@ -37,6 +37,7 @@ define([
 		__canDrawDelay:-1,
 		__beforeDrawList:null,
 		__beforeDrawWaiting:"",
+		__modelDirty:"dirty",
 
 		//do not override
 		init:function(opts) {
@@ -198,7 +199,7 @@ define([
 			var args = E.slice(arguments, 0);
 			var m = sb.models;
 			var ms = this.__models;
-			var df = this.bind("dirty");
+			var df = this.bind(this.__modelDirty);
 			args.forEach(function(v,i) {
 				if(!ms[v]) {
 					ms[v] = m.subscribe(v, df);
@@ -374,7 +375,7 @@ define([
 		},
 
 		beforeDrawDone: function() {
-			this.__beforeDrawWaiting = "";
+			this.__beforeDrawWaiting = false;
 			this.dirty();
 		},
 

@@ -98,7 +98,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			this._subscriptions[id] = cb;
 			var m = this.get();
 			if(m) {
-				sb.queue.add(cb, id, 0);
+				sb.queue.add(cb, id, 50);
 			}
 			return id;
 		},
@@ -155,8 +155,9 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		
 		**************************************************************/
 		_handleUpdate: function(response) {
-			this._processResponse(response);
-			if(!this._model) { 
+			var processed = this._processResponse(response);
+			if(!this._model || !processed) {
+				//don't trigger the update if there's no model or we didn't do anything 
 				return;
 			} 
 			this._publish();
@@ -181,15 +182,32 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		_processResponse: function(data) {
 			this._model = this._model || {};
 			
-			E.debug("Processing Model", this.name);
 			
 			//The following order assumes a faulty server and ensures we don't update  or delete missing
 			//items.
-			this._addItems(data.added);
-			
-			this._updateItems(data.updated);
-			
-			this._deleteItems(data.deleted);
+			var ae = E.length(data.added) === 0;
+			var ue = E.length(data.updated) === 0;
+			var de = E.length(data.deleted) === 0;
+
+			//cover ass because sever sometimes sends me empty stuff. This should get fixed,
+			//but in the meantime, don't touch the model if there's nothing here, especially the 
+			//timestamp and arraycache
+			if(ae && ue && de) { 
+				// console.log("MODEL: ", this.name, " has an empty HLM");
+				return false; 
+			}
+			E.debug("Processing Model", this.name, ae, ue, de);
+
+			if(!ae) { 
+				this._addItems(data.added);
+			}
+			if(!ue) {
+				this._updateItems(data.updated);
+			}
+
+			if(!de) {
+				this._deleteItems(data.deleted);
+			}			
 			
 			
 			this._massageUpdatedModel();
@@ -198,6 +216,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			this._resetArrayCache();
 
 
+			return true;
 		},
 	
 		
