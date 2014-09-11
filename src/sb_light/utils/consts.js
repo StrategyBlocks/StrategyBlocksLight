@@ -29,6 +29,8 @@ define(['sb_light/globals'], function(sb) {
 		return 	types;
 	};
 
+
+
 	consts.blockRollupTypes = function() { 
 		return [
 			{key:"progressRollupDefault", 	name:"Default", 	value: -1},	//-1
@@ -48,6 +50,14 @@ define(['sb_light/globals'], function(sb) {
 		]
 	};
 	
+
+	consts.mapNodeTypes = function() {
+		return 	[
+			{key:"status", 	nodeType:"map-node-block-status", name:"Circles"},
+			{key:"text",	nodeType:"map-node-block-title", name:"Text"},
+			{key:"block",	nodeType:"map-node-block-block", name:"Block"}
+		];
+	};
 	
 	
 	return consts;

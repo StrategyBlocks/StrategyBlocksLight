@@ -70,13 +70,18 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 
 		_handleUpdate: function(update) {
-			this._progress = null;
-			this._health = null;
-			this._npv = null;
-			this._properties = {};
+			var ts = this._timestamp;
 
 			this._super(update);
-		},
+			
+			if(ts != this._timestamp) {
+				this._progress = null;
+				this._health = null;
+				this._npv = null;
+				this._properties = {};
+			}
+
+		}, 
 		
 		//usually override by the model subclasses to provide some post-processing on the model elements before consumption 
 		//by a view
@@ -220,6 +225,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 								b.progress_color == "red" ? "bad" : (b.progress_color == "yellow" ? "warning" : "good")
 							)
 						)),
+				overdue: E.daysDiff(E.today(), E.serverMoment(b.end_date)) > 0,
 				is_root:(depth===0),
 				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
 				level_sort: (p ? (p.levelPath + "." + pos) : "L1"),

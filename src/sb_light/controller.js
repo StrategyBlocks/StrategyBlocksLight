@@ -19,6 +19,17 @@ define(['sb_light/globals'], function(sb) {
 		//{"rating":[0-5], "comment":String}
 		controller.invoke(sb.urls.BLOCKS_CLOSE, sb.ext.mixin({id:id}, closeObj), cb,cb);
 	};
+	// controller.blockMove = function(id, left, cb) {
+	// 	// var vars:Object = { relative_to_id:s.id, parent_id:p.id };
+	// 	var pb = sb.queries.
+	// 	var args = {id: id, }
+
+	// 	controller.invoke(sb.urls.BLOCKS_MOVE, sb.ext.mixin({id:id}, closeObj), cb,cb);
+	// };
+	controller.blockMoveRight = function(id, closeObj, cb) {
+		//{"rating":[0-5], "comment":String}
+		controller.invoke(sb.urls.BLOCKS_CLOSE, sb.ext.mixin({id:id}, closeObj), cb,cb);
+	};
 	controller.blockPublish = function(id, children, cb) {
 		//children:bool
 		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, children:children}, cb,cb);

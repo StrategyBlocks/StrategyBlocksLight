@@ -15,7 +15,8 @@ define([
 	var OPTS = {
 		appendTo: 		null,
 		idKey:			null,
-		stateFunction: 	null
+		stateFunction: 	null,
+		typeName:		"Dom"
 	};
 
 	var Dom = Class.extend({
@@ -38,6 +39,8 @@ define([
 		__beforeDrawList:null,
 		__beforeDrawWaiting:"",
 		__modelDirty:"dirty",
+		__typeName:"Dom",
+		__differences:null,
 
 		//do not override
 		init:function(opts) {
@@ -100,7 +103,8 @@ define([
 				"sel": 		{get: function() { 	return d3.select(this.dom); 	}},
 				"id": 		{get: function() { 	return this.__id; 	}},
 				"delay": 	{set: function(x) { this.__delay = x; }},
-				"busy": 	{set: function(x) { this.__busy = x; }}
+				"busy": 	{set: function(x) { this.__busy = x; }},
+				"typeName":	{get: function() { return this.__opts.typeName; }}
 			});
 
 			this.cleanup();
@@ -130,15 +134,12 @@ define([
 			// console.log("create", this.id);
 		},
 
-		domById: function(id) {
-			return DOM_REGISTER[id] || null;
-		}, 
 
 
 		//This function is called after creation when "canDraw" is true, but postCreate hasn't been called yet.
 		//it generally signals the loading of the html templates
 		postCreate:function(cb) {
-		 	console.log("postCreate", this.id, cb);
+		 	// console.log("postCreate", this.id, cb);
 
 
 			if(cb) {
@@ -192,7 +193,26 @@ define([
 			}
 		},
 
+		addDifferenceCheck: function(name, func) {
+			this.__differences = this.__differences || {};
+			this.__differences[name] = {cache:null, func:func};
+		},
 
+		hasDifferences: function() {
+			if(!this.__differences) { return true;}
+
+			var id = this.id;
+			return E._.some(this.__differences, function(v) {
+				var res = v.func();	
+				var diff = v.cache != res;
+				if(diff) {
+					console.log("HAS DIFFERENCE", id, res, v.cache);
+				}
+				return diff;
+			});
+
+
+		},
 
 		//which models this widget subscribes to
 		models: function(/*string list...*/) {
@@ -450,7 +470,13 @@ define([
 						this._handleDoneBeforeDraw();
 					}
 				} else {
-					this.draw();
+					if(this.hasDifferences()) {
+						this.draw();
+						//cache differences
+						E.each(this.__differences, function(v) {
+							v.cache = v.func();
+						});
+					}
 				}
 			} else { 
 				if (this.needsData()) {
@@ -501,6 +527,14 @@ define([
 		}
 
 	});
+
+	Dom.domById = function(id) {
+		return DOM_REGISTER[id] || null;
+	}; 
+	Dom.domByEl = function(el) {
+		return Dom.domById(el.id);
+	}; 
+
 
 	return Dom;
 

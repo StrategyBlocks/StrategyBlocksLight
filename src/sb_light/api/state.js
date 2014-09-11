@@ -118,7 +118,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		var s = watching[group];
 		//var list = s[type] || [];
 		var value = state[group](type);
-		//E.debug("Publish: ", type, value);
+		// E.debug("Publish: ", type, value);
 		E.each(s[type], function(v) {
 			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});
@@ -304,9 +304,14 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	//returns true / false depending on whether the response session is valid
 	state.update = function(data) {
 
+		var session = state.context("session");
+
 		_updateSession(data);
 		_updateModels(data);
-		sb.queue.add(state.publish.bind(state, "context", "session"), "sb_state_publish_context_session");
+
+		if(session != state.context("session")) {
+			sb.queue.add(state.publish.bind(state, "context", "session"), "sb_state_publish_context_session");
+		}
 
 		return state.authorized();
 	};

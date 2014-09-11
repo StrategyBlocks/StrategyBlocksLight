@@ -11,7 +11,12 @@
 	nature of the models. 
 ************************/
 
-define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'], function(sb, moment, E, ST) {
+define(['sb_light/globals', 
+		"moment",
+		"accounting", 
+		"sb_light/utils/ext", 
+		'sb_light/api/state'
+], function(sb, moment, accounting,  E, ST) {
 	
 	'use strict';
 	var q = {};
@@ -307,8 +312,9 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 	//DISPLAY purposes
 	q.metricActual = function(id) {
 		var m = q.metric(id);
+		var ma = accounting.formatNumber(m.last_actual_value);
 		return m ? 
-			(m.unit_before ? E.join("", m.unit, m.last_actual_value) : E.join(" ", m.last_actual_value, m.unit) ) : 
+			(m.unit_before ? E.join("", m.unit, ma) : E.join(" ", ma, m.unit) ) : 
 			"--"
 		;
 	};
@@ -316,18 +322,26 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 	//DISPLAY purposes
 	q.metricTarget = function(id) {
 		var m = q.metric(id);
+		var mt = accounting.formatNumber(m.last_target_value);
 		return m ? 
-			(m.unit_before ? E.join("", m.unit, m.last_target_value) : E.join(" ", m.last_target_value, m.unit) ) : 
+			(m.unit_before ? E.join("", m.unit, mt) : E.join(" ", mt, m.unit) ) : 
 			"--"
 		;
 	};
 	q._trendMap = {
-		"Down": "fa fa-arrow-circle-down",
-		"Up": "fa fa-arrow-circle-up",
-		"Flat": "fa fa-arrow-circle-right"
+		"Down": "fa fa-lg fa-arrow-circle-down",
+		"Up": "fa fa-lg fa-arrow-circle-up",
+		"Flat": "fa fa-lg fa-arrow-circle-right"
 	};
-	//DISPLAY purposes
+
 	q.metricTrendClass = function(id) {
+		var m = q.metric(id);
+		if(!m) { return ""; }
+		return "trend" + m.trend;
+	};
+
+	//DISPLAY purposes
+	q.metricTrendMarkup = function(id) {
 		var m = q.metric(id);
 		return "<i class='" + (q._trendMap[m.trend]) + "'></i>";
 
@@ -339,8 +353,15 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 		"Bad": "statusBad",
 	};
 
-	//DISPLAY purposes
 	q.metricStatusClass = function(id) {
+		var m = q.metric(id);
+		if(!m) { return ""; }
+
+		return q._statusMap[m.status];
+	};
+
+	//DISPLAY purposes
+	q.metricStatusMarkup = function(id) {
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
@@ -434,6 +455,91 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 	}
 
 
+	q.progressChartData = function(progressData, bid) {
+		var pd = progressData[bid];
+		if(!pd) { return null;}
+
+		var timer = E.moment();
+		var percent = true;
+		var btg = false;
+		var start = E.min(pd.tolerance.range_end, pd.tolerance.range_end)/100;
+		var end = E.max(pd.tolerance.range_start, pd.tolerance.range_end)/100;
+		var today = E.today();
+		var targets  = (pd.target && pd.target.length) ? E._.cloneDeep(pd.target) : [{date:today, value:0}];
+		var actuals  = (pd.values && pd.values.length) ? E._.cloneDeep(pd.values) : [{date:today, value:0}];
+
+		
+		targets.sort(E.sortFactory("date", E.sortDate));
+		actuals.sort(E.sortFactory("date", E.sortDate));
+
+		var targetDates = E.values(targets, "date");
+		var actualDates = E.values(actuals, "date");
+
+		var targetValues = E.values(targets, "value");
+		var actualValues = E.values(actuals, "value");
+
+		var upperValues = targetValues.map(function(v) {
+			return v + (percent ? (v*end) : end );
+		});
+		var lowerValues = targetValues.map(function(v) {
+			return v + (percent ? (v*start) : start );
+		});
+		var sv = E._.union(targetValues,actualValues,upperValues,lowerValues).sort(E.sortNumber);
+
+		var actualsMap = E.toObject(actuals, "date");
+		//ceate a unique, sorted list of dates. 
+		var dates = E._.union([today], targetDates, actualDates).sort(E.sortDate);
+
+		//convert date strings to date objects for the time scales
+		var dm = function(v) { return E.date(v); };
+		var td = targetDates.map(dm);
+		var ad = actualDates.map(dm);
+
+		var ascale = d3.time.scale().domain(ad).range(actualValues);
+		var tscale = d3.time.scale().domain(td).range(targetValues);
+		var upperScale = d3.time.scale().domain(td).range(upperValues);
+		var lowerScale = d3.time.scale().domain(td).range(lowerValues);
+
+		var res = {
+			td:targetDates,				tv:targetValues,
+			ad:actualDates,				av:actualValues,
+			as:ascale,					ts:tscale,
+			us:upperScale,				ls:lowerScale,
+			uv:upperValues,				lv:lowerValues,
+		};
+
+		res.series = E.map(dates, function(ds) {
+			var d = E.date(ds);
+			var t = tscale(d);
+			var a = ascale(d);
+			var v = (a ? ((a-t)/a) : Number.POSITIVE_INFINITY);
+			var u = upperScale(d);
+			var l = lowerScale(d);
+			var uv = (u ? ((u-t)/u) : Number.POSITIVE_INFINITY);
+			var lv = (l ? ((l-t)/l) : Number.POSITIVE_INFINITY);
+
+			return {
+				date:d,
+				_dateStr: ds,
+				target:t,
+				actual:a,
+				upper:u,
+				lower:l,
+				variance:v,
+				upperVariance:uv,
+				lowerVariance:lv,
+				overdue: (E.daysDiff(end, d) > 0),
+				comment:(actualsMap[ds] ? actualsMap[ds].comment : "")
+			};
+		});
+
+		// console.log("ProgressChart Timer: ", E.moment().diff(timer));
+		return res;
+	}
+
+
+
+
 	// q.metricData = function(id) {
 	// 	var m = q.metric(id);
 	// 	// if(m.metricData) {
@@ -492,17 +598,20 @@ define(['sb_light/globals', "moment", "sb_light/utils/ext", 'sb_light/api/state'
 		BLOCKS
 	*********************************/
 
-	q.rootBlock = function(prop) {
-		var c = q.company();
+	q.rootBlock = function() {
 		var ba = sb.models.get("blocks").rawArray();
-		var rb = c ? c.root_block : (ba? ba[0]: null);
+		if(ba) {
+			return E._.find(ba, {is_root:true});
+		}
+		var c = q.company();
+		var rb = c ? c.root_block : null;
 		return rb ? q.block(rb.id, prop) : null;
 	};
 
 	q.block = function(b, prop) {
 		//get the string or use path in the "b" object
-		b = E.isStr(b) ? b : (b ? (b.path || b.id) : "" );
-		b = b === undefined ? null :  (b || ST.state("block"));
+		b = E.isStr(b) ? b : (b ? (b.path || b.id) : b );
+		b = (b || b === undefined) ? (b || ST.state("block")) : null;
 		//takes an object or string
 		b = sb.models.find("blocks", b);
 		return b ? (prop ? b[prop] : b) : null;

@@ -152,7 +152,8 @@ define([
 			this.parentDom.appendChild(this._dom);
 			this._created = true;
 
-			$(this.dom).on("resize change", this.bind("dirty"));
+			$(this.dom).on("resize", this.bind("resizeDirty"));
+			$(this.dom).on("change", this.bind("changeDirty"));
 			//E.debug("created", this._name);
 		},
 
@@ -228,7 +229,7 @@ define([
 			var args = E.slice(arguments, 0);
 			var m = this._sb.models;
 			var ms = this._models;
-			var df = this.bind("dirty");
+			var df = this.bind("modelDirty");
 			args.forEach(function(v,i) {
 				ms[v] = m.subscribe(v, df);
 			});
@@ -383,7 +384,7 @@ define([
 			}
 			if(arguments.length > 1) {
 				this[innerName] = value;
-				this.dirty();
+				this.propDirty();
 				return this;
 			}
 			return this[innerName];
@@ -494,6 +495,27 @@ define([
 			}
 		},
 
+		propDirty: function() {
+			console.log("Widget", this.id, "PROP DIRTY");
+			this.dirty();
+		},
+		modelDirty: function() {
+			console.log("Widget", this.id, "MODEL DIRTY");
+			this.dirty();
+		},
+		afterApplyDirty: function() {
+			console.log("Widget", this.id, "AFTER APPLY DIRTY");
+			this.dirty();
+		},
+		resizeDirty: function() {
+			console.log("Widget", this.id, "RESIZE DIRTY");
+			this.dirty();
+		},
+		changeDirty: function() {
+			console.log("Widget", this.id, "CHANGE DIRTY");
+			this.dirty();
+		},
+
 		dirty: function() {
 			if(this && this._sb) {
 				//this._beforeDraw.bindDelay(this,this._delay);
@@ -522,7 +544,7 @@ define([
 			// 	v.invalidate();
 			// });
 
-			this.dirty();
+			this.afterApplyDirty();
 		},
 
 

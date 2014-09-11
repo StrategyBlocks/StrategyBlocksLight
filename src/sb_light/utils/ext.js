@@ -598,7 +598,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
 
-	E.healthColor = function ext_healthColor(data) { return (["#196419","#7d741f","#7d1f1f"])[data.status+1]; };
+	E.healthColor = function ext_healthColor(data) { return (["#67b41f","#d3a900","#b41f27"])[data.status+1]; };
 	E.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	E.progressColor = function ext_progressColor(block) {
 		//support passing just the color

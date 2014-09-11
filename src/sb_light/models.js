@@ -96,7 +96,7 @@ define([
 	models.select = function(modelName, type, cb, func) {
 		var m = _verifyModel(modelName);
 		if(m.model) {
-			sb.ext.debug("Doing a select on the model.", modelName);
+			// sb.ext.debug("Doing a select on the model.", modelName);
 			m.model.select(type, cb, func);
 		}
 	};
