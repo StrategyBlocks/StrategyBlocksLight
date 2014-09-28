@@ -144,6 +144,10 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		if(val !== undefined) {
 			//we still need to return "this" when 
 			if(force || sg[type] != val) {
+				if(type == "blockMapZoom") {
+					console.log("wtf");
+				}
+
 				sg[type] = val;
 				state.publish(group, type);
 			}
@@ -306,7 +310,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 		var session = state.context("session");
 
-		_updateSession(data);
+		_updateSession(data, session);
 		_updateModels(data);
 
 		if(session != state.context("session")) {
@@ -348,7 +352,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		}
 	};
 
-	function _updateSession (data) {
+	function _updateSession (data, prevSession) {
 		if(data) {
 			var uid = data.user ? data.user.id : null;
 			var cid = data.company ? data.company.id : null;
@@ -391,8 +395,11 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 				storage.context.session =  state.session_normal;
 			}
 		}
-		
-		state.context("flash", data.flash);
+		var fakeLogin = (prevSession == state.session_unknown || prevSession == state.session_startup) && storage.context.session == state.session_invalid; 
+		if(!fakeLogin ||  data.flash.error || data.flash.warning) {
+			//prevent updating the flash message on dummy logins
+			state.context("flash", data.flash);
+		}
 		state.context("errors", data.errors);
 	}
 	

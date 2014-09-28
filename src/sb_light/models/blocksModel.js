@@ -194,10 +194,10 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		
 
 		//returns the path of the current block
-		_massage: function(b, ppath, depth, pos, schema) {
+		_massage: function(b, p, depth, pos, schema) {
 			var recurse = this._massage.bind(this);
 
-			if(!ppath) {
+			if(!p) {
 				this._idModel = {};
 				this._pathModel = {};
 			}
@@ -207,8 +207,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				b = this._model[b.split("_").last()];
 			}
 
-			var bpath = ppath ? [ppath, b.id].join("_") : b.id;
-			var p = ppath ? this._model[ppath.split("_").last()] : null;
+			var bpath = p ? [p.path, b.id].join("_") : b.id;
 			var pinfo = p ? E._.find(b.parents, {parent_id:p.id}) : null;
 
 
@@ -216,9 +215,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				path:bpath,
-				parentPath:ppath,
-				parent:(ppath||""),
+				parentPath:(p ? p.path : null),
+				parent:p,
 				level: depth,
+				level_sort: (p ? (p.level_sort + "." + pos) : "L1"),
+
 				size:1,
 				status: ((b.ownership_state == "new") ? "new" : (
 							b.closed? "closed" : (
@@ -228,7 +229,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				overdue: E.daysDiff(E.today(), E.serverMoment(b.end_date)) > 0,
 				is_root:(depth===0),
 				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
-				level_sort: (p ? (p.levelPath + "." + pos) : "L1"),
 				can_move_left: (b.is_owner && (pos> 0)),
 				can_move_right: (b.is_owner && p && (pos < p.children.length-1) && p.children.length > 1),
 				can_delete: (b.is_owner && !b.closed),
@@ -236,11 +236,13 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				parent_title: (p ? p.title : ""),
 				schema:schema,
 
-				//map children ids to paths
-				children: E.map(b.children, function(cpath, i) {
-					return recurse(cpath, bpath, depth+1, i, schema);
-				})
 			});
+
+			//map children ids to paths
+			b.children = E.map(b.children, function(cpath, i) {
+				return recurse(cpath, b, depth+1, i, schema);
+			});
+
 
 			E.each(b.children, function(cpath) {
 				b.size += pm[cpath].size;

@@ -320,9 +320,9 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.userDate = function ext_userDate(d, format) { return E.moment(d,format).format( E.userFormat()); };
 	E.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
 		if(reverse) {
-			return "(" + moment(d).fromNow() + ")&nbsp;" + moment(d).format(format || E.userFormat());
+			return "(" + moment(d).fromNow() + ") " + moment(d).format(format || E.userFormat());
 		} 
-		return moment(d).format(format || E.userFormat()) + "&nbsp;(" + moment(d).fromNow() + ")";
+		return moment(d).format(format || E.userFormat()) + " (" + moment(d).fromNow() + ")";
 	};
 	E.fromNow = function ext_fromNow(d, format) {		return moment(d, format).fromNow();	};
 
@@ -428,6 +428,18 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.to_color = function ext_to_color(num) {
 		return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
 	};
+
+	//turns #FFFFFF into rgba(255,255,255,0.5) where alpha is between 0 - 1.
+	E.color_to_rgba = function ext_color_to_rgba(hex, alpha) {
+		hex = hex.replace('#','');
+		var r = parseInt(hex.substring(0,2), 16);
+		var g = parseInt(hex.substring(2,4), 16);
+		var b = parseInt(hex.substring(4,6), 16);
+
+		var result = 'rgba('+r+','+g+','+b+','+alpha+')';
+		return result;
+	};
+	E.hex_to_rgba = E.color_to_rgba;
 
 	//str in #ff4455 or 0x004340 format to int
 	E.from_color = function ext_from_color(str) {

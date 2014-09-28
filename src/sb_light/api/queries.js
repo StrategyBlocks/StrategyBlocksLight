@@ -56,15 +56,21 @@ define(['sb_light/globals',
 	*********************************/
 	q.fullname = function(uid) {
 		var u = q.user(uid);
-		return u ? u.name : "<unknown>";
+		return u ? u.name : "<deleted>";
 	};
 	q.firstname = function(uid) {
 		var u = q.user(uid);
-		return u ? u.first_name : "<unknown>";
+		return u ? u.first_name : "<deleted>";
 	};
+
+	q.shortName = function(uid) {
+		var u = q.user(uid);
+		return u? (u.first_name.slice(0,1) + ". " + u.last_name) : "<deleted>";
+	};
+
 	q.lastname = function(uid) {
 		var u = q.user(uid);
-		return u ? u.last_name : "<unknown>";
+		return u ? u.last_name : "<deleted>";
 	};
 	q.user = function(uid /*optional*/) {
 		var sid = ST.state("user_id");
@@ -613,7 +619,7 @@ define(['sb_light/globals',
 		b = E.isStr(b) ? b : (b ? (b.path || b.id) : b );
 		b = (b || b === undefined) ? (b || ST.state("block")) : null;
 		//takes an object or string
-		b = sb.models.find("blocks", b);
+		b = b ? sb.models.find("blocks", b): null;
 		return b ? (prop ? b[prop] : b) : null;
 	};
 
@@ -1041,7 +1047,7 @@ define(['sb_light/globals',
 		var cb = b;
 		do {
 			centerList.unshift(cb.path);
-			cb = blocks[cb.parent];
+			cb = blocks[cb.parentPath];
 		} while(cb);
 
 		//add the child 

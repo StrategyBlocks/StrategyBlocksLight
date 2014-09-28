@@ -146,6 +146,7 @@ define([
 				cb();
 			} else {
 				console.log("wtf?");
+				throw new Error("Please pass the 'cb' callback when overriding the postCreate function", this.id);
 			}
 		},
 
