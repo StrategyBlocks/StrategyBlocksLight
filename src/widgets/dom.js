@@ -4,7 +4,6 @@ define([
 	'sb_light/utils/Class', 
 	"sb_light/main",
 	//no args
-	"bootstrap.switch",
 	"d3"
 ], function( Class, sb ) {
 	

@@ -29,6 +29,7 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_TAGS:			{url: "/tags.js", 						post:false},
 		MODEL_TIMEZONES: 	{url: "/companies/timezones.js", 		post:false},
 		MODEL_DASHBOARD: 	{url: "/reports/dashboard_layout.js", 	post:false},
+		MODEL_HISTORY: 		{url: "/login/history.js", 				post:false},
 			
 		BLOCKS_CONTEXT:					{url: "/blocks/context/%id%.js", 				post:false},
 		BLOCKS_CLOSE: 					{url: "/blocks/close/%id%.js", 					post:true,		deleteId: true},

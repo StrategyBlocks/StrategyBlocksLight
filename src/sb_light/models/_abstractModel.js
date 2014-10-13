@@ -196,6 +196,9 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			//timestamp and arraycache
 			if(ae && ue && de) { 
 				// console.log("MODEL: ", this.name, " has an empty HLM");
+				if(!this._modelArray) {
+					this._modelArray = [];
+				}
 				return false; 
 			}
 			E.debug("Processing Model", this.name, ae, ue, de);

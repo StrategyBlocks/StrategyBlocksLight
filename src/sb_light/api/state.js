@@ -395,7 +395,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 				storage.context.session =  state.session_normal;
 			}
 		}
-		var fakeLogin = (prevSession == state.session_unknown || prevSession == state.session_startup) && storage.context.session == state.session_invalid; 
+		var fakeLogin = (!prevSession || prevSession == state.session_unknown || prevSession == state.session_startup); 
 		if(!fakeLogin ||  data.flash.error || data.flash.warning) {
 			//prevent updating the flash message on dummy logins
 			state.context("flash", data.flash);

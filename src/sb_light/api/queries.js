@@ -615,6 +615,7 @@ define(['sb_light/globals',
 	};
 
 	q.block = function(b, prop) {
+		if(E.isNum(b)) { b = String(b); }
 		//get the string or use path in the "b" object
 		b = E.isStr(b) ? b : (b ? (b.path || b.id) : b );
 		b = (b || b === undefined) ? (b || ST.state("block")) : null;
