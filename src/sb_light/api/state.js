@@ -118,7 +118,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		var s = watching[group];
 		//var list = s[type] || [];
 		var value = state[group](type);
-		// E.debug("Publish: ", type, value);
+		//E.debug("Publish: ", type, value);
 		E.each(s[type], function(v) {
 			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});

@@ -923,10 +923,10 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.mergeLists = function ext_mergeLists(larger,smaller, key) {
 		larger = E.toObject(larger||[], key);
 		E.each(smaller, function(v) {
-			if(!v.name) {
+			if(!v || !v[key]) {
 				console.log("wtf");
 			}
-			larger[v.name] = v;
+			larger[v[key]] = v;
 		});
 
 		return larger;
