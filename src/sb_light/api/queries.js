@@ -248,7 +248,6 @@ define(['sb_light/globals',
 		var lvl = q.level(depth);
 		return lvl ? lvl.title : "";
 	};
-	
 
 
 	/********************************

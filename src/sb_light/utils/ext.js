@@ -414,7 +414,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		return Math.ceil(number * val)/val;
 	};
 
-	E.to_i = function ext_to_i(str, base, def/*=0*/) {
+	E.to_i = function ext_to_i(str, base/*==10*/, def/*=0*/) {
 		var i = parseInt(str, base||10);
 		return isNaN(i) ? E.number(def,0) : i; 
 	};
@@ -427,6 +427,14 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	};
 	E.to_color = function ext_to_color(num) {
 		return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
+	};
+
+	E.randomColor = function() {
+		var color = d3.scale.linear()
+			.domain([0, 0.5, 1])
+			.range(["red", "green", "blue"])
+		;
+		return color(Math.random());
 	};
 
 	//turns #FFFFFF into rgba(255,255,255,0.5) where alpha is between 0 - 1.
@@ -522,6 +530,31 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 			}
 		}
 		return n;
+	};
+
+
+	//event handler function generator where we are using Jquery or D3 and want to bind to a class function
+	//but also maintain the event's context
+	//So, generally, call E.$Handler(this, "myfunc") where "myfunc" is a member function of "this" class
+	//	This returns a function than can be bound to events where the event context is important as well. 
+	//	myFunc would then appear as: 
+	//		myFunc: function(eventContext, ...args) {
+	//			"this" is the class that defined "myFunc"
+	//			"eventContext" is the element that triggered the event
+	//		}
+	
+	E.$Handler = function(context, func) {
+		if(E.isStr(func)) {
+			func = context[func];
+		}
+		if(!E.isFunc(func)) { 
+			throw Error("E.$Handler expects a function", arguments); 
+		}
+		return function()  {
+			//push the current context in with the arguments
+			var args = ([this]).concat(E.slice(arguments));
+			func.apply(context, args);
+		}
 	};
 
 	//takes an array of literals or functions and sums the result
