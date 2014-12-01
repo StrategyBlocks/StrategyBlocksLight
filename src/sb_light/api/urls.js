@@ -71,7 +71,7 @@ define(['sb_light/globals'], function(sb) {
 		COMPANIES_UPDATE: 				{url: "/companies/update.js"},
 		COMPANIES_HEALTH: 				{url: "/health_calculations.js"},
 		COMPANIES_HEALTH_CREATE: 		{url: "/health_calculations/create.js"},
-		COMPANIES_HEALTH_UPDATE :		{url: "/health_calculations/%id%/update.js"},
+		COMPANIES_HEALTH_UPDATE :		{url: "/health_calculations/%id%/update.js", deleteId:true},
 		COMPANIES_HEALTH_DELETE: 		{url: "/health_calculations/%id%/destroy.js"},
 		COMPANIES_HEALTH_DEFAULT: 		{url: "/health_calculations/%id%/set_default.js"},
 		COMPANIES_LOGO_PREVIEW_URL: 		{url: "/upload/company_logo_preview.js"},

@@ -246,6 +246,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 			E.each(b.children, function(cpath) {
 				b.size += pm[cpath].size;
+				b.height = E.max(1, b.height, pm[cpath].height+1);
 			});
 
 			if(!b.is_link) {

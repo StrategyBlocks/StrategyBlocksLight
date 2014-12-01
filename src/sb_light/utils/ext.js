@@ -664,41 +664,6 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 
 
 		
-	/************  MASSAGE SERVER DATA INTO BETTER OBJECTS FOR D3/presentation ***************************/
-	E.getResultMessages = function ext_getResultMessages(r) {
-		var res = {
-			errors:null,
-			warnings: null,
-			notices:null
-		};
-		if (r) {
-			//errors that mean something in the form was incorrect, hopefully out of our control (e.g., bad input from user)
-			if(E.isArray(r.result)) {
-				r.result.forEach(function ext_getResultMessages_forEach(o) {
-					if(o && o.errors) {
-						res.errors = {
-							form: r.result.errors, 
-							message:JSON.stringify(r.result)
-						};
-					}
-				});
-			} else if(r.result && r.result.errors) {
-				res.errors = {form: r.result.errors, message:JSON.stringify(r.result)};
-			}
-			//errors on the server that the client / user cannot control 
-			if(!res.errors && r.flash && r.flash.error) { 
-				res.errors = {message: r.flash.error};
-			}
-			//errors on the server that likely mean a bug somewhere.
-			if (!res.errors && r.errors && r.errors.error) {
-				res.errors = {message: r.errors.error };
-			}
-		}
-		res.notices = r.flash ? r.flash.notice : "";
-		res.warnings = r.flash ? r.flash.warning : "";
-		return res;
-	};
-	
 		
 		//merge the target and actuals series into one array of objects. 
 	E.massageTA = function ext_massageTA(data) {
@@ -925,6 +890,28 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 
 	};
 
+
+	//compares two arrays for changes. Assuming the arrays are lists of objects, we compare the properties  
+	//this also assumes they are sorted in the same order
+	E.listHasChanges = function(a, b, keys) {
+		if(!a || !b || a.length != b.length) { return true; }
+
+		//limit the keys compared or use all the keys in the first element of A.
+		keys = keys || E.keys(a[0]);
+
+		//iterate through A and assume B is sorted the same
+		return E._.some(a, function(av, i) {
+			var bv = b[i];
+			//iterate the keys and compare
+			return E._.some(keys, function(k) {
+				if(av[k] != bv[k]) { return true; }
+				return false;
+			});
+			return false;
+		});
+	}
+
+
 	//return the number of differences from diff to orig
 	E.changes = function ext_changes(diff,orig, keys) {
 		keys = keys || [];
@@ -948,6 +935,33 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 			}
 			return false;
 		});
+	};
+
+	//form:		 is a dom / jquery object
+	//values:	is a key-value map where the keys are the names of the form fields to apply
+	E.formChanges = function ext_applyChanges(form, values) {
+		form = $(form);
+		if(values) {
+			form.find("[name]").each(function(i) {
+				console.log("Set Form Changes: ", this.name, values[this.name]);
+				if($(this).data("control") == "switch") {
+					$(this).bootstrapSwitch("state", values[this.name], true);
+				} else {
+					$(this).val(values[this.name]);
+				}
+			});
+		} else {
+			var res = {};
+			form.find("[name]").each(function(i) {
+				if($(this).data("control") == "switch") {
+					res[this.name] = $(this).bootstrapSwitch("state");
+				}else {
+					res[this.name] = $(this).val();
+				}
+				console.log("Get Form Changes: ", this.name, res[this.name]);
+			});
+			return res;
+		}
 	};
 
 

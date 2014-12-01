@@ -1,6 +1,5 @@
 
-define(['sb_light/globals'], function(sb) {
-
+define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	var controller = {};
 
 	controller.forgotPassword =  function(email,cb,errCb) {
@@ -34,6 +33,8 @@ define(['sb_light/globals'], function(sb) {
 		//children:bool
 		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, children:children}, cb,cb);
 	};
+
+
 	controller.userUpdate = function( changes, cb) {
 		controller.invoke(sb.urls.USERS_UPDATE,changes, cb,cb);
 	};
@@ -60,12 +61,34 @@ define(['sb_light/globals'], function(sb) {
 
 
 	controller.updateLevels = function(data, cb,errCb) {
+		data = E.map(data, function(v,i) {
+			return {
+				title:v.title,
+				color:E.from_color(v.color)
+			}
+		});
 		controller.invoke(sb.urls.LEVELS_UPDATE, data, cb,errCb);
 	};
+
+
+
 	controller.updateFocus = function(data, cb,errCb) {
 		controller.invoke(sb.urls.FOCUS_UPDATE, data, cb,errCb);
 	};
 	
+
+	controller.updateHealthCalculation = function(data, cb, errorCb) {
+		if(E.isStr(data)) {
+			controller.invoke(sb.urls.COMPANIES_HEALTH_DEFAULT, {id:data}, cb,errorCb);
+		} else if(data.id == "new") {
+			delete data.id;
+			controller.invoke(sb.urls.COMPANIES_HEALTH_CREATE, data,cb,errorCb);
+		} else {
+			controller.invoke(sb.urls.COMPANIES_HEALTH_UPDATE, data,cb,errorCb);
+		}
+	}	
+
+
 
 
 	controller.admin = function(urlObj, args, successCb, errorCb, stateCheck, overrides) {

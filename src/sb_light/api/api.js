@@ -71,7 +71,7 @@ define(['sb_light/globals'], function(sb) {
 
 		if (sb.state.update(data) ) {
 			//success function in the original call
-			var errors = sb.ext.getResultMessages(data).errors;
+			var errors = sb.helpers.getResultMessages(data).errors;
 			
 			if(!errors && reqArgs.success) {
 				reqArgs.success(data);
