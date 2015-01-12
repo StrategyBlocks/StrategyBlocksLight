@@ -20,6 +20,15 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 			console.log("Massage: ", E.moment().diff(t));
 
+			E.each(this._model, function(v) {
+				v.tolerance = {
+					range_start: v.range_start,
+					range_end: v.range_end,
+					below_tolerance_good: v.below_tolerance_good,
+					percentage: v.percentage
+				}
+			});
+
 		},
 
 

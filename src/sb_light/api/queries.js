@@ -314,6 +314,15 @@ define(['sb_light/globals',
 		return null;
 	};
 
+	q.isMetricOwner = function(m) {
+		var m = q.metric(m);
+		return m && m.is_owner; 
+	};
+	q.isMetricManager = function(m) {
+		var m = q.metric(m);
+		return m && m.is_manager;
+	};
+
 	//DISPLAY purposes
 	q.metricActual = function(id) {
 		var m = q.metric(id);
@@ -685,8 +694,8 @@ define(['sb_light/globals',
 		b = q.block(b); 
 		return b.is_owner && !b.closed && b.ownership_state != "new" && b.leaf;
 	};
-	q.isOwner = q.canUpdateProgress;
-	q.isManager = q.canManageBlock;
+	q.isBlockOwner = q.canUpdateProgress;
+	q.isBlockManager = q.canManageBlock;
 
 
 	q.progressRollupMethod = function(parent, companyFallback/*true*/) {

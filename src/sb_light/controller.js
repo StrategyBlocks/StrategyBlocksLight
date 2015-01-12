@@ -33,6 +33,16 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		//children:bool
 		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, children:children}, cb,cb);
 	};
+	controller.blockComment = function(id, message, cb) {
+		controller.invoke(sb.urls.COMMENT_PROPERTIES_ADD, {id:id, body:message}, cb,cb);
+	};
+
+
+
+	controller.metricUpdate = function( changes, cb) {
+		controller.invoke(sb.urls.METRICS_UPDATE,changes, cb,cb);
+	};
+
 
 
 	controller.userUpdate = function( changes, cb) {
@@ -42,9 +52,6 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.USERS_CREATE_BATCH,list, cb,cb);
 	};
 	
-	controller.blockComment = function(id, message, cb) {
-		controller.invoke(sb.urls.COMMENT_PROPERTIES_ADD, {id:id, body:message}, cb,cb);
-	};
 	controller.changeDefaultCompany = function(id,cb, errCb) {
 		controller.invoke(sb.urls.USERS_CHANGE_DEFAULT_COMPANY, {id:sb.state.state("user_id"),default_company_id:id}, cb,errCb);
 	};
