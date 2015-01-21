@@ -544,6 +544,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	//		}
 	
 	E.$Handler = function(context, func) {
+		var origArgs = E.slice(arguments, 2);
 		if(E.isStr(func)) {
 			func = context[func];
 		}
@@ -552,7 +553,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		}
 		return function()  {
 			//push the current context in with the arguments
-			var args = ([this]).concat(E.slice(arguments));
+			var args = origArgs.concat([this]).concat(E.slice(arguments));
 			func.apply(context, args);
 		}
 	};

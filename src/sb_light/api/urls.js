@@ -114,7 +114,7 @@ define(['sb_light/globals'], function(sb) {
 		
 		METRICS_CREATE:  			{url: "/metrics/create.js"},
 		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js"},
-		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js"},
+		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js", deleteId:true},
 		METRICS_ATTACH_BLOCK:  		{url: "/blocks/attach_metric/%id%.js" },
 		METRICS_DETACH_BLOCK:  		{ url: "/blocks/detach_metric/%id%.js" },
 		METRICS_UPDATE_GROUPS:  	{ url: "/metrics/%id%/update_group_expression.js" },

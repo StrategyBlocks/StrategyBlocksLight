@@ -39,8 +39,8 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 
 
-	controller.metricUpdate = function( changes, cb) {
-		controller.invoke(sb.urls.METRICS_UPDATE,changes, cb,cb);
+	controller.metricUpdate = function( changes, cm) {
+		controller.invoke(sb.urls.METRICS_UPDATE,changes, cm,cm);
 	};
 
 
