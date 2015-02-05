@@ -286,12 +286,12 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	//move into the "unknown" state.  
 	state.startup = function() {	return storage.context.session == state.session_startup; };
 	
-	//any state but unknown 
-	state.known = function() {	return storage.context.session != state.session_unknown;	};
+	//any state but unknown / startup
+	state.known = function() {	return state.unknown() == false;	};
 	//not tried auth yet. 
 	state.unknown = function() {	return storage.context.session == state.session_unknown || storage.context.session == state.session_startup;	};
 	//no auth
-	state.unauthorized = function() {	return  storage.context.session == state.session_unknown || storage.context.session == state.session_invalid || storage.context.session == state.session_startup;	};
+	state.unauthorized = function() {	return  state.authorized() == false;	};
 	//invalid
 	state.invalid = function() {	return  storage.context.session == state.session_invalid;	};
 	//has user/company
