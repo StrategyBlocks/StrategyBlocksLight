@@ -2,6 +2,14 @@
 define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	var controller = {};
 
+	controller.createCompany = function(obj, cb, errCb) {
+		var user = E.cherryPick(obj, ["first_name", "last_name", "username"]);
+		var company = E.cherryPick(obj, ["company_name", "vision"]);
+		company.user = user;
+		controller.invoke(sb.urls.REGISTER_COMPANY, company, cb, errCb, sb.state.any);
+	};	
+
+
 	controller.forgotPassword =  function(email,cb,errCb) {
 		controller.invoke(sb.urls.LOGIN_FORGOT_PASSWORD, {username:email}, cb,errCb, sb.state.invalid);
 	};

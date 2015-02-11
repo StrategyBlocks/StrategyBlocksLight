@@ -67,7 +67,8 @@ define(['sb_light/globals'], function(sb) {
 		COMMENT_PROPERTIES_ADD: 		{url: "/blocks/%id%/comment.js", normalParams:true, deleteId:true},
 		
 		
-		COMPANIES_CREATE: 				{url: "/companies/create.js"},
+		// COMPANIES_CREATE: 				{url: "/companies/create.js"},
+		COMPANIES_REGISTER: 			{url: "/companies/create.js"},
 		COMPANIES_UPDATE: 				{url: "/companies/update.js"},
 		COMPANIES_HEALTH: 				{url: "/health_calculations.js"},
 		COMPANIES_HEALTH_CREATE: 		{url: "/health_calculations/create.js"},
@@ -143,7 +144,7 @@ define(['sb_light/globals'], function(sb) {
 		
 		USERS_CHANGE_DEFAULT_COMPANY:	{url: "/users/%id%/change_default_company.js", normalParams:true},
 		
-		REGISTER_COMPANY: 		{url: "/registration/register_company.js"},
+		REGISTER_COMPANY: 			{url: "/registration/register.js"},
 		
 		LOGIN :						{url: "/login/auth.js"},
 		LOGOUT: 					{url: "/login/logout.js"},

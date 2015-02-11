@@ -246,6 +246,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		sb.queue.add(sb.models.reset.bind(sb.models), "sblight_models_reset");
 	};
 
+
 	state.logout = function() {
 		sb.api.post(sb.urls.url(sb.urls.LOGOUT));
 		state.reset();
