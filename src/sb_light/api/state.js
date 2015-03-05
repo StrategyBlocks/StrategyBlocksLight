@@ -138,7 +138,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 		var sg = storage[group];
 		if(!sg.hasOwnProperty(type)) {
-			throw "SBLIGHT::State - Trying to access a state property that hasn't been initialized. " + group + "::" + type;
+			E.warn("SBLIGHT::State - Trying to access a state property that hasn't been initialized. " + group + "::" + type);
 		}
 
 		if(val !== undefined) {
@@ -214,7 +214,10 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		}
 	};
 	
+	state._loginBusy = false;
 	state.login = function(uname, pword, cb, errCb) {
+		if(state._loginBusy) { return; }
+
 		var params = {};
 		if(uname && pword) {
 			params.username = uname;
@@ -225,10 +228,23 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		}
 		state.context("session", state.session_unknown);
 
+
 		var url = sb.urls.url(sb.urls.LOGIN);
 
-		sb.queue.add(sb.api.post.bind(sb.api, url, params, cb, errCb, state.unauthorized), "sblight_state_login");
+		state._loginBusy = true;
+
+		var cbf = function() { 
+			state._loginBusy = false; 
+			cb.apply(null, E.slice(arguments));	
+		}
+		var errorCbf = function() { 
+			state._loginBusy = false; 
+			errCb.apply(null, E.slice(arguments));	
+		}
+
+		sb.queue.add(sb.api.post.bind(sb.api, url, params, cbf, errorCbf, state.unauthorized), "sblight_state_login");
 	};
+
 	
 	state.reset = function(cid) {
 		storage.context.session = state.session_startup;
@@ -397,7 +413,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			}
 		}
 		var fakeLogin = (!prevSession || prevSession == state.session_unknown || prevSession == state.session_startup); 
-		if(!fakeLogin ||  data.flash.error || data.flash.warning) {
+		if(!fakeLogin && (data.flash.error || data.flash.warning)) {
 			//prevent updating the flash message on dummy logins
 			state.context("flash", data.flash);
 		}

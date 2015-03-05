@@ -30,6 +30,8 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_TIMEZONES: 	{url: "/companies/timezones.js", 		post:false},
 		MODEL_DASHBOARD: 	{url: "/reports/dashboard_layout.js", 	post:false},
 		MODEL_HISTORY: 		{url: "/login/history.js", 				post:false},
+		MODEL_BUILDERS: 	{url: "/builders.js", 					post:false},
+
 			
 		BLOCKS_CONTEXT:					{url: "/blocks/context/%id%.js", 				post:false},
 		BLOCKS_CLOSE: 					{url: "/blocks/close/%id%.js", 					post:true,		deleteId: true},
@@ -161,6 +163,14 @@ define(['sb_light/globals'], function(sb) {
 		PAYMENTS_CREATE: 			{url: "/purchases/create.js"},
 		
 		ADMIN_RAISE: 				{url:"/admin/log_client_error.js"},
+
+
+		//BUILDER 
+		BUILDER_TEMPLATE:			{url: "/builders/template.js",							post:false},
+		BUILDER_CREATE:				{url: "/builders/create.js",							post:true},
+		BUILDER_UPDATE:				{url: "/builders/%id%/update.js",						post:true, deleteId:true},
+		BUILDER_DESTROY:			{url: "/builders/%id%/destroy.js",						post:true, deleteId:true},
+
 
 		//admintool urls
 		ADMIN_AUDITS:				{url: "/admin/audits.js", 								post:false, normalParams:true, company:"admin_company_id", user:"admin_user_id"},					

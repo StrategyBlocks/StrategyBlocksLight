@@ -148,6 +148,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	};
 	//takes a list of objects and a key property and converts the array to a hash map
 	E.toObject = function ext_toObject(list, key) {
+		key = key || "id";
 		return list.reduce(function ext_toObject_reduce(prev, el) {
 			prev[el[key]] = el;
 			return prev;
@@ -944,9 +945,13 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		form = $(form);
 		if(values) {
 			form.find("[name]").each(function(i) {
-				console.log("Set Form Changes: ", this.name, values[this.name]);
-				if($(this).data("control") == "switch") {
+				// console.log("Set Form Changes: ", this.name, values[this.name]);
+				if(this.selectize) {
+					this.selectize.setValue(values[this.name]);
+				} else if($(this).data("control") == "switch") {
 					$(this).bootstrapSwitch("state", values[this.name], true);
+				} else if($(this).data("control") == "slider") {
+					$(this).slider("setValue", values[this.name]);
 				} else {
 					$(this).val(values[this.name]);
 				}
@@ -954,12 +959,17 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		} else {
 			var res = {};
 			form.find("[name]").each(function(i) {
-				if($(this).data("control") == "switch") {
+				// console.log(this.slider);
+				if(this.selectize) {
+					res[this.name] = this.selectize.getValue();
+				} else if($(this).data("control") == "switch") {
 					res[this.name] = $(this).bootstrapSwitch("state");
+				} else if($(this).data("control") == "slider") {
+					res[this.name] = $(this).slider("getValue");
 				}else {
 					res[this.name] = $(this).val();
 				}
-				console.log("Get Form Changes: ", this.name, res[this.name]);
+				// console.log("Get Form Changes: ", this.name, res[this.name]);
 			});
 			return res;
 		}

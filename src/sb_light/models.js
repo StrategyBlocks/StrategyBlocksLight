@@ -18,8 +18,10 @@ define([
 	'sb_light/models/healthsModel',
 	'sb_light/models/milestonesModel',
 	'sb_light/models/capabilitiesModel',
-	'sb_light/models/historyModel'
-], function(sb, tags,news,users,blocks,levels,focus,risks,kpis, metrics, companies, groups,timezones,healths, milestones, capabilities, history) {
+	'sb_light/models/historyModel',
+	'sb_light/models/buildersModel',
+
+], function(sb, tags,news,users,blocks,levels,focus,risks,kpis, metrics, companies, groups,timezones,healths, milestones, capabilities, history, builders) {
 
 	'use strict';
 	
@@ -39,7 +41,8 @@ define([
 		capabilities:				{klass:capabilities},
 		health_calculations:		{klass:healths},
 		milestone_definitions:		{klass:milestones},
-		history:					{klass:history}
+		history:					{klass:history},
+		builders:					{klass:builders},
 	};
 	
 	var models = {};

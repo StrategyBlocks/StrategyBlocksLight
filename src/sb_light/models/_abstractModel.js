@@ -145,6 +145,28 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			}
 		},
 		
+		//should contain "added", "updated", "deleted" objects
+		manualUpdate: function(data) {
+			var dirty = false;
+			if(data.updated) {
+				dirty = true;
+				this._updateItems(data.updated)
+			}
+			if(data.added) {
+				dirty = true;
+				this._addItems(data.added)
+			}
+			if(data.deleted) {
+				dirty = true;
+				this._deleteItems(data.deleted)
+			}
+			if(dirty) {
+				this._massageUpdatedModel();
+				this._resetArrayCache();
+				this._publish();
+			}
+		},
+
 		/*************************************************************
 			This is expecting the response to be a map with the following keys: {
 				"deleted": Array of ids that have been deleted since the last request. They do not have to exist the our
@@ -156,8 +178,11 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 						to be able to treat the objects differently if we wanted to.
 		
 		**************************************************************/
+
+
 		_handleUpdate: function(response) {
 			var processed = this._processResponse(response);
+			// console.log("UPDATE", this.name, this._model, processed);
 			if(!this._model || !processed) {
 				//don't trigger the update if there's no model or we didn't do anything 
 				return;
@@ -184,10 +209,9 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		_processResponse: function(data) {
 			this._model = this._model || {};
 			
-			
 			//The following order assumes a faulty server and ensures we don't update  or delete missing
 			//items.
-			var ae = E.length(data.added) === 0;
+			var ae = E.length(data.added) === 0 && this._modelArray;
 			var ue = E.length(data.updated) === 0;
 			var de = E.length(data.deleted) === 0;
 
@@ -201,7 +225,8 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 				}
 				return false; 
 			}
-			E.debug("Processing Model", this.name, ae, ue, de);
+			// console.log("AbstractModel", this.name);
+			E.debug("Processing Model", this._model, this.name, ae, ue, de);
 
 			if(!ae) { 
 				this._addItems(data.added);
@@ -245,7 +270,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			var self =this;
 			deleted.forEach(function(v) {
 				if(model[v]) {
-					self._sb.ext.debug("Deleting Model", self.name, v);
+					sb.ext.debug("Deleting Model", self.name, v);
 				}
 				delete model[v];
 			});

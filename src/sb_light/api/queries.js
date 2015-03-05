@@ -612,13 +612,15 @@ define(['sb_light/globals',
 		BLOCKS
 	*********************************/
 
-	q.rootBlock = function() {
+	q.rootBlock = function(prop) {
 		var ba = sb.models.get("blocks").rawArray();
+		var rb = null;
 		if(ba) {
-			return E._.find(ba, {is_root:true});
+			rb = E._.find(ba, {is_root:true});
+			return rb ? (prop ? rb[prop] : rb): null;
 		}
 		var c = q.company();
-		var rb = c ? c.root_block : null;
+		rb = c ? c.root_block : null;
 		return rb ? q.block(rb.id, prop) : null;
 	};
 

@@ -95,15 +95,16 @@ define([
 
 			Object.defineProperties(this, {
 				//jQuery 
-				"$": 		{get: function() { 	return $(this.__root); 			}},
+				"$": 			{get: function() { 	return $(this.__root); 			}},
 				//DOM
-				"dom": 		{get: function() { 	return this.$.get(0); 			}},
+				"dom": 			{get: function() { 	return this.$.get(0); 			}},
 				//D3 selection
-				"sel": 		{get: function() { 	return d3.select(this.dom); 	}},
-				"id": 		{get: function() { 	return this.__id; 	}},
-				"delay": 	{set: function(x) { this.__delay = x; }},
-				"busy": 	{set: function(x) { this.__busy = x; }},
-				"typeName":	{get: function() { return this.__opts.typeName; }}
+				"sel": 			{get: function() { 	return d3.select(this.dom); 	}},
+				"id": 			{get: function() { 	return this.__id; 	}},
+				"delay": 		{set: function(x) { this.__delay = x; }},
+				"busy": 		{set: function(x) { this.__busy = x; }},
+				"modelDirty": 	{set: function(x) { this.__modelDirty = x; }},
+				"typeName":		{get: function() { return this.__opts.typeName; }}
 			});
 
 			this.cleanup();
@@ -206,7 +207,7 @@ define([
 				var res = v.func();	
 				var diff = v.cache != res;
 				if(diff) {
-					console.log("HAS DIFFERENCE", id, res, v.cache);
+					// console.log("HAS DIFFERENCE", id, res, v.cache);
 				}
 				return diff;
 			});
@@ -419,7 +420,7 @@ define([
 					d.busy = true;
 					d.args = d.collect();
 					var f = self.handleData.bind(self, d.id);
-					ctrl.admin(d.url, d.args, f, f, d.state);				
+					ctrl.fetch(d.url, d.args, f, f, d.state);				
 				}
 			});
 		},

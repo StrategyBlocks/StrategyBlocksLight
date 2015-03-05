@@ -10,6 +10,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};	
 
 
+	controller.createBuilder = function(args, cb, errCb) {
+		controller.invoke(sb.urls.BUILDER_CREATE, args, cb, errCb);
+	};
+	controller.updateBuilder = function(args, cb, errCb) {
+		var func = controller.invoke.bind(controller,sb.urls.BUILDER_UPDATE, args,cb,errCb);
+		sb.queue.buffer(func, "controller_update_builder", 10000, true);
+	};
+	controller.deleteBuilder = function(args, cb, errCb) {
+		controller.invoke(sb.urls.BUILDER_DESTROY, args, cb, errCb);
+	};
+
+
+
 	controller.forgotPassword =  function(email,cb,errCb) {
 		controller.invoke(sb.urls.LOGIN_FORGOT_PASSWORD, {username:email}, cb,errCb, sb.state.invalid);
 	};
@@ -106,15 +119,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 
 
-	controller.admin = function(urlObj, args, successCb, errorCb, stateCheck, overrides) {
+	controller.fetch = function(urlObj, args, successCb, errorCb, stateCheck, overrides) {
 		args = args || {};
-		var c = sb.state.context("selectedCompany");
-		var u = sb.state.context("selectedUser");
-		if(urlObj.company && c) {
-			args[urlObj.company] = c;
+		if(urlObj.company) {
+			var c = sb.state.context("selectedCompany");
+			if(c) {
+				args[urlObj.company] = c;
+			}
 		}
-		if(urlObj.user && u) {
-			args[urlObj.user] = u;
+		if(urlObj.user) {
+			var u = sb.state.context("selectedUser");
+			if(u) {
+				args[urlObj.user] = u;
+			}
 		} 
 		controller.invoke(urlObj, args, successCb, errorCb,stateCheck,overrides);
 	};
