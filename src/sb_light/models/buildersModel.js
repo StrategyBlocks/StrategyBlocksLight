@@ -63,6 +63,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				self._massageStakeholders(m);
 				self._massageIndustry(m);
 				self._massageGrowthRate(m);
+				self._massageOpportunities(m);
 				self._massageCompetitors(m);
 				self._massageCapabilities(m);
 			})
@@ -107,7 +108,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			var self = this;
 			m.growth_rate_list = E.map(m.growth_rate_list, function(v,i) {
 				var g = E.merge(v, {
-					id: E._.camelCase(v.name)
+					id: E._.camelCase(v.name),
 				});
 				return E.merge(self._growthProperties[g.id], g);
 			});
@@ -116,10 +117,10 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 
 		_competitorsProperties: {
-			"me": 		{idx: 0, color:"#69839D", bsPrefix:"success"}, 
-			"first": 	{idx: 1, color:"#F6B568", bsPrefix:"danger"}, 
-			"second": 	{idx: 2, color:"#F6B568", bsPrefix:"danger"}, 
-			"third": 	{idx: 3, color:"#F6B568", bsPrefix:"danger"},
+			"me": 		{id:"me", 		idx: 0, color:"#69839D", bsPrefix:"success"}, 
+			"first": 	{id:"first", 	idx: 1, color:"#F6B568", bsPrefix:"danger"}, 
+			"second": 	{id:"second",	idx: 2, color:"#F6B568", bsPrefix:"danger"}, 
+			"third": 	{id:"third",	idx: 3, color:"#F6B568", bsPrefix:"danger"},
 		},
 
 		_massageCompetitors: function(m) {
@@ -129,7 +130,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			var me = E._.find(m.competitors, {competitor:false});
 			if(!me) { return; }
 
-			me.id = "me";
 			me = E.merge(this._competitorsProperties.me, me);
 
 			var them = E.filter(m.competitors, function(v) {
@@ -166,8 +166,14 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				console.log("Capabilities", v.name, v.id);
 			});
 
+		},
 
-
+		_massageOpportunities: function(m) {
+			m.opportunities = E.map(m.opportunities, function(v,i) {
+				return E.merge(v, {
+					id: E._.camelCase(v.name),
+				});
+			});
 		}
 
 

@@ -235,11 +235,15 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 
 		var cbf = function() { 
 			state._loginBusy = false; 
-			cb.apply(null, E.slice(arguments));	
+			if(cb) {
+				cb.apply(null, E.slice(arguments));	
+			}
 		}
 		var errorCbf = function() { 
 			state._loginBusy = false; 
-			errCb.apply(null, E.slice(arguments));	
+			if(errCb) {
+				errCb.apply(null, E.slice(arguments));	
+			}
 		}
 
 		sb.queue.add(sb.api.post.bind(sb.api, url, params, cbf, errorCbf, state.unauthorized), "sblight_state_login");

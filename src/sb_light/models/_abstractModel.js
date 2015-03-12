@@ -88,7 +88,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 				return this._model ? this._model[id] : null;
 			} else {
 				//if ID is an object
-				return id.id ? this._model[id.id] : null; 
+				return (id && id.id && this._model) ? this._model[id.id] : null; 
 			}
 		},
 
@@ -147,24 +147,9 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		
 		//should contain "added", "updated", "deleted" objects
 		manualUpdate: function(data) {
-			var dirty = false;
-			if(data.updated) {
-				dirty = true;
-				this._updateItems(data.updated)
-			}
-			if(data.added) {
-				dirty = true;
-				this._addItems(data.added)
-			}
-			if(data.deleted) {
-				dirty = true;
-				this._deleteItems(data.deleted)
-			}
-			if(dirty) {
-				this._massageUpdatedModel();
-				this._resetArrayCache();
-				this._publish();
-			}
+			this._processResponse(data);
+			this._resetArrayCache();
+			this._publish();
 		},
 
 		/*************************************************************
@@ -260,6 +245,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		_updateItems: function(updated) {
 			updated  = updated || {};
 			for (var k in updated) {
+				console.log("UPDATE", this.name, k, updated[k]);
 				this._model[k] = updated[k];
 			}
 		},	
@@ -290,14 +276,14 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		},
 		
 		_addTimestamp: function() {
-			var ts = ST.getTimestamp(this.name);
+			var ts = ST.getTimestamp(this.name) || E.time();
 
 			this._timestamp = ts;
 
 			// console.log("Model Timestamp", this.name, this._timestamp);
 			E.map(this._model, (function(v) {
 				if(!v) {
-					console.log("wtf?");
+					console.log("wtf?", v, this._model);
 				}
 				//this can be used for performance reasons to check whether a model has been updated
 				v.__timestamp = ts;

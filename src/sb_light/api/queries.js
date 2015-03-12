@@ -26,16 +26,13 @@ define(['sb_light/globals',
 	*********************************/
 	q.company = function(cid /*optional*/) {
 
-		var cs = sb.models.raw("companies");
 		var sid = ST.state("company_id");
 		cid = cid || sid;
 		//use the company returned in the JSON 
 		if(cid == sid) {
 			return ST.context("company") || null;
 		}
-
-		//fall back on the companies model
-		return (cs && cid && cs[cid] ) || null; 
+		return sb.models.find("companies", cid);
 	};
 	q.companyRollup = function() {
 		var c = q.company();
@@ -49,6 +46,15 @@ define(['sb_light/globals',
 		var c = q.company();
 		return c ? c.default_health_calculation_id : null;
 	};
+
+	q.shortCompanyName = function(cid) {
+		var c = q.company(cid);
+		var t = c ? c.name : null;
+		if(t && t.length > 28) {
+			t = t.substr(0,10) + "..." + t.substr(t.length-10);
+		} 
+		return t;
+	}
 
 
 	/********************************
@@ -76,11 +82,7 @@ define(['sb_light/globals',
 		var sid = ST.state("user_id");
 		uid = uid || sid;
 
-		var us = sb.models.raw("users");
-
-		//try the model, then the state, then null
-		return (us && uid && us[uid]) || (uid == sid && ST.context("user")) || null;
-
+		return sb.models.find("users", uid);
 	};
 	q.companyMembership = function(uid) {
 		var u = q.user(uid);
@@ -269,10 +271,10 @@ define(['sb_light/globals',
 		
 		return n.msg.replace(re, function(match,type, id) {
 			if(type == "blocks") {
-				return blocks[id] ? blocks[id].title : "(unknown block)"; 
+				return Q.block(id, "title") || "<unknown block>";
 			}
 			if(type == "users") {
-				return users[id] ? users[id].name : "(unknown user)";
+				return Q.fullName(id) || "<unknow user>";
 			}
 		});	
 	};

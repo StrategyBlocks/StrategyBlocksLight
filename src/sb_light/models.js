@@ -60,7 +60,7 @@ define([
 
 	models.find = function(modelName, id) {
 		var m = _verifyModel(modelName);
-		return m.model.find(id);
+		return id ? m.model.find(id) : null;
 	};
 	
 	//adds a callback watcher. 

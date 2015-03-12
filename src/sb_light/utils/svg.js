@@ -62,6 +62,14 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		}, {});
 	});
 
+	S.extendD3("getBBox", function() {
+		try {
+			return this.node().getBBox();
+		} catch(e) {
+			return {left:0, right:0, top:0, bottom:0, width:0, height:0}
+		}
+	});
+
 	//adds x1,x2,y1,y2 to "line" type SVG elements
 	//skips any property that === null
 	S.extendD3("line", function(x1,x2,y1,y2) {
