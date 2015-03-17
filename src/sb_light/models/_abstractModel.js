@@ -46,6 +46,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			if(publish) {
 				this._publish();
 			}
+			this.get.bindDelay(this, 50);
 		},
 
 		timestamp: function() {

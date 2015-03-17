@@ -152,18 +152,21 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 
 		_massageCapabilities: function(m) {
-
-			console.log("capabilities", m.capabilities, m.capabilities_list)
 			var list = m.capabilities_list;
 			var selected = E.map(m.capabilities, function(v) { return v.name;});
 
-			E.each(list, function(v) {
-				v.selected = selected.indexOf(v.name) > -1;	
-				v.id = v.id || E._.camelCase(v.name);
+			m.capabilities_list = E.map(m.capabilities_list, function(v) {
+				return E.merge({
+					selected: 	(selected.indexOf(v.name) > -1),
+					strength: 	(v.strength || 0),
+					id: 		(v.id || E._.camelCase(v.name))
+				},v);
 			});
-			E.each(m.capabilities, function(v) {
-				v.id = v.id || E._.camelCase(v.name);
-				console.log("Capabilities", v.name, v.id);
+			m.capabilities = E.map(m.capabilities, function(v) {
+				return E.merge({
+					strength: 	(v.strength || 0),
+					id: 		(v.id || E._.camelCase(v.name))
+				},v);
 			});
 
 		},

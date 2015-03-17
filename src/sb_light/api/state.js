@@ -31,10 +31,8 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			//kpi:null,		//kpi  id		
 			metric:null,	//metric  id		
 			risk:null,		//risk id		
-			tag:null,		//tag id		
+			tag:null		//tag id		
 
-			user_id:null,
-			company_id:null
 		},
 
 		//"uncontrolled" event data, like authentication state, flash message, errors, etc...
@@ -45,6 +43,8 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			flash:null,
 			session: state.session_startup,
 			errors:null,
+			user_id:null,
+			company_id:null,
 			company:null,
 			user:null
 		},
