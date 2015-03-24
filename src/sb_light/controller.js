@@ -4,7 +4,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 	controller.createCompany = function(obj, cb, errCb) {
 		var user = E.cherryPick(obj, ["first_name", "last_name", "username"]);
-		var company = E.cherryPick(obj, ["company_name", "vision"]);
+		var company = E.cherryPick(obj, ["company_name", "vision", "industry"]);
 		company.user = user;
 		controller.invoke(sb.urls.REGISTER_COMPANY, company, cb, errCb, sb.state.any);
 	};	
@@ -15,7 +15,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 	controller.updateBuilder = function(args, name,  cb, errCb) {
 		var func = controller.invoke.bind(controller,sb.urls.BUILDER_UPDATE, args,cb,errCb);
-		sb.queue.buffer(func, "controller_update_builder_"+name, 5000, true);
+		sb.queue.buffer(func, "controller_update_builder_"+name, 2000, true);
 	};
 	controller.deleteBuilder = function(args, cb, errCb) {
 		controller.invoke(sb.urls.BUILDER_DESTROY, args, cb, errCb);

@@ -25,13 +25,11 @@ define(['sb_light/globals',
 		COMPANIES
 	*********************************/
 	q.company = function(cid /*optional*/) {
-
-		var sid = ST.state("company_id");
-		cid = cid || sid;
-		//use the company returned in the JSON 
-		if(cid == sid) {
+		var cm = sb.models.rawArray("companies");
+		if(!cid && !cm) { 
 			return ST.context("company") || null;
 		}
+		cid = cid || ST.state("company_id");
 		return sb.models.find("companies", cid);
 	};
 	q.companyRollup = function() {
@@ -62,7 +60,7 @@ define(['sb_light/globals',
 	*********************************/
 	q.fullname = function(uid) {
 		var u = q.user(uid);
-		return u ? u.name : "<deleted>";
+		return u ? (u.name || (u.firstname + " " + u.lastname)) : "<deleted>";
 	};
 	q.firstname = function(uid) {
 		var u = q.user(uid);
@@ -79,9 +77,11 @@ define(['sb_light/globals',
 		return u ? u.last_name : "<deleted>";
 	};
 	q.user = function(uid /*optional*/) {
-		var sid = ST.state("user_id");
-		uid = uid || sid;
-
+		var um = sb.models.rawArray("users");
+		if(!uid && !um) { 
+			return ST.context("user") || null;
+		}
+		uid = uid || ST.state("user_id");
 		return sb.models.find("users", uid);
 	};
 	q.companyMembership = function(uid) {

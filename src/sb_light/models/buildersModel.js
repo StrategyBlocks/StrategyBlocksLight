@@ -63,9 +63,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				self._massageStakeholders(m);
 				self._massageIndustry(m);
 				self._massageGrowthRate(m);
-				self._massageOpportunities(m);
 				self._massageCompetitors(m);
 				self._massageCapabilities(m);
+				self._massageOpportunities(m);
+				self._massageStrengths(m);
+				self._massageHeatmap(m);
 			})
 
 		},
@@ -177,6 +179,22 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 					id: E._.camelCase(v.name),
 				});
 			});
+		},
+		_massageStrengths: function(m) {
+			m.strengths = E.map(m.strengths, function(v,i) {
+				return E.merge(v, {
+					id: E._.camelCase(v.name)
+				});
+			});
+		},
+
+		_massageHeatmap: function(m) {
+			m.heatmap = E.map(m.heatmap, function(v,i) {
+				return E.merge(v, {
+					id: E._.camelCase(v.opportunity_name + "_" + v.strength_name)
+				});
+			});
+
 		}
 
 
