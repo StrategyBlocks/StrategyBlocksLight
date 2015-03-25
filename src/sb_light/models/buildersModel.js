@@ -68,6 +68,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				self._massageOpportunities(m);
 				self._massageStrengths(m);
 				self._massageHeatmap(m);
+				self._massageGoals(m);
 			})
 
 		},
@@ -192,6 +193,15 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			m.heatmap = E.map(m.heatmap, function(v,i) {
 				return E.merge(v, {
 					id: E._.camelCase(v.opportunity_name + "_" + v.strength_name)
+				});
+			});
+
+		},
+		_massageGoals: function(m) {
+			m.balanced_goals = E.map(m.balanced_goals, function(v,i) {
+				return E.merge(v, {
+					id: E._.camelCase(v.title),
+					index:(i+1)
 				});
 			});
 
