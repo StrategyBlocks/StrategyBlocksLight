@@ -294,6 +294,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.parseDate = function ext_moment(d) {
 		E.deprecated("E.parseDate", "E.moment");
 	};
+	E.parseUnix = function ext_parseUnix(dn) {	return moment.unix(dn); };
 	E.moment = function ext_moment(d, format) { return moment(d, format);	};
 	E.dateNumber = function ext_dateNumber(d, format) { return E.moment(d, format).valueOf();	};
 	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
