@@ -1,4 +1,4 @@
-/* globals define, $, d3, SB_OPTIONS, require */
+/* globals define, $, d3, require */
 
 define([
 	'sb_light/utils/Class', 
@@ -336,7 +336,7 @@ define([
 
 			var templateOpts = this.__opts.templatePath.split("#");
 
-			var opts = [SB_OPTIONS.path, "/templates/", templateOpts[0], ".html"];
+			var opts = [sb.options.host, sb.options.path, "/templates/", templateOpts[0], ".html"];
 			if(templateOpts[1]) {
 				opts.put(" #", templateOpts[1]);
 			}

@@ -101,11 +101,13 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			});
 		},
 
-		_growthProperties: {
-			"introduction":	{end:0.85, mid:0.96, color:"#aaa", icon:(SB_OPTIONS.images + "/builder/growth_intro.png")},
-	 		"growth":		{end:0.4, mid:0.7, color:"#faa", icon:(SB_OPTIONS.images + "/builder/growth_growth.png")},
-	 		"maturity":		{end:0.14, mid:0.1, color:"#aaf", icon:(SB_OPTIONS.images + "/builder/growth_mature.png")},
-	 		"decline":		{end:0.50, mid:0.20, color:"#fFa", icon:(SB_OPTIONS.images + "/builder/growth_decline.png")}
+		_growthProperties: function() {
+			return  {
+				"introduction":	{end:0.85, mid:0.96, color:"#aaa", icon:(sb.options.host + sb.options.images + "/builder/growth_intro.png")},
+		 		"growth":		{end:0.4, mid:0.7, color:"#faa", icon:(sb.options.host + sb.options.images + "/builder/growth_growth.png")},
+		 		"maturity":		{end:0.14, mid:0.1, color:"#aaf", icon:(sb.options.host + sb.options.images + "/builder/growth_mature.png")},
+		 		"decline":		{end:0.50, mid:0.20, color:"#fFa", icon:(sb.options.host + sb.options.images + "/builder/growth_decline.png")}
+		 	};
 	 	},
 	 	
 		_massageGrowthRate: function(m) {
@@ -114,17 +116,19 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				var g = E.merge(v, {
 					id: E._.camelCase(v.name),
 				});
-				return E.merge(self._growthProperties[g.id], g);
+				return E.merge(self._growthProperties()[g.id], g);
 			});
 
 		},
 
 
-		_competitorsProperties: {
-			"me": 		{id:"me", 		idx: 0, color:"#69839D", bsPrefix:"success"}, 
-			"first": 	{id:"first", 	idx: 1, color:"#F6B568", bsPrefix:"danger"}, 
-			"second": 	{id:"second",	idx: 2, color:"#F6B568", bsPrefix:"danger"}, 
-			"third": 	{id:"third",	idx: 3, color:"#F6B568", bsPrefix:"danger"},
+		_competitorsProperties: function() {
+			return {
+				"me": 		{id:"me", 		idx: 0, color:"#69839D", bsPrefix:"success"}, 
+				"first": 	{id:"first", 	idx: 1, color:"#F6B568", bsPrefix:"danger"}, 
+				"second": 	{id:"second",	idx: 2, color:"#F6B568", bsPrefix:"danger"}, 
+				"third": 	{id:"third",	idx: 3, color:"#F6B568", bsPrefix:"danger"},
+			};
 		},
 
 		_massageCompetitors: function(m) {
@@ -134,7 +138,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			var me = E._.find(m.competitors, {competitor:false});
 			if(!me) { return; }
 
-			me = E.merge(this._competitorsProperties.me, me);
+			me = E.merge(this._competitorsProperties().me, me);
 
 			var them = E.filter(m.competitors, function(v) {
 				// console.log("Competitor", v, v.name, v.competitor);
@@ -147,7 +151,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 					id: ["first", "second", "third"][i]
 				});
 
-				return E.merge(self._competitorsProperties[c.id], c);
+				return E.merge(self._competitorsProperties()[c.id], c);
 			});
 
 			m.competitors = [me].concat(them);
