@@ -1,7 +1,7 @@
 
 
 
-define(['sb_light/globals'], function(sb) {
+define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function(E, ST, sb) {
 	'use strict';
 
 	var api = {};
@@ -10,6 +10,7 @@ define(['sb_light/globals'], function(sb) {
 	var _errorTimeout = 50;
 	var _errorTimeoutDefault = 50;
 	var _requestQueue =  [];
+
 
 		
 	api.get = function(url, params, success, failure, stateCheck, overrides) {
@@ -21,8 +22,8 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 	api.request =  function(url, params, post, success,failure, stateCheck, overrides) {
-		var stateFunc = (stateCheck || sb.state.authorized);
-		if(stateFunc.call(sb.state)) {
+		var stateFunc = (stateCheck || ST.authorized);
+		if(stateFunc.call(ST)) {
 			_request(url, params, post, success, failure, overrides); 
 		} else if(failure) {
 			failure(null);
@@ -37,7 +38,7 @@ define(['sb_light/globals'], function(sb) {
 			throw "Error: sb.api.ajax has not been inititalized. Please set this value to one of the functions available in sb.ajax";
 		}
 		params = params || {};
-		sb.state.addTimestamps(params);
+		ST.addTimestamps(params);
 
 		var opts = sb.ext.merge({
 			url: url,
@@ -58,7 +59,7 @@ define(['sb_light/globals'], function(sb) {
 		sb.ext.debug("SUCCESS: SB_Api", reqArgs.url);
 		_errorTimeout = _errorTimeoutDefault;
 		
-		var wasValid = sb.state.authorized();
+		var wasValid = ST.authorized();
 		
 		var opts = reqArgs.opts;
 
@@ -69,7 +70,7 @@ define(['sb_light/globals'], function(sb) {
 			return;
 		}
 
-		if (sb.state.update(data) ) {
+		if (ST.update(data) ) {
 			//success function in the original call
 			var errors = sb.helpers.getResultMessages(data).errors;
 			
@@ -90,11 +91,20 @@ define(['sb_light/globals'], function(sb) {
 				reqArgs.failure(data);	
 			}	
 		}
+
+		_popQueue();
 	}
 	
-	function _failure (reqArray, data) {
-		sb.ext.debug("FAILURE SB_Api", reqArray.join(" "), JSON.stringify(data));
-		sb.state.context("session", sb.state.session_disconnected);
+	function _failure (reqArgs, data) {
+		sb.ext.debug("FAILURE SB_Api", JSON.stringify(reqArgs), JSON.stringify(data));
+
+		if(!ST.disconnected()) {
+			ST.context("session", ST.session_disconnected);
+			_pushQueue(reqArgs);
+		} else {
+			_watchConnection();
+		}
+
 	}
 	
 	function _pushQueue (data) {
@@ -104,25 +114,41 @@ define(['sb_light/globals'], function(sb) {
 			_requestQueue.push({key:key, data:data});
 		}
 	}
-	
+
 	function _popQueue () {
 		if(_errorData) {
 			sb.ext.debug("Running Error Request");
 			_request.apply(this, this._errorData);
 		} else if (_requestQueue.length > 0) {
 			var r = _requestQueue.shift().data;
-			if(r.state()) {
-				_request.call(null, r.url, r.params, r.post, r.success, r.failure);
-			} else {
-				r.count += 1;
-				if(r.count < this._maxRetries) {
-					_pushQueue.bindDelay(null, _retryDelay, r);
-				}
-				_popQueue();
-			}
+			api.request.call(null, r.url, r.params, r.post, r.success, r.failure);
 		}
 	}
 	
+	var _checkContext = 0;
+	function _watchConnection() {
+		sb.ext.debug("Watching Connection ", ST.context("session"), _checkContext);
+		if(ST.disconnected()) {
+			_checkContext = E.range(50, 10000, _checkContext*2);
+			sb.ext.debug("Disconnected. Try login periodically until it succeeds", _checkContext);
+			
+			api.post.bindDelay(null, _checkContext, sb.urls.url(sb.urls.LOGIN), {}, null, null, ST.disconnected);
+
+		} else if(_checkContext > 0) {
+			sb.ext.debug("Popup Queue. Connection Success");
+			_checkContext = 0;
+			_popQueue();
+		}
+	}
+
+	
+
+	//check the connection
+	ST.watchContext("session", _watchConnection);
+
+
+
+
 	return api;
 });
 
