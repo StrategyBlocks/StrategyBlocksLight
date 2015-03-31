@@ -7,7 +7,7 @@ define(['sb_light/globals'], function(sb) {
 
 
 	ajax.d3 = function(d3) { return function(opts) {
-		var url = opts.url.replace(/^(https?:\/\/)/, "//");
+		// var url = opts.url.replace(/^(https?:\/\/)/, "//");
 		var data =  sb.urls.o_to_params(opts.data);
 		if(opts.type !== "POST" && data) {
 			url += "?" + data;
@@ -48,7 +48,7 @@ define(['sb_light/globals'], function(sb) {
 	ajax.jquery = function(jquery) { return function(opts) {
 		var cd = (sb.state.host != window.location.host);
 
-		opts.url = cd ? opts.url.replace(/^(https?:\/\/)/, "//") : opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
+		// opts.url = cd ? opts.url.replace(/^(https?:\/\/)/, "//") : opts.url.replace(/^(https?:\/\/)?.+?\//, "/");
 		sb.ext.debug("jquery ajax", opts.type, opts.url, opts.dataType);
 		
 
