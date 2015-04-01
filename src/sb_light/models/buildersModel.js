@@ -126,8 +126,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			return {
 				"me": 		{id:"me", 		idx: 0, color:"#69839D", bsPrefix:"success"}, 
 				"first": 	{id:"first", 	idx: 1, color:"#F6B568", bsPrefix:"danger"}, 
-				"second": 	{id:"second",	idx: 2, color:"#F6B568", bsPrefix:"danger"}, 
-				"third": 	{id:"third",	idx: 3, color:"#F6B568", bsPrefix:"danger"},
+				"second": 	{id:"second",	idx: 2, color:"#F6E558", bsPrefix:"danger"}, 
+				"third": 	{id:"third",	idx: 3, color:"#F69578", bsPrefix:"danger"},
 			};
 		},
 
@@ -185,6 +185,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 					id: E._.camelCase(v.name),
 				});
 			});
+
+			m.opportunities = E._.sortByOrder(m.opportunities, ["rank", "name"], [false, true]);  
 		},
 		_massageStrengths: function(m) {
 			m.strengths = E.map(m.strengths, function(v,i) {

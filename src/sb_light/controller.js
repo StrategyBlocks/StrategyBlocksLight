@@ -13,9 +13,8 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.createBuilder = function(args, cb, errCb) {
 		controller.invoke(sb.urls.BUILDER_CREATE, args, cb, errCb);
 	};
-	controller.updateBuilder = function(args, name,  cb, errCb) {
-		var func = controller.invoke.bind(controller,sb.urls.BUILDER_UPDATE, args,cb,errCb);
-		sb.queue.buffer(func, "controller_update_builder_"+name, 2000, true);
+	controller.updateBuilder = function(args, cb, errCb) {
+		controller.invoke(sb.urls.BUILDER_UPDATE, args, cb, errCb);
 	};
 	controller.deleteBuilder = function(args, cb, errCb) {
 		controller.invoke(sb.urls.BUILDER_DESTROY, args, cb, errCb);
