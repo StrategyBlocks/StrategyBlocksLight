@@ -207,6 +207,12 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		}
 		return 0;
 	};
+	state.setTimestamp = function(name, timestamp) {
+		var m = models;
+		if(m[name]) {
+			return m[name].timestamp  = timestamp;
+		}
+	};
 	state.resetTimestamp = function(name) {
 		var m = models;
 		if(m[name]) {

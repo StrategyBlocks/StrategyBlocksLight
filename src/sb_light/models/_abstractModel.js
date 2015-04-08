@@ -147,7 +147,8 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		},
 		
 		//should contain "added", "updated", "deleted" objects
-		manualUpdate: function(data) {
+		manualUpdate: function(data, timestamp) {
+			if(E.first(timestamp,0)) { ST.setTimestamp(this.name, timestamp); }
 			this._processResponse(data);
 			this._resetArrayCache();
 			this._publish();
