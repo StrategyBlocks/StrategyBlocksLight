@@ -215,7 +215,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		_massageGoals: function(m) {
 			m.balanced_goals = E.map(m.balanced_goals, function(v,i) {
 				return E.merge(v, {
-					id: E._.camelCase(v.title),
+					id: E._.camelCase(v.opportunity_name + " " + v.strength_name),
 					index:(i+1)
 				});
 			});
