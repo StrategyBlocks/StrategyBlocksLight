@@ -33,7 +33,7 @@ define([
 		__created:false,
 		__dirty: false,
 		__busy:false,
-		__delay:50,
+		__delay:0,
 		__canDrawDelay:-1,
 		__beforeDrawList:null,
 		__beforeDrawWaiting:"",
