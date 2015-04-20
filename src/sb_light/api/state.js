@@ -232,7 +232,10 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		if(storage.state.company_id) {
 			params.company_id = storage.state.company_id;
 		}
-		state.context("session", state.session_unknown);
+
+		if(!uname) {
+			state.context("session", state.session_unknown);
+		}
 
 
 		var url = sb.urls.url(sb.urls.LOGIN);
