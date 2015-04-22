@@ -503,8 +503,9 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.first = function ext_first(/*etc...*/) {
 		var i, args = E.slice(arguments);
 		for(i = 0; i < args.length; ++i) {
-			if(!isNaN(args[i])) {
-				return args[i];
+			var ci= args[i]
+			if(E.isNum(ci) && !isNaN(ci)) {
+				return ci;
 			}
 		}
 		return NaN;

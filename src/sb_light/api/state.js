@@ -133,7 +133,9 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		if(!type && sb.debug) {
 			//provide access to the raw object. This may or may not be dangerous....
 			//TODO: investigate benefits beyond debugging
-			return storage[group];
+			//GM APR 21 / 2015: Start using cloneDeep to avoid giving access to the raw stored object. This prevents changing the object
+			//                  by accident when accessing it and making modifications directly without applying changes manually.   
+			return E._.cloneDeep(storage[group]);
 		}
 
 		var sg = storage[group];
@@ -153,7 +155,18 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			}
 			return state;
 		}
-		return sg[type] || sg["_default_"+type] || null;
+		//GM APR 21 / 2015: Start using cloneDeep to avoid giving access to the raw stored object. This prevents changing the object
+		//                  by accident when accessing it and making modifications directly without applying changes manually.   
+
+		var retVal = sg[type];
+		if(E.valid(retVal)) {
+			return E._.cloneDeep(retVal);
+		} 
+		retVal = sg["_default_"+type];
+		if(E.valid(retVal)) {
+			return E._.cloneDeep(retVal); 
+		}
+		return null;
 	};
 
 	var _initStorage = function(group, type, _default) {
