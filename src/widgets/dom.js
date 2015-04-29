@@ -341,7 +341,7 @@ define([
 				opts.put(" #", templateOpts[1]);
 			}
 			this.$.load(opts.join(""), function() {
-				self.beforeDrawDone();
+				self.beforeDrawDone.bindDelay(self, 200);
 			});
 		},
 
