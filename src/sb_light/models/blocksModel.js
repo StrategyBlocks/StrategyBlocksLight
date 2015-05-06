@@ -218,7 +218,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				parentPath:(p ? p.path : null),
 				parent:p,
 				level: depth,
-				level_sort: (p ? (p.level_sort + "." + pos) : "L1"),
+				level_sort: (p ? (p.level_sort + "." + (1+pos)) : "L1"),
 
 				size:1,
 				status: ((b.ownership_state == "new") ? "new" : (
