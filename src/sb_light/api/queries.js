@@ -622,8 +622,8 @@ define(['sb_light/globals',
 			return rb ? (prop ? rb[prop] : rb): null;
 		}
 		var c = q.company();
-		rb = c ? c.root_block : null;
-		return rb ? q.block(rb.id, prop) : null;
+		rb = c ? (c.company_block || c.root_block || null): null;
+		return rb ? (q.block(rb.id, prop) || (prop ? rb[prop] : rb)) : null;
 	};
 
 	q.block = function(b, prop) {

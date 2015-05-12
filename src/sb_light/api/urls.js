@@ -168,6 +168,7 @@ define(['sb_light/globals'], function(sb) {
 		//BUILDER 
 		BUILDER_TEMPLATE:			{url: "/builders/template.js",							post:false},
 		BUILDER_CREATE:				{url: "/builders/create.js",							post:true},
+		BUILDER_LICENSE:			{url: "/builders/check_license.js",						post:false},
 		BUILDER_UPDATE:				{url: "/builders/%id%/update.js",						post:true, deleteId:true},
 		BUILDER_DESTROY:			{url: "/builders/%id%/destroy.js",						post:true, deleteId:true},
 
