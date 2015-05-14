@@ -452,8 +452,11 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 			var pt = S.utils.pt;
 			var ctm = S.utils.ctm;
 
-			pt.x = E.first(evt.clientX,evt.pageX); 
-			pt.y = E.first(evt.clientY, evt.pageY);
+			var loc = evt.touches ? evt.touches[0] : evt;
+			console.log(loc.clientX, loc.pageX);
+
+			pt.x = E.first(loc.clientX,loc.pageX); 
+			pt.y = E.first(loc.clientY, loc.pageY);
 			var res = pt.matrixTransform(ctm);
 			if(offset) {
 				res.x -= ctm.e;
