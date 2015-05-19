@@ -977,6 +977,11 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		}
 	};
 
+	E.formValid = function(form) {
+		form = $(form).validator();
+		return form && !form.data("bs.validator").hasErrors(); 
+	};
+
 
 	//take a list of "complete" length and merge the sparse "smaller" into it by matching keys
 	//returns an object with "key" as the key
