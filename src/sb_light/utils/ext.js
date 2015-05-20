@@ -72,7 +72,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 
 	E.warn = function ext_warn() {
 		var str = ([(new Date()).toTimeString(), "WARNING:"]).concat(E.slice(arguments)).join(" ");
-		if(E.global("Ti")) {
+		if(E.global("API")) {
 			Ti.API.warn(str);
 		} else if(E.global("console")) {
 			console.log(str);
