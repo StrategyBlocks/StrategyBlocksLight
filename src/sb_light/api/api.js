@@ -98,6 +98,17 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 	function _failure (reqArgs, data) {
 		sb.ext.debug("FAILURE SB_Api", JSON.stringify(reqArgs), JSON.stringify(data));
 
+		if(data && data.status == 200) {
+			reqArgs.failure(data);
+			if(sb.helpers && sb.helpers.showMessage) {
+				sb.helpers.showMessage("Something bad happened with your last update and the response could not be processed.\
+										 Please contact <a href='mailto:help@strategyblocks.com'>StrategyBlocks Support</a> \
+										 and let us know what happened.", "danger")
+				;
+			}
+			return;
+		}
+
 		if(!ST.disconnected()) {
 			ST.context("session", ST.session_disconnected);
 			if(sb.options && sb.options.isDevice) {
