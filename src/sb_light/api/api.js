@@ -100,8 +100,12 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 
 		if(!ST.disconnected()) {
 			ST.context("session", ST.session_disconnected);
-			_pushQueue(reqArgs);
-		} else {
+			if(sb.options && sb.options.isDevice) {
+				reqArgs.failure(data);
+			} else {
+				_pushQueue(reqArgs);
+			}
+		} else if(!(sb.options && sb.options.isDevice)) {
 			_watchConnection();
 		}
 

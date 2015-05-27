@@ -330,7 +330,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 	state.startup = function() {	return storage.context.session == state.session_startup; };
 	
 	//any state but unknown / startup
-	state.known = function() {	return state.unknown() == false;	};
+	state.known = function() {	return state.unknown() == false && state.disconnected() == false;	};
 	//not tried auth yet. 
 	state.unknown = function() {	return storage.context.session == state.session_unknown || storage.context.session == state.session_startup;	};
 	//no auth
