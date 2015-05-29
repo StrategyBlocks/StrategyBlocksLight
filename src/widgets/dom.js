@@ -124,7 +124,7 @@ define([
 				if(opts.hasOwnProperty(k)) { 
 					opts[k] = v; 
 				}
-			})
+			});
 
 
 			this.__created = true;
@@ -145,7 +145,7 @@ define([
 			if(cb) {
 				cb();
 			} else {
-				console.log("wtf?");
+				// console.log("wtf?");
 				throw new Error("Please pass the 'cb' callback when overriding the postCreate function", this.id);
 			}
 		},
@@ -165,7 +165,7 @@ define([
 			//unsubscribe from states
 			E.each(w, function(type) {
 				var list = w[type];
-				E.each(list,function(v,k) {
+				E.each(list,function(v) {
 					ST.unwatch(type, w[type], v);
 				});
 			});
@@ -202,7 +202,6 @@ define([
 		hasDifferences: function() {
 			if(!this.__differences) { return true;}
 
-			var id = this.id;
 			return E._.some(this.__differences, function(v) {
 				var res = v.func();	
 				var diff = v.cache != res;
@@ -221,7 +220,7 @@ define([
 			var m = sb.models;
 			var ms = this.__models;
 			var df = this.bind(this.__modelDirty);
-			args.forEach(function(v,i) {
+			args.forEach(function(v) {
 				if(!ms[v]) {
 					ms[v] = m.subscribe(v, df);
 				}
@@ -279,6 +278,8 @@ define([
 				state:sb.state.authorized,
 				data:null,
 				busy:false,
+				// id:"audits",
+				//url: sb.urls.ADMIN_AUDITS,
 				collect:E.fidentity({}), //function for fetching, default just returns an empty object
 			}, opts);
 			this.__data[opts.id] = opts;
@@ -324,7 +325,7 @@ define([
 
 		//done first after init. This allows the caller and subclass to override / add properties
 		initOpts: function(opts) {
-			var opts = E.merge(OPTS, opts);
+			opts = E.merge(OPTS, opts);
 			opts.stateFunction = opts.stateFunction || ST.any;
 			return opts;
 		},

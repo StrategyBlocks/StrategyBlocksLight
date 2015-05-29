@@ -72,6 +72,7 @@ define(['sb_light/globals'], function(sb) {
 		// COMPANIES_CREATE: 				{url: "/companies/create.js"},
 		COMPANIES_REGISTER: 			{url: "/companies/create.js"},
 		COMPANIES_UPDATE: 				{url: "/companies/update.js"},
+
 		COMPANIES_HEALTH: 				{url: "/health_calculations.js"},
 		COMPANIES_HEALTH_CREATE: 		{url: "/health_calculations/create.js"},
 		COMPANIES_HEALTH_UPDATE :		{url: "/health_calculations/%id%/update.js", deleteId:true},
@@ -147,6 +148,8 @@ define(['sb_light/globals'], function(sb) {
 		USERS_CHANGE_DEFAULT_COMPANY:	{url: "/users/%id%/change_default_company.js", normalParams:true},
 		
 		REGISTER_COMPANY: 			{url: "/registration/register.js"},
+		REGISTER_INDUSTRIES: 		{url: "/registration/industries.js"},
+
 		
 		LOGIN :						{url: "/login/auth.js"},
 		LOGOUT: 					{url: "/login/logout.js"},
