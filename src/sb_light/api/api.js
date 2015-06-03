@@ -6,7 +6,6 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 
 	var api = {};
 
-	var _errorData = null;
 	var _errorTimeout = 50;
 	var _errorTimeoutDefault = 50;
 	var _requestQueue =  [];
@@ -92,6 +91,7 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 			}	
 		}
 
+		_failedArgs = null;
 		_popQueue();
 	}
 	
@@ -109,17 +109,20 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 			return;
 		}
 
-		if(!ST.disconnected()) {
+		if (!_failedArgs) {
+			//cache the request arguments and poll the connection
+			_failedArgs = reqArgs;
+			_pushQueue(reqArgs);
+			_watchConnection();
+		} else if(_checkContext >= _checkTimeout) {
+			//we've been trying for too long, so disconnect them and let them try to fix the problem.
 			ST.context("session", ST.session_disconnected);
-			if(sb.options && sb.options.isDevice) {
-				reqArgs.failure(data);
-			} else {
-				_pushQueue(reqArgs);
-			}
-		} else if(!(sb.options && sb.options.isDevice)) {
+			_failedArgs.failure(data);
+			_failedArgs = null;
+		} else  {
+			//increase the polling wait time (_checkContext) and try again
 			_watchConnection();
 		}
-
 	}
 	
 	function _pushQueue (data) {
@@ -131,23 +134,23 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 	}
 
 	function _popQueue () {
-		if(_errorData) {
-			sb.ext.debug("Running Error Request");
-			_request.apply(this, this._errorData);
-		} else if (_requestQueue.length > 0) {
+		_failedArgs = null;
+		if(_requestQueue.length > 0) {
 			var r = _requestQueue.shift().data;
 			api.request.call(null, r.url, r.params, r.post, r.success, r.failure);
 		}
 	}
 	
 	var _checkContext = 0;
+	var _checkTimeout = 3000
+	var _failedArgs = null;
 	function _watchConnection() {
 		sb.ext.debug("Watching Connection ", ST.context("session"), _checkContext);
-		if(ST.disconnected()) {
-			_checkContext = E.range(50, 10000, _checkContext*2);
+		if(_failedArgs) {
+			_checkContext = E.range(50, _checkTimeout, _checkContext*2);
 			sb.ext.debug("Disconnected. Try login periodically until it succeeds", _checkContext);
 			
-			api.post.bindDelay(null, _checkContext, sb.urls.url(sb.urls.LOGIN), {}, null, null, ST.disconnected);
+			api.post.bindDelay(null, _checkContext, sb.urls.url(sb.urls.LOGIN), {}, null, null, ST.any);
 
 		} else if(_checkContext > 0) {
 			sb.ext.debug("Popup Queue. Connection Success");
