@@ -143,7 +143,7 @@ define([
 			//on devices, we want to open HTML links in a new system browser window
 			if(sb.options.isDevice) {
 				this.$.find("a[target='_blank']").on("click", function(el) {
-					var href = this.attr("href");
+					var href = $(this).attr("href");
 					if(href.match(/^\//)) {
 						href = sb.state.host + href;
 					}
