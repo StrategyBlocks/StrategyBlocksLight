@@ -139,7 +139,19 @@ define([
 		//This function is called after creation when "canDraw" is true, but postCreate hasn't been called yet.
 		//it generally signals the loading of the html templates
 		postCreate:function(cb) {
-		 	// console.log("postCreate", this.id, cb);
+
+			//on devices, we want to open HTML links in a new system browser window
+			if(sb.options.isDevice) {
+				this.$.find("a[target='_blank']").on("click", function(el) {
+					var href = this.attr("href");
+					if(href.match(/^\//)) {
+						href = sb.state.host + href;
+					}
+					console.log("Open external browser");
+					window.open(href, "_system");
+					return false;
+				})
+			}
 
 
 			if(cb) {
