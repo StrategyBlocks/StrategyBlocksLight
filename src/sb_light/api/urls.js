@@ -102,6 +102,10 @@ define(['sb_light/globals'], function(sb) {
 		GROUPS_REMOVE :				{url: "/groups/%id%/remove.js"},
 	
 	
+		//type: IMAGE  : pdf
+		//email: true|FALSE
+		HTML_REPORT:				{url: "/html/generate_report.js"},
+
 		RISKS_CREATE :				{url: "/risks/create.js"},
 		RISKS_DESTROY :				{url: "/risks/%id%/destroy.js"},
 		RISKS_UPDATE :				{url: "/risks/%id%/update.js"},
