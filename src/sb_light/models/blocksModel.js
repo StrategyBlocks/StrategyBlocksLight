@@ -168,6 +168,14 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		_handleProperty: function(type, id, data) {
 			this._properties[type] = this._properties[type] || {};
 			this._properties[type][id] = data ? data.result : this._properties[type][id];
+
+			E.each(this._properties[type][id], function(v) {
+				E.each(["date", "created_at", "updated_at"], function(d) {
+					if(v[d]) {
+						v[d] = E.moment(v[d], E.unixFormat);
+ 					}
+				})
+			});
 			
 			while(this._properties[type+"_queue"][id].length) {
 				var cb = this._properties[type+"_queue"][id].pop();
@@ -183,12 +191,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 		},
 		_massageProgress: function(d) {
-			var f = E.massageTA;
-			E.each(d, function(dv) {
-				f(dv);
-			});			
+			// var f = E.massageTA;
+			// E.each(d, function(dv) {
+				// f(dv);
+			// });			
 		},
-		_massageNpv: function(d) {
+			_massageNpv: function(d) {
 
 		},
 		
@@ -235,13 +243,18 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				progress_status_class: (b.closed ? "closed" : (b.ownership_state == "new" ? "private" : b.progress_color)),
 				parent_title: (p ? p.title : ""),
 				schema:schema,
+				start_date_str: b.start_date,
+				end_date_str: b.end_date,
+				start_date: E.serverMoment(b.start_date),
+				end_date: E.serverMoment(b.end_date),
+
 
 			});
 
 			//map children ids to paths
-			b.children = E.map(b.children, function(cpath, i) {
+			b.children = b.children ? E.map(b.children, function(cpath, i) {
 				return recurse(cpath, b, depth+1, i, schema);
-			});
+			}) : [];
 
 
 			E.each(b.children, function(cpath) {

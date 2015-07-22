@@ -1,6 +1,6 @@
 
 
-/*globals define,  CryptoJS */
+/*globals define, d3 */
 
 
 
@@ -15,7 +15,9 @@ define(['sb_light/globals',
 		"moment",
 		"accounting", 
 		"sb_light/utils/ext", 
-		'sb_light/api/state'
+		'sb_light/api/state',
+		//ignore
+		'd3'
 ], function(sb, moment, accounting,  E, ST) {
 	
 	'use strict';
@@ -48,33 +50,61 @@ define(['sb_light/globals',
 	q.shortCompanyName = function(cid) {
 		var c = q.company(cid);
 		var t = c ? c.name : null;
-		if(t && t.length > 28) {
+		if(t && t.length > 25) {
 			t = t.substr(0,10) + "..." + t.substr(t.length-10);
 		} 
 		return t;
-	}
+	};
+
+	q.yearEnd = function() {
+		var c = q.company();
+		var fy = c ? c.npv.financial_year_starts_on : "1/4";
+		var ds = fy.match(/^(\d\d?)\//)[1];
+		var ms = fy.match(/\/(\d\d?)$/)[1];
+
+		var cfy = E.moment().startOf("year").add(E.to_i(ms)-1,"m").add(E.to_i(ds)-1, "d").subtract(1, "d");
+		if(cfy.isBefore(E.moment())) {
+			return cfy.add(1, "year");
+		} 
+		return cfy; 
+	};
+
+	q.yearStart = function() {
+		var c = q.company();
+		var fy = c ? c.npv.financial_year_starts_on : "1/4";
+		var ds = fy.match(/^(\d\d?)\//)[1];
+		var ms = fy.match(/\/(\d\d?)$/)[1];
+
+		var cfy = E.moment().startOf("year").add(E.to_i(ms)-1,"m").add(E.to_i(ds)-1, "d");
+		if(cfy.isAfter(E.moment())) {
+			return cfy.subtract(1, "year");
+		} 
+		return cfy; 
+	};
 
 
 	/********************************
 		USERS
 	*********************************/
+	var DELETED_NAME = "<deleted>";
+
 	q.fullname = function(uid) {
 		var u = q.user(uid);
-		return u ? (u.name || (u.firstname + " " + u.lastname)) : "<deleted>";
+		return u ? (u.name || (u.firstname + " " + u.lastname)) : DELETED_NAME;
 	};
 	q.firstname = function(uid) {
 		var u = q.user(uid);
-		return u ? u.first_name : "<deleted>";
+		return u ? u.first_name : DELETED_NAME;
 	};
 
 	q.shortName = function(uid) {
 		var u = q.user(uid);
-		return u? (u.first_name.slice(0,1) + ". " + u.last_name) : "<deleted>";
+		return u? (u.first_name.slice(0,1) + ". " + u.last_name) : DELETED_NAME;
 	};
 
 	q.lastname = function(uid) {
 		var u = q.user(uid);
-		return u ? u.last_name : "<deleted>";
+		return u ? u.last_name : DELETED_NAME;
 	};
 	q.user = function(uid /*optional*/) {
 		var um = sb.models.rawArray("users");
@@ -84,6 +114,12 @@ define(['sb_light/globals',
 		uid = uid || ST.state("user_id");
 		return sb.models.find("users", uid);
 	};
+
+	q.userProfile = function() {
+		var uid = ST.state("profile_user");
+		return uid ? q.user(uid): null;
+	};
+
 	q.companyMembership = function(uid) {
 		var u = q.user(uid);
 		if(u.company_membership) {
@@ -116,9 +152,20 @@ define(['sb_light/globals',
 		}).sort(sb.ext.sortUsers);
 	};
 
-	q.gravatar = function(uid) {
+	q.gravatar = function(uid, size) {
 		var u = q.user(uid);
-		return "http://www.gravatar.com/avatar/" +  CryptoJS.MD5(u ? u.username : "") + "?d=identicon";
+		return "http://www.gravatar.com/avatar/" +  (u ? u.gravatar : "") + "?d=identicon&s="+ (size||50);
+	};
+
+
+	q.userMessageDisplay = function(uid, message, width) {
+		var u = q.user(uid);
+		if(!u) {
+			return DELETED_NAME;
+		}
+		return 	"<div style='min-width:"+ (width || "auto") +"'><a target='_blank' href='mailto:"+ u.username + "' title='"+ q.fullname() +"' >"  + 
+					" <img style='float:left;margin:0 5px 5px 0;' src='" + q.gravatar(u.id) + "'></img> " + q.shortName(u.id) + ": " +
+				"</a> " + (message||"") + "</div>";
 	};
 
 	q.isAdmin = function(uid) {
@@ -233,7 +280,7 @@ define(['sb_light/globals',
 
 	q.focusPath = function(fid) {
 		var list = q.focusList(fid);
-		return list.reverse().map(function(v,k){
+		return list.reverse().map(function(v){
 			return v.title;
 		}).join(" / ");
 	};
@@ -263,45 +310,7 @@ define(['sb_light/globals',
 		return model && id ? model[id] : null;	
 	};
 	
-	var _newsMsgRE = /%(users|blocks)_(\d+)%/g;
-	q.newsMessage = function(n) {
-		var re= _newsMsgRE;
-		var blocks = sb.models.raw("blocks");
-		var users = sb.models.raw("users");
-		
-		return n.msg.replace(re, function(match,type, id) {
-			if(type == "blocks") {
-				return Q.block(id, "title") || "<unknown block>";
-			}
-			if(type == "users") {
-				return Q.fullName(id) || "<unknow user>";
-			}
-		});	
-	};
 	
-	var _newsUsersRE = /%users_(\d+)%/g;
-	q.newsUsers = function(n) {
-		var re = _newsUsersRE;
-		var users = [];
-		var match = null;
-		do {
-			if(match) { users.push(match[1]); }
-			match = re.exec(n.msg);
-		} while(match);
-		return users;
-	};
-	
-	var _newsBlocksRE = /%blocks_(\d+)%/g;
-	q.newsBlocks = function(n) {
-		var re = _newsBlocksRE;
-		var blocks = [];
-		var match = null;
-		do {
-			if(match) { blocks.push(match[1]); }
-			match = re.exec(n.msg);
-		} while(match);
-		return blocks;
-	};
 	
 	/********************************
 		METRICS
@@ -310,18 +319,19 @@ define(['sb_light/globals',
 		id = id || ST.state("metric");
 		var m = sb.models.raw("metrics");
 		if(id && m) {
+			id = E.isNum(id) ? String(id) : id;
 			//return the original kpi if we've passed the real object
 			return E.isStr(id) ? m[id] : m[id.id];
 		}
 		return null;
 	};
 
-	q.isMetricOwner = function(m) {
-		var m = q.metric(m);
+	q.isMetricOwner = function(mid) {
+		var m = q.metric(mid);
 		return m && m.is_owner; 
 	};
-	q.isMetricManager = function(m) {
-		var m = q.metric(m);
+	q.isMetricManager = function(mid) {
+		var m = q.metric(mid);
 		return m && m.is_manager;
 	};
 
@@ -347,7 +357,7 @@ define(['sb_light/globals',
 	q._trendMap = {
 		"Down": "fa fa-lg fa-arrow-circle-down",
 		"Up": "fa fa-lg fa-arrow-circle-up",
-		"Flat": "fa fa-lg fa-arrow-circle-right"
+		"Flat": "fa fa-lg fa-minus-circle"
 	};
 
 	q.metricTrendClass = function(id) {
@@ -385,25 +395,23 @@ define(['sb_light/globals',
 	};
 
 	q.metricChartData = function(id) {
-		var timer = E.moment();
+		// var timer = E.moment();
 
 		var m = q.metric(id);
-		var percent = m.tolerance.percentage ? true : false;
-		var btg = m.tolerance.below_target_good ? true : false;
-		var start = E.min(m.tolerance.range_start, m.tolerance.range_end);
-		var end = E.max(m.tolerance.range_start, m.tolerance.range_end);
-		var today = E.serverDate();
+		var percent = m.percentage ? true : false;
+		var start = E.min(m.range_start, m.range_end);
+		var end = E.max(m.range_start, m.range_end);
+		var today = E.moment();
 		var targets  = (m.target && m.target.length) ? E._.cloneDeep(m.target) : [{date:E.serverDate(), value:0}];
 		var actuals  = (m.actuals && m.actuals.length) ? E._.cloneDeep(m.actuals) : [{date:E.serverDate(), value:0}];
 		targets.push({date:today, value:(m.last_target_value||0)});
 		actuals.push({date:today, value:(m.last_actual_value||0), comment:"Current Actual"});
 
-		
-		targets.sort(E.sortFactory("date", E.sortDate));
-		actuals.sort(E.sortFactory("date", E.sortDate));
+		targets.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
+		actuals.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
 
-		var targetDates = E.values(targets, "date");
-		var actualDates = E.values(actuals, "date");
+		var targetDates = E.values(targets, "date", E.serverMoment);
+		var actualDates = E.values(actuals, "date", E.serverMoment);
 
 		var targetValues = E.values(targets, "value");
 		var actualValues = E.values(actuals, "value");
@@ -418,7 +426,6 @@ define(['sb_light/globals',
 		var lowerValues = targetValues.map(function(v) {
 			return v + (percent ? (v*start) : start );
 		});
-		var sv = E._.union(targetValues,actualValues,upperValues,lowerValues).sort(E.sortNumber);
 
 		var actualsMap = E.toObject(actuals, "date");
 		//ceate a unique, sorted list of dates. 
@@ -442,8 +449,9 @@ define(['sb_light/globals',
 			uv:upperValues,				lv:lowerValues,
 		};
 
-		res.series = E.map(dates, function(ds) {
-			var d = E.date(ds);
+		res.series = E.map(dates, function(dm) {
+			var d = E.date(dm);
+			var ds = E.serverDate(dm);
 			var t = tscale(d);
 			var a = ascale(d);
 			var v = (a ? ((a-t)/a) : Number.POSITIVE_INFINITY);
@@ -454,7 +462,9 @@ define(['sb_light/globals',
 
 			return {
 				date:d,
-				_dateStr: ds,
+				moment:dm,
+				dateStr: E.serverDate(d),
+				dateNum: d.getTime(),
 				target:t,
 				actual:a,
 				upper:u,
@@ -466,30 +476,28 @@ define(['sb_light/globals',
 			};
 		});
 
-		console.log("MetricsChart Timer: ", E.moment().diff(timer));
+		// console.log("MetricsChart Timer: ", E.moment().diff(timer));
 		return res;
-	}
+	};
 
 
 	q.progressChartData = function(progressData, bid) {
 		var pd = progressData[bid];
 		if(!pd) { return null;}
 
-		var timer = E.moment();
 		var percent = true;
-		var btg = false;
-		var start = E.min(pd.tolerance.range_end, pd.tolerance.range_end)/100;
-		var end = E.max(pd.tolerance.range_start, pd.tolerance.range_end)/100;
+		var start = E.min(pd.range_end, pd.range_end)/100;
+		var end = E.max(pd.range_start, pd.range_end)/100;
 		var today = E.today();
 		var targets  = (pd.target && pd.target.length) ? E._.cloneDeep(pd.target) : [{date:today, value:0}];
-		var actuals  = (pd.values && pd.values.length) ? E._.cloneDeep(pd.values) : [{date:today, value:0}];
+		var actuals  = (pd.actuals && pd.actuals.length) ? E._.cloneDeep(pd.actuals) : [{date:today, value:0}];
 
 		
-		targets.sort(E.sortFactory("date", E.sortDate));
-		actuals.sort(E.sortFactory("date", E.sortDate));
+		targets.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
+		actuals.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
 
-		var targetDates = E.values(targets, "date");
-		var actualDates = E.values(actuals, "date");
+		var targetDates = E.map(targets, function(v) { return E.serverMoment(v.date); });
+		var actualDates = E.map(actuals, function(v) { return E.serverMoment(v.date); });
 
 		var targetValues = E.values(targets, "value");
 		var actualValues = E.values(actuals, "value");
@@ -500,7 +508,6 @@ define(['sb_light/globals',
 		var lowerValues = targetValues.map(function(v) {
 			return v + (percent ? (v*start) : start );
 		});
-		var sv = E._.union(targetValues,actualValues,upperValues,lowerValues).sort(E.sortNumber);
 
 		var actualsMap = E.toObject(actuals, "date");
 		//ceate a unique, sorted list of dates. 
@@ -511,10 +518,10 @@ define(['sb_light/globals',
 		var td = targetDates.map(dm);
 		var ad = actualDates.map(dm);
 
-		var ascale = d3.time.scale().domain(ad).range(actualValues);
-		var tscale = d3.time.scale().domain(td).range(targetValues);
-		var upperScale = d3.time.scale().domain(td).range(upperValues);
-		var lowerScale = d3.time.scale().domain(td).range(lowerValues);
+		var ascale = d3.time.scale().domain(ad).range(actualValues).clamp(true);
+		var tscale = d3.time.scale().domain(td).range(targetValues).clamp(true);
+		var upperScale = d3.time.scale().domain(td).range(upperValues).clamp(true);
+		var lowerScale = d3.time.scale().domain(td).range(lowerValues).clamp(true);
 
 		var res = {
 			td:targetDates,				tv:targetValues,
@@ -526,17 +533,18 @@ define(['sb_light/globals',
 
 		res.series = E.map(dates, function(ds) {
 			var d = E.date(ds);
-			var t = tscale(d);
-			var a = ascale(d);
+			var t = Math.floor(tscale(d));
+			var a = Math.floor(ascale(d));
 			var v = (a ? ((a-t)/a) : Number.POSITIVE_INFINITY);
-			var u = upperScale(d);
-			var l = lowerScale(d);
+			var u = Math.floor(upperScale(d));
+			var l = Math.floor(lowerScale(d));
 			var uv = (u ? ((u-t)/u) : Number.POSITIVE_INFINITY);
 			var lv = (l ? ((l-t)/l) : Number.POSITIVE_INFINITY);
 
 			return {
 				date:d,
-				_dateStr: ds,
+				dateStr: ds,
+				dateNum: d.getTime(),
 				target:t,
 				actual:a,
 				upper:u,
@@ -551,7 +559,7 @@ define(['sb_light/globals',
 
 		// console.log("ProgressChart Timer: ", E.moment().diff(timer));
 		return res;
-	}
+	};
 
 
 
@@ -561,10 +569,10 @@ define(['sb_light/globals',
 	// 	// if(m.metricData) {
 	// 	// 	return m.metricData();
 	// 	// } else {
-	// 		var percent = m.tolerance.percentage ? true : false;
-	// 		var btg = m.tolerance.below_target_good ? true : false;
-	// 		var ts = E.min(m.tolerance.range_start, m.tolerance.range_end);
-	// 		var te = E.max(m.tolerance.range_start, m.tolerance.range_end);
+	// 		var percent = m.percentage ? true : false;
+	// 		var btg = m.below_target_good ? true : false;
+	// 		var ts = E.min(m.range_start, m.range_end);
+	// 		var te = E.max(m.range_start, m.range_end);
 	// 		ts = percent ? ts/100 : ts;
 	// 		te = percent ? te/100 : ts;
 
@@ -642,7 +650,7 @@ define(['sb_light/globals',
 			return q.block(b.parent);
 		}
 		return null;
-	}
+	};
 
 
 	q.blockStatusClass= function(b) {
@@ -655,11 +663,33 @@ define(['sb_light/globals',
 		// ;
 	};
 
+	q.blockTarget = function(b) {
+		b = q.block(b);
+		if(!b || b.ownership_state == "new") { return 0; }
+		return b.expected_progress;
+	};
+	q.blockProgress = function(b) {
+		b = q.block(b);
+		if(!b || b.ownership_state == "new") { return 0; }
+		return b.percent_progress;
+	};
+	q.blockVariance = function(b) {
+		var p  = q.blockProgress(b);
+		var e  = q.blockTarget(b);
+		return (e > 0) ? Math.floor( ((p - e)/e) *100) : 100;
+	};
+
+	q.blockProgressRatioLabel = function(b) {
+		var p = q.blockProgress(b);
+		var t = q.blockTarget(b);
+		return [p,"/",t].join("");
+	};	
+
 	q.isCenterPath = function(b) {
 		b = q.block(b);
 		var cb = q.block();
 		return cb.path.match(b.path) ? true : false;
-	}
+	};
 
 	q.defaultBlockType = function(type) {
 		ST.initState("blockType", "status");
@@ -677,7 +707,7 @@ define(['sb_light/globals',
 		ST.initState("blockType", "status");
 		ST.initState("blockSettings", "");
 
-		var types = sb.consts.blockTypes({key:"shortkey"});
+		//var types = sb.consts.blockTypes({key:"shortkey"});
 
 		var defaultType = q.defaultBlockType("shortkey");
 		var localType = ST.getStateKey("blockSettings", path);
@@ -688,7 +718,7 @@ define(['sb_light/globals',
 	};
 
 	q.canEditBlock = function(b) {
-		return q.canManageBlock() || q.canUpdateProgress();
+		return q.canManageBlock(b) || q.canUpdateProgress(b);
 	};
 	q.canManageBlock = function(b) {
 		b = q.block(b);
@@ -718,22 +748,22 @@ define(['sb_light/globals',
 		});
 	};
 
-	q._blockProgressWeightCustom = function(block, siblings) {
+	q._blockProgressWeightCustom = function(block/*, siblings*/) {
 		return block.custom_progress_weight || 0;
 	};
 
 	q._blockProgressWeightDuration = function(block, siblings) {
 		var total = E.reduce(siblings, function(prev, curr) {
-			return prev + E.daysDiff(E.moment(curr.end_date), E.moment(curr.start_date));
+			return prev + E.daysDiff(E.moment(curr.end_date, E.serverFormat), E.moment(curr.start_date, E.serverFormat));
 		}, 0);
-		return (E.daysDiff(E.moment(block.end_date), E.moment(block.start_date)) / total) * 100;
+		return (E.daysDiff(E.moment(block.end_date, E.serverFormat), E.moment(block.start_date, E.serverFormat)) / total) * 100;
 	};
 
-	q._blockProgressWeightEffort = function(block, siblings) {
+	q._blockProgressWeightEffort = function(block/*, siblings*/) {
 		return block.days_of_effort || 0;
 	};
 
-	q._blockProgressWeightPriority = function(block, siblings) {
+	q._blockProgressWeightPriority = function(block/*, siblings*/) {
 		return block.priority || 0;
 	};
 
@@ -743,6 +773,7 @@ define(['sb_light/globals',
 		q._blockProgressWeightEffort,
 		q._blockProgressWeightPriority	
 	];
+
 
 
 

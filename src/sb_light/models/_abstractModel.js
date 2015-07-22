@@ -62,7 +62,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			if(!this._model) {
 				// E.debug("Getting the " + this.name + " model.");
 				if(this._authStateCheck() ) {
-					E.debug("Forcing the update");
+					E.debug("Forcing the update", this.name);
 					ST.forceModelUpdate(this);
 				} else {
 					var me = this;
@@ -99,7 +99,8 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			this._subscriptions[id] = cb;
 			var m = this.get();
 			if(m) {
-				sb.queue.add(cb, id, 50);
+				// sb.queue.add(cb, id, 50);
+				cb.bindDelay(null, 0);
 			}
 			return id;
 		},
@@ -126,7 +127,8 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 
 			console.log("MODEL IS BEING PUBLISHED: ", this.name);
 			E.each(this._subscriptions, function(cb,k) {
-				q.add(cb, k, 0);
+				// q.add(cb, k, 0);
+				cb.bindDelay(null, 0);
 			});	
 		},
 		

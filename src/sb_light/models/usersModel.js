@@ -1,7 +1,7 @@
 
-/*globals define */
+/*globals define CryptoJS*/
 
-define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
+define(['sb_light/models/_abstractModel','sb_light/globals', "md5"], function( _Model, sb ) {
 	'use strict';
 
 	var Model = _Model.extend({
@@ -18,6 +18,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			
 			for(var i in this._model) {
 				var u = this._model[i];
+				u.gravatar = CryptoJS.MD5(u.username).toString();
 				u.name = u.first_name + " " + u.last_name;
 				u.role = u.company_membership.role;
 				u.active = u.company_membership.active;

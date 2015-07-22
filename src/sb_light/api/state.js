@@ -1,7 +1,7 @@
 
 /*globals define */
 
-define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], function(sb,consts,E) {
+define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 	//console.log("State:",sb.version);
 	'use strict';
 
@@ -118,7 +118,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		var s = watching[group];
 		//var list = s[type] || [];
 		var value = state[group](type);
-		E.debug("Publish: ", type, value);
+		// E.debug("Publish: ", type, value);
 		E.each(s[type], function(v) {
 			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});
@@ -357,7 +357,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 		_updateModels(data);
 
 		if(session != state.context("session")) {
-			sb.queue.add(state.publish.bind(state, "context", "session"), "sb_state_publish_context_session");
+			state.publish.bindDelay(state, 100, "context", "session");
 		}
 
 		return state.authorized();
@@ -402,8 +402,8 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			if(!state.authorized() || uid != storage.state.user_id || cid != storage.state.company_id) {
 				storage.state.user_id = data.user ? data.user.id : null;
 				storage.state.company_id = data.company ? data.company.id : storage.state.company_id;
-				sb.queue.add(state.publish.bind(state, "state", "user_id"), "sb_state_publish_state_user_id", 100);
-				sb.queue.add(state.publish.bind(state, "state", "company_id"), "sb_state_publish_state_company_id", 100);
+				state.publish.bindDelay(state, 100, "state", "user_id");
+				state.publish.bindDelay(state, 100, "state", "company_id");
 			}
 			
 			storage.context.user = data.user || null;
@@ -415,7 +415,7 @@ define(["sb_light/globals", "sb_light/utils/consts","sb_light/utils/ext"], funct
 			if(data.block && (!storage.state.block || (sb.models.raw("blocks") && !sb.queries.block()))) {
 				storage.state.block = String(data.block);
 				//delay so notification happens after the session is valid
-				sb.queue.add(state.publish.bind(state, "state", "block"), "sb_state_publish_state_block", 100);
+				state.publish.bindDelay(state, 100, "state", "block");
 			}
 		} else {
 			storage.state.user_id = null;

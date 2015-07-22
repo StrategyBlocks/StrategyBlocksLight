@@ -14,7 +14,7 @@ define([
 	var OPTS = {
 		appendTo: 		null,
 		idKey:			null,
-		stateFunction: 	null,
+		stateFunction: 	"any",
 		typeName:		"Dom"
 	};
 
@@ -37,9 +37,13 @@ define([
 		__canDrawDelay:-1,
 		__beforeDrawList:null,
 		__beforeDrawWaiting:"",
+		__beforeDrawFunctions: null,
+		__postBeforeDrawFunctions: null,
 		__modelDirty:"dirty",
 		__typeName:"Dom",
 		__differences:null,
+
+
 
 		//do not override
 		init:function(opts) {
@@ -50,6 +54,7 @@ define([
 			var o = this.__opts = this.initOpts(opts);
 
 			this.__root = o.appendTo || o.root || "body";
+			this.__age = E.time();
 
 						//set inside the options take priority
 			this.__id = o.id || 
@@ -65,6 +70,9 @@ define([
 			if(!DOM_REGISTER[this.__id]) {
 				DOM_REGISTER[this.__id] = this;
 				$(this.__root).attr("id", this.__id);
+
+				sb.queue.buffer(Dom.cleanup, "DOM_CLEANUP_REGISTRY", 500);
+				// console.log("Adding to the DOM", E.length(DOM_REGISTER));
 			} else {
 				throw new Error("DOM Widget with the same id already exists", this.__id);
 			}
@@ -92,6 +100,8 @@ define([
 			this.__data = {};
 
 			this.__beforeDrawList = [];
+			this.__beforeDrawFunctions = [];
+			this.__postBeforeDrawFunctions = ["postCreate"];
 
 			Object.defineProperties(this, {
 				//jQuery 
@@ -105,8 +115,11 @@ define([
 				"busy": 		{set: function(x) { this.__busy = x; }},
 				"modelDirty": 	{set: function(x) { this.__modelDirty = x; }},
 				"typeName":		{get: function() { return this.__opts.typeName; }}
+
 			});
 
+
+			
 			this.cleanup();
 			this.create();
 		},
@@ -126,6 +139,13 @@ define([
 				}
 			});
 
+
+			//if there's an HTML template
+			if(this.__opts.templatePath) {
+				// console.log("Template", this.id, this.__opts.templatePath);
+				this.addBeforeDraw("loadTemplate");
+				this.addBeforeDraw("parseChildren");
+			}
 
 			this.__created = true;
 
@@ -147,7 +167,7 @@ define([
 					if(href.match(/^\//)) {
 						href = sb.state.host + href;
 					}
-					console.log("Open external browser");
+					// console.log("Open external browser");
 					window.open(href, "_system");
 					return false;
 				})
@@ -198,13 +218,25 @@ define([
 			});
 		},
 
+		
+	
+
+
+		//MUST CALL this.beforeDrawDone() when this function has completed.
 		addBeforeDraw: function(f) {
-			//don't add twice
-			//shouldn't cause problems, but there's no reason to run twice+
-			if(!E._.find(this.__beforeDrawList, f)) {
-				this.__beforeDrawList.push(f);
-			}
+			//can be a function or a string. String is called this[f](), func is called f();
+			this.__beforeDrawFunctions.punique(f);
+			this._rebuildBeforeDrawList();
 		},
+
+		_rebuildBeforeDrawList: function() {
+			this.__beforeDrawList = this.__beforeDrawFunctions.concat(this.__postBeforeDrawFunctions);
+		},
+
+
+
+
+
 
 		addDifferenceCheck: function(name, func) {
 			this.__differences = this.__differences || {};
@@ -214,12 +246,12 @@ define([
 		hasDifferences: function() {
 			if(!this.__differences) { return true;}
 
-			return E._.some(this.__differences, function(v) {
+			return E._.some(this.__differences, function(v, k) {
 				var res = v.func();	
 				var diff = v.cache != res;
-				if(diff) {
-					// console.log("HAS DIFFERENCE", id, res, v.cache);
-				}
+				// if(diff) {
+				// 	console.log("HAS DIFFERENCE", k, res, v.cache);
+				// }
 				return diff;
 			});
 
@@ -252,7 +284,7 @@ define([
 			var args = E.slice(arguments, 2);
 			var ss = this.__watchers[type];
 			if(!ss) {
-				// console.log("DOM:WATCH", type, this.id, ss);
+				// this._consoleLogPages("DOM:WATCH", type, this.id, ss);
 			}
 			var df = this.bind(funcName);
 			args.forEach(function(v) {
@@ -260,7 +292,10 @@ define([
 					sb.ext.warn("DOM::Watch:You are already watching this " +  v + " " +  type + " " + self.id);
 					return;
 				}
-				ss[v] = ST.watch(type, v, df);
+				ss[v] = ST.watch(type, v, function() {
+					// self._consoleLogPages("HANDLE ", funcName, type, v, self.id);
+					df()
+				});
 			});
 		},
 
@@ -299,10 +334,12 @@ define([
 
 		stateValid:function() {
 			//everything needs a state function. The default is "all" which allows any state
-			if(!this.__opts.stateFunction) {
+			var sf = this.__opts.stateFunction;
+			sf = sf ? ST[sf] : null;
+			if(!sf) {
 				throw new Error("DOM:Error (id:"  + this.id + ") has no defined stateFunction.");
 			}
-			return this.__opts.stateFunction();
+			return sf();
 		},
 
 		modelsValid: function() {
@@ -337,15 +374,24 @@ define([
 
 		//done first after init. This allows the caller and subclass to override / add properties
 		initOpts: function(opts) {
-			opts = E.merge(OPTS, opts);
-			opts.stateFunction = opts.stateFunction || ST.any;
+			var opts = E.merge(OPTS, opts);
+			// console.log("*********************INIT", opts.id, opts.stateFunction);
 			return opts;
+		},
+
+
+		opts: function(str, val, preventDirty/*===true*/) {
+			if(arguments.length > 1 &&  this.__opts.hasOwnProperty(str)) {
+				this.__opts[str] = val;
+				if(!preventDirty) { this.dirty(); }
+			}
+			return this.__opts.hasOwnProperty(str) ? this.__opts[str] : null;
 		},
 
 		loadTemplate: function() {
 			var self = this; 
 
-			// console.log("DOM:LoadingTemplate", this.id, this.__opts.templatePath);
+			// this._consoleLogPages("DOM:LoadingTemplate", this.id, this.__opts.templatePath);
 
 			var templateOpts = this.__opts.templatePath.split("#");
 
@@ -353,9 +399,17 @@ define([
 			if(templateOpts[1]) {
 				opts.put(" #", templateOpts[1]);
 			}
-			this.$.load(opts.join(""), function() {
-				self.beforeDrawDone.bindDelay(self, 200);
-			});
+			try {
+				this.$.load(opts.join(""), function(response, status, xhr) {
+					if(status != "error") {
+						self.beforeDrawDone.bindDelay(self, 200);
+					} else {
+						E.warn("Error loading template", xhr.status + "\n" + xhr.statusText);
+					}
+				});
+			} catch(e) {
+				E.warn("Error loading template", opts.join(""));
+			}
 		},
 
 		addParser: function(k,func) {
@@ -367,7 +421,7 @@ define([
 				cb = node;
 				node = null;
 			}
-			// console.log("DOM:parseChildren", this.id);
+			// this._consoleLogPages("DOM:parseChildren", this.id);
 			//parse the resulting HTML for data-template elements.
 			var cel = node || this.$;
 
@@ -380,11 +434,12 @@ define([
 			this.beforeDrawDone();
 		},
 
-		createChildren:function(el, opts) {
+		createChildren:function(el, opts, redraw/*==true*/) {
 			var self = this; 
 			var c = this.__children;
 			opts = E.merge(opts, {root:el});
 
+			redraw = (arguments.length > 2) && (redraw !== false);
 
 			var src = opts.require; 
 			el.data("require", null);
@@ -392,20 +447,29 @@ define([
 			delete opts.require;
 
 			if(src) {
-				//console.log("DOM:CREATECHILDREN: Trying to load: ", this.id, src);
-				require([src], function(El) {
-					//no guarantee of order this happens
-					if(El) {
-						// console.log("DOM Create children: ", self.id);
-						c.push(new El(opts));
-					} else {
-						// console.log("Cannot load SRC:", self.id, src);
-					}
-					sb.queue.buffer(self.dirty.bind(self), "_buffer" + self.id, self.__delay, true);
-				});
-			} else {
-				sb.queue.buffer(this.dirty.bind(this), "_buffer" + this.id, this.__delay, true);
+				try {
+					// this._consoleLogPages("DOM:CREATECHILDREN: Trying to load: ", this.id, src);
+					require([src], function(El) {
+						//no guarantee of order this happens
+						if(El) {
+							c.push(new El(opts));
+						} 
+						if(redraw) {
+							//sb.queue.buffer(self.dirty.bind(self), "_buffer" + self.id, self.__delay, true);
+							this.dirty();
+						}
+					});
+				} catch (e) {
+					E.warn("Error Loading JS: ", src);
+				}
+			} else if (redraw) {
+				// sb.queue.buffer(this.dirty.bind(this), "_buffer" + this.id, this.__delay, true);
+				this.dirty();
 			}
+		},
+
+		findChild: function(dom) {
+			return E._.find(this.__children, {dom:dom});
 		},
 
 		beforeDrawDone: function() {
@@ -418,9 +482,9 @@ define([
 			//reset the delay
 			this.__canDrawDelay = this.__canDrawDelay >= 0 ? E.max(50, delay) : -1;
 
-			// console.log("DOM WIDGET dirtying: ", this.id);
+			// this._consoleLogPages("DOM WIDGET dirtying: ", this.id);
 			//queue drawing so we don't end up calling it repeatedly from different events
-			sb.queue.buffer(this.__beforeDraw.bind(this), "_buffer" + this.id, delay, true);
+			sb.queue.buffer(this._beforeDraw.bind(this), "_buffer" + this.id, delay, true);
 
 		},
 
@@ -464,55 +528,80 @@ define([
 		},
 
 		canDraw:function() {
-			// console.log("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this.__beforeDrawList.length,  this.stateValid());			
+			// this._consoleLogPages("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this._beforeDrawList.length,  this.stateValid());			
 			return this.__created && !this.__busy && !this.__beforeDrawWaiting && 
 					this.stateValid() && this.modelsValid() && !this.needsData();
 		},
 
 		//sanity before drawing
-		__beforeDraw:function() {
-			if(this.canDraw()) {
-				if(this.__beforeDrawList.length) {
-					this.__beforeDrawWaiting = true;
-					var df = this.__beforeDrawList.shift();
-					if(E.isStr(df)) {
-						this[df].call(this, this.bind("_handleDoneBeforeDraw"));
-					} else if (E.isFunc(df)) {
-						df(this.bind("_handleDoneBeforeDraw"));
+		_beforeDraw:function() {
+			try {
+				if(this.canDraw()) {
+					// this._consoleLogPages("DOM CAN DRAW:", this.id);
+					if(this.__beforeDrawList.length) {
+						this.__beforeDrawWaiting = true;
+						var df = this.__beforeDrawList.shift();
+						if(E.isStr(df)) {
+							this[df].call(this, this.bind("_handleDoneBeforeDraw"));
+						} else if (E.isFunc(df)) {
+							df(this.bind("_handleDoneBeforeDraw"));
+						} else {
+							//not a valid function
+							this._handleDoneBeforeDraw();
+						}
 					} else {
-						//not a valid function
-						this._handleDoneBeforeDraw();
-					}
-				} else {
-					if(this.hasDifferences()) {
-						this.draw();
-						//cache differences
-						E.each(this.__differences, function(v) {
-							v.cache = v.func();
-						});
-					}
-				}
-			} else { 
-				if (this.needsData()) {
-					this.fetchData();
-				}
-				if(this.__busy) {
-					this.drawBusy();
-				} else {
-					//THIS IS INVALID -- REMOVE ALL ITEMS
-					if(this.__dirty) {
-						this.cleanup();
-					}
-					
-					//if the delay is -1, we don't keep calling "dirty"
-					if(this.__canDrawDelay >= 0) {
-		//					console.log("Queueing " + this.id);
-						this.__canDrawDelay = E.max(5000/*5 seconds*/,this.__canDrawDelay);
-						sb.queue.buffer(this.__beforeDraw.bind(this), "_buffer" + this.id, this.__delay, true);		
-					} else {
+						if(this.hasDifferences()) {
+							// this._consoleLogPages("DOM CAN DRAW MUTHER FARKER:", this.id);
 
+							this.draw();
+							//cache differences
+							E.each(this.__differences, function(v) {
+								v.cache = v.func();
+							});
+
+							//cancel any events that have been queued since we've drawn successfully
+							// this._consoleLogPages("DOM CLEARING DRAW QUEUE:", this.id);
+							sb.queue.cancel("_buffer" + this.id);
+							// sb.queue.report();
+						} else {
+							// this._consoleLogPages("DOM CAN DRAW BUT NO DIFFERENCES:", this.id);
+						}
+					}
+				} else { 
+					if (this.needsData()) {
+						// this._consoleLogPages("DOM NEEDS DATA:", this.id);
+
+						this.fetchData();
+						return;
+					}
+					if(this.__busy) {
+						// this._consoleLogPages("DOM IS BUSY:", this.id);
+						this.drawBusy();
+					} else {
+						//THIS IS INVALID -- REMOVE ALL ITEMS
+						if(this.__dirty) {
+							// this._consoleLogPages("DOM IS INVALID:", this.id);
+							this.cleanup();
+						}
+						
+						//if the delay is -1, we don't keep calling "dirty"
+						if(this.__canDrawDelay >= 0) {
+			//					console.log("Queueing " + this.id);
+							this.__canDrawDelay = E.max(5000/*5 seconds*/,this.__canDrawDelay);
+							
+							// this._consoleLogPages("DOM IS BEING DIRTIED AGAIN:", this.id, this.__canDrawDelay);
+
+							this.dirty(this.__canDrawDelay);
+							// sb.queue.buffer(this._beforeDraw.bind(this), "_buffer" + this.id, this.__delay,);		
+						} else {
+							// this._consoleLogPages("DOM ELSE DO NOTHING", this.id);
+						}
 					}
 				}
+			} catch(e) {
+				E.warn( "Error: exception thrown in " + this.id + "\n\n  " + e.stack);
+				throw e;
+
 			}
 		},
 
@@ -532,12 +621,15 @@ define([
 
 		cleanup: function() {
 			this.sel.html("");
-			if(this.__opts.templatePath) {
-				this.addBeforeDraw("loadTemplate");
-				this.addBeforeDraw("parseChildren");
-			}
-			this.addBeforeDraw("postCreate");
+			
+			this._rebuildBeforeDrawList();
 			this.__dirty = false;
+		},
+
+		_consoleLogPages: function(str, id) {
+			if(id.match(/^blocksTable/)) {
+				console.log.apply(null, E.slice(arguments));
+			}
 		}
 
 	});
@@ -548,6 +640,17 @@ define([
 	Dom.domByEl = function(el) {
 		return Dom.domById(el.id);
 	}; 
+	Dom.cleanup = function() {
+		var time = E.time();
+		E.each(DOM_REGISTER, function(v, k) {
+			var dom = v.dom;
+
+			if (E.minutesDiff(time, v.__age) > 1 &&  !$.contains(document, dom)) {
+ 			   v.destroy();
+ 			   // this._consoleLogPages("DOM CLEANUP----REMOVED ", k, E.minutesDiff(time, dom.__age), E.length(DOM_REGISTER));
+			}
+		});
+	}
 
 
 	return Dom;

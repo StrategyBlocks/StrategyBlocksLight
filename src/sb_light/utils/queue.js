@@ -1,4 +1,7 @@
-define(['sb_light/globals'], function(sb) {
+define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
+
+	'use strict';
+
 
 	var queue = {};
 	var low_list = [];
@@ -154,10 +157,15 @@ define(['sb_light/globals'], function(sb) {
 	};
 
 	queue.report = function queue_report() {
-		var hi = high_list.map(function(el) {return el.name;}).join(" ");
-		var lo = low_list.map(function(el) {return el.name;}).join(" ");
+		var hi = E.map(high_list, function(el) {return el.name;}).join(" ");
+		var lo = E.map(low_list, function(el) {return el.name;}).join(" ");
+		var buff = E.map(buffer_list, function(el) {return el.name;}).join(" ");
 
-		//console.log("Current Queue:", (high_list.length ? (" High: " + hi) : "" ),   (low_list.length ? (" Normal: " + lo) : "" ) );
+		console.log("Current Queue:", 
+			(high_list.length ? (" High: " + hi) : "" ),   
+			(low_list.length ? (" Normal: " + lo) : "" ),
+			(buffer_list.length ? (" Buffered: " + buff) : "" )
+		);
 	};
 
 	return queue;

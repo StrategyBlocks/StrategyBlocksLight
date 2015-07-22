@@ -4,20 +4,29 @@
 define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
 	'use strict';
 
+	var E;
+
 	var Model = _Model.extend({
 		init: function() {
+			E = sb.ext;
+
 			this._super("news", sb.urls.MODEL_NEWS);
 		},
 		
 		
-		
-		//usually override by the model subclasses to provide some post-processing on the model elements before consumption 
-		//by a view
+
+
 		_massageUpdatedModel: function() {
 			this._super();
-			// for(var k in this._model) {
-			// }
+			
+			for(var i in this._model) {
+				var h = this._model[i];
+				h.fromNow = E.fromNow(h.date, E.unixFormat);
+				h.dateNumber = E.moment(h.date, E.unixFormat);
+				h.date = E.moment(h.date, E.unixFormat);
+			}
 		}
+		
 	});	
 	return Model;
 });

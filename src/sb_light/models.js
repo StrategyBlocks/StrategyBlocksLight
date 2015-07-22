@@ -60,6 +60,7 @@ define([
 
 	models.find = function(modelName, id) {
 		var m = _verifyModel(modelName);
+		id = String(id);
 		return id ? m.model.find(id) : null;
 	};
 	

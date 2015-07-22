@@ -11,7 +11,6 @@ define([
 	'sb_light/utils/queue',	
 	'sb_light/utils/events',	
 	'sb_light/layout',	
-	'sb_light/utils/consts',
 	'sb_light/utils/Class',
 	'sb_light/models',		
 	'sb_light/controller',
@@ -34,7 +33,6 @@ define([
 	queue,
 	events,
 	layout,
-	consts,	 
 	Class,	 
 	models,	
 	controller,
@@ -60,7 +58,6 @@ define([
 	globals.queue = queue;
 	globals.events = events;
 	globals.layout = layout;
-	globals.consts = consts;
 	globals.models = models;
 	globals.controller = controller;
 	globals.state = state;	 

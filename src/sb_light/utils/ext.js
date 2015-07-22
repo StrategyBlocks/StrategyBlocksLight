@@ -1,8 +1,8 @@
-/*globals define, Ti, console, moment*/
+/*globals define, Ti, console, moment, d3*/
 /*jslint passfail: false */
 
 
-define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
+define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	"use strict";
 
 	//console.log("ext", sb.version);
@@ -124,8 +124,8 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		if(E.isArray(list)) {
 			return list.reduce(fn, init);
 		} else {
-			for(var el in list) {
-				init = fn.call(scope|| list, init, list[el], el, list);
+			for(var k in list) {
+				init = fn.call(scope|| list, init, list[k], k, list);
 			}
 			return init;
 		}
@@ -156,9 +156,13 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	};
 
 	//takes a hash map / array and returns an array of values. 
-	E.values = function ext_values(map, keyName) {
-		return E.map(map, function ext_values_map(el,k) { 
-			return keyName ? el[keyName] : el;
+	E.values = function ext_values(map, keyName, func) {
+		return E.map(map, function ext_values_map(el) { 
+			var ret = keyName ? el[keyName] : el;
+			if(func) {
+				ret = func(ret);
+			}
+			return ret;
 		});
 	};
 	//create an array of the specified size, and then set the values;
@@ -178,6 +182,18 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 			o[prop] = def;
 		}
 		return o[prop];
+	};
+
+
+	//Appends the elements of B which are not in A and unions them based on a property value (prop)
+	//match is based 
+	E.union = function(a, b, prop) {
+		var res = E.map(a, E.identity);
+		var match = {}; 
+		return E._.union(res, E.filter(b, function(v) {
+			match[prop] = b[prop];
+			return !E._.find(a, match); 
+		}));
 	};
 
 
@@ -203,7 +219,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 
 	E.cloneArray = function(arr) {
 		return arr.map(function(v) { return E.merge(v); });
-	}
+	};
 
 	//this only works with objects that contain only native JS object (e.g., Object-derived)
 	//probably won't work very well for system,proprietary, etc.. objects.
@@ -291,7 +307,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 			return function ext_time() { return Date.now(); };
 	}());	
 	
-	E.parseDate = function ext_moment(d) {
+	E.parseDate = function ext_moment() {
 		E.deprecated("E.parseDate", "E.moment");
 	};
 	E.parseUnix = function ext_parseUnix(dn) {	return moment.unix(dn); };
@@ -300,16 +316,22 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
 
 	//number is positive when db is earlier than da
+	E.minutesDiff = function ext_minutesDiff(da, db) {return E.moment(da).diff(E.moment(db),"minutes");};
+	E.hoursDiff = function ext_hoursDiff(da, db) {return E.moment(da).diff(E.moment(db),"hours");};
 	E.daysDiff = function ext_daysDiff(da, db) {return E.moment(da).diff(E.moment(db),"days");};
-	E.weeksDiff = function ext_daysDiff(da, db) {return E.moment(da).diff(E.moment(db),"weeks");};
-	E.monthsDiff = function ext_daysDiff(da, db) {return E.moment(da).diff(E.moment(db),"months");};
-	E.yearsDiff = function ext_daysDiff(da, db) {return E.moment(da).diff(E.moment(db),"years");};
-	E.daysFrom = function ext_daysDiff(da, db, noPrefix) {return E.moment(db).from(da, noPrefix||false); };
+	E.weeksDiff = function ext_weeksDiff(da, db) {return E.moment(da).diff(E.moment(db),"weeks");};
+	E.monthsDiff = function ext_monthsDiff(da, db) {return E.moment(da).diff(E.moment(db),"months");};
+	E.yearsDiff = function ext_yearsDiff(da, db) {return E.moment(da).diff(E.moment(db),"years");};
+	E.daysFrom = function ext_daysFrom(da, db, noPrefix) {return E.moment(db).from(da, noPrefix||false); };
 	E.today = function ext_today() { return new Date(); };
 	E.minDate = function ext_minDate() { return E.moment(E.slice(arguments).sort(E.sortDate)[0]); };
 	E.maxDate = function ext_maxDate() { return E.moment(E.slice(arguments).sort(E.sortDate).last()); };
 	E.serverFormat = "YYYY/MM/DD";
-	E.unixFormat = undefined;
+	E.unixFormat = "YYYY-MM-DD HH:mm:ss Z";
+	
+	//07 Jun 2015 22:08 +0000
+	E.adminFormat = "DD MMM YYYY HH:mm Z";
+
 	E.userFormat = function ext_userFormat() { 
 		var u = sb.queries.user();
 		var udf = u ? u.date_format : E.serverFormat;
@@ -341,12 +363,16 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		/************  SORTING ***************************/
 		//sort an array based on a property, and the function to use
 		//so if an array is [{date:...,value:...},...], you can sort using E.sortProp("date",E.sortDate); 
-	E.sortFactory = function ext_sortFactory(prop, func, reverse) {
+	E.sortFactory = function ext_sortFactory(prop, func, reverse, prepFunc) {
 		func = func || E.sortString;
 		reverse = reverse || false;
 		return function ext_sortFactory_cb(a,b) {	
 			var aprop = a ? a[prop] : null;
 			var bprop = b ? b[prop] : null;
+			if(prepFunc) {
+				aprop = prepFunc(aprop);
+				bprop = prepFunc(bprop);
+			}
 			return func(aprop, bprop) * (reverse ? -1 : 1);		
 		};
 	};
@@ -356,6 +382,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.sortNumStr = function ext_sortNumber(a,b){ return E.to_f(a)-E.to_f(b); };
 	E.sortDay = function ext_sortDate(a,b){ return E.daysDiff(a,b); }; 
 	E.sortDays = E.sortDay;
+	//b is larger, result is negative
 	E.sortDate = function ext_sortDate(a,b){ return E.sortNumber(E.dateNumber(a), E.dateNumber(b)); }; 
 	E.sortDates = E.sortDate;
 	E.sortString = function ext_sortString(a,b){ return String(a).localeCompare(String(b)); };
@@ -414,6 +441,19 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.ceilTo = function ext_ceilTo(number, dec) {
 		var val = Math.pow(10,E.number(dec,0));
 		return Math.ceil(number * val)/val;
+	};
+
+	//http://stackoverflow.com/questions/10454518/javascript-how-to-retrieve-the-number-of-decimals-of-a-string-number
+	E.decimals = function ext_decimalCount(num) {
+		var match = (''+num).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
+		if (!match) { return 0; }
+		return Math.max(
+			 0,
+			 // Number of digits right of decimal point.
+			 (match[1] ? match[1].length : 0)
+			 // Adjust for scientific notation.
+			 - (match[2] ? +match[2] : 0))
+		;
 	};
 
 	E.to_i = function ext_to_i(str, base/*==10*/, def/*=0*/) {
@@ -503,7 +543,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.first = function ext_first(/*etc...*/) {
 		var i, args = E.slice(arguments);
 		for(i = 0; i < args.length; ++i) {
-			var ci= args[i]
+			var ci= args[i];
 			if(E.isNum(ci) && !isNaN(ci)) {
 				return ci;
 			}
@@ -516,7 +556,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	E.percent = function ext_percent(val, total, round/*==0*/) {
 		round = E.first(round,0);
 		return E.roundTo(  (E.number(val) / E.number(total))*100, round );
-	}
+	};
 
 	E.range = function ext_range(min,max,num) {
 		return E.max(min, E.min(max,num));
@@ -558,7 +598,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 			//push the current context in with the arguments
 			var args = origArgs.concat([this]).concat(E.slice(arguments));
 			func.apply(context, args);
-		}
+		};
 	};
 
 	//takes an array of literals or functions and sums the result
@@ -607,16 +647,16 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 
 	E.domain = function ext_domain(type,min,max, pc) {
 		pc = E.first(pc, 0);
-
+		var pad;
 		if(type === "date") {
 			min = E.moment(min);
 			max = E.moment(max);
-			var pad = E.daysDiff(max, min) * pc;
+			pad = E.daysDiff(max, min) * pc;
 			min = min.subtract(pad, "days").toDate();
 			max = max.add(pad, "days").toDate();
 		} else { 
 			//(!type || type === "number") {
-			var pad = (max - min) * pc;
+			pad = (max - min) * pc;
 			min -= pad;
 			max += pad;
 		}
@@ -642,12 +682,12 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 			height:	target.height
 		};
 
-	}
+	};
 
 		/************  BLOCK COLOR CONSTANTS***************************/
 		//status is -1 (red), 0 (yellow), and 1 (green)
 
-	E.healthColor = function ext_healthColor(data) { return (["#67b41f","#d3a900","#b41f27"])[data.status+1]; };
+	E.healthColor = function ext_healthColor(data) { return (["#b41f27","#d3a900","#67b41f"])[data.status+1]; };
 	E.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	E.progressColor = function ext_progressColor(block) {
 		//support passing just the color
@@ -656,9 +696,12 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		block = block || "none";
 
 		switch(block) {
-			case "green": 	return ["#196419", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"] ];
-			case "yellow":	return ["#7d741f", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"] ];
-			case "red": 	return ["#7d1f1f", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"] ];
+			case "green": 	return ["#196419", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"], 
+									"<span style='color:#196419'><i class='fa fa-fw fa-lg fa-check'></i> Good</span>" ];
+			case "yellow":	return ["#7d741f", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"], 
+									"<span style='color:#7d741f'><i class='fa fa-fw fa-lg fa-warning'></i> Warning" ];
+			case "red": 	return ["#7d1f1f", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"], 
+									"<span style='color:#7d1f1f'><i class='fa fa-fw fa-lg fa-warning'></i> Bad" ];
 			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		,["#999", "#aaa"]  ];
 		}
 	};
@@ -676,8 +719,6 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		data.values = data.values && data.values.length ? data.values : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
 		data.target = data.target && data.target.length ? data.target : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
 
-		var dataMap = {};
-		
 		data.values.forEach(function ext_massageTA_forEachVal(el) {
 			el.date = E.date(el.date);
 			dates[dates.length] = (el.date);
@@ -756,8 +797,8 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		var vd = data.values;
 		var td = data.target;
 		
-		var minY = Number.POSITIVE_INFINITY;
-		var maxY = Number.NEGATIVE_INFINITY;
+		// var minY = Number.POSITIVE_INFINITY;
+		// var maxY = Number.NEGATIVE_INFINITY;
 		
 		
 		if(vd.length && td.length) {
@@ -826,9 +867,8 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		
 		//fix dates and sort history for health charts
 	E.massageHealth = function ext_massageHealth(data) {
-		var dates = [];
 		var series = E.map(data.historical_values, function ext_massageHealth_map(v, k) {
-			return {date: E.date(k), value:v};
+			return {date: E.serverMoment(k), value:v};
 		});
 		
 							//sort by the date number
@@ -888,10 +928,11 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		}
 		var res = {};
 		props.forEach(function(prop){
-			res[prop] = o[prop];
+			if(o.hasOwnProperty(prop)) {
+				res[prop] = o[prop];
+			}
 		});
 		return res; 
-
 	};
 
 
@@ -911,9 +952,8 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 				if(av[k] != bv[k]) { return true; }
 				return false;
 			});
-			return false;
 		});
-	}
+	};
 
 
 	//return the number of differences from diff to orig
@@ -931,7 +971,6 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 	//return the number of differences from diff to orig
 	E.hasChanges = function ext_changes(diff,orig, keys) {
 		keys = keys || [];
-		var res = {};
 		orig = orig || {};
 		return E._.some(diff, function(v,k) {
 			if( (!keys.length || keys.indexOf(k) >-1) &&  orig[k] != v) {
@@ -941,46 +980,7 @@ define(["sb_light/globals", "lodash", "moment"], function(sb, _) {
 		});
 	};
 
-	//form:		 is a dom / jquery object
-	//values:	is a key-value map where the keys are the names of the form fields to apply
-	E.formChanges = function ext_applyChanges(form, values) {
-		form = $(form);
-		if(values) {
-			form.find("[name]").each(function(i) {
-				// console.log("Set Form Changes: ", this.name, values[this.name]);
-				if(this.selectize) {
-					this.selectize.setValue(values[this.name]);
-				} else if($(this).data("control") == "switch") {
-					$(this).bootstrapSwitch("state", values[this.name], true);
-				} else if($(this).data("control") == "slider") {
-					$(this).slider("setValue", values[this.name]);
-				} else {
-					$(this).val(values[this.name]);
-				}
-			});
-		} else {
-			var res = {};
-			form.find("[name]").each(function(i) {
-				// console.log(this.slider);
-				if(this.selectize) {
-					res[this.name] = this.selectize.getValue();
-				} else if($(this).data("control") == "switch") {
-					res[this.name] = $(this).bootstrapSwitch("state");
-				} else if($(this).data("control") == "slider") {
-					res[this.name] = $(this).slider("getValue");
-				}else {
-					res[this.name] = $(this).val();
-				}
-				// console.log("Get Form Changes: ", this.name, res[this.name]);
-			});
-			return res;
-		}
-	};
-
-	E.formValid = function(form) {
-		form = $(form).validator();
-		return form && !form.data("bs.validator").hasErrors(); 
-	};
+	
 
 
 	//take a list of "complete" length and merge the sparse "smaller" into it by matching keys
