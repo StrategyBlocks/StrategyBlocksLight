@@ -67,7 +67,7 @@ define(['sb_light/globals'], function(sb) {
 		BOOKMARK_DELETE:				{url: "/saved_client_states/%id%/delete.js"},
 				 
 		COMMENT_PROPERTIES_ADD: 		{url: "/blocks/%id%/comment.js", normalParams:true, deleteId:true},
-		
+		COMMENT_PROPERTIES_REMOVE:		{url: "/blocks/%id%/delete_comment.js", normalParams:true, deleteId:true},
 		
 		// COMPANIES_CREATE: 				{url: "/companies/create.js"},
 		COMPANIES_REGISTER: 			{url: "/companies/create.js"},

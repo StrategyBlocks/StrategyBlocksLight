@@ -80,6 +80,8 @@ define([
 
 			//children dom widgets that were parsed
 			this.__children = [];
+			//children dom widgets that were parsed
+			this.__creatingChildren = {};
 
 			//children dom widgets that were parsed
 			this.__binds = {};
@@ -380,10 +382,16 @@ define([
 		},
 
 
-		opts: function(str, val, preventDirty/*===true*/) {
+		//you can set the options here and provide a function to call after the option has been set. 
+		opts: function(str, val, handlerFunc) {
 			if(arguments.length > 1 &&  this.__opts.hasOwnProperty(str)) {
 				this.__opts[str] = val;
-				if(!preventDirty) { this.dirty(); }
+				if(handlerFunc) { 
+					var f = E.isStr(handlerFunc) ? this.bind(handlerFunc) : handlerFunc;
+					if(E.isFunc(f)) {
+						f();
+					}
+				}
 			}
 			return this.__opts.hasOwnProperty(str) ? this.__opts[str] : null;
 		},
@@ -439,7 +447,7 @@ define([
 			var c = this.__children;
 			opts = E.merge(opts, {root:el});
 
-			redraw = (arguments.length > 2) && (redraw !== false);
+			redraw = (arguments.length < 3) || (redraw === true);
 
 			var src = opts.require; 
 			el.data("require", null);
@@ -448,15 +456,19 @@ define([
 
 			if(src) {
 				try {
+
+					self.__creatingChildren[src] = true;
 					// this._consoleLogPages("DOM:CREATECHILDREN: Trying to load: ", this.id, src);
 					require([src], function(El) {
+
 						//no guarantee of order this happens
 						if(El) {
 							c.push(new El(opts));
+							delete self.__creatingChildren[src];
 						} 
 						if(redraw) {
 							//sb.queue.buffer(self.dirty.bind(self), "_buffer" + self.id, self.__delay, true);
-							this.dirty();
+							self.dirty();
 						}
 					});
 				} catch (e) {
@@ -469,6 +481,9 @@ define([
 		},
 
 		findChild: function(dom) {
+			if(E.isStr(dom)) {
+				dom = this.$.find(dom).get(0);
+			}
 			return E._.find(this.__children, {dom:dom});
 		},
 
@@ -529,8 +544,13 @@ define([
 
 		canDraw:function() {
 			// this._consoleLogPages("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this._beforeDrawList.length,  this.stateValid());			
-			return this.__created && !this.__busy && !this.__beforeDrawWaiting && 
+			var cd = this.__created && !this.__busy && !this.__beforeDrawWaiting && !E.length(this.__creatingChildren) &&
 					this.stateValid() && this.modelsValid() && !this.needsData();
+
+			if(!cd &&  E.length(this.__creatingChildren)) {
+				console.log("CAN'T DRAW ", this.id, this.__creatingChildren, E.length(this.__creatingChildren));
+			}		
+			return cd;
 		},
 
 		//sanity before drawing

@@ -376,6 +376,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 			return func(aprop, bprop) * (reverse ? -1 : 1);		
 		};
 	};
+
+	E.parseUnixDate = _.curry(E.moment)(_, E.unixFormat);
+	E.sortUnixDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseUnixDate);
+	E.parseServerDate = _.curry(E.moment)(_, E.unixFormat);
+	E.sortServerDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseServerDate);
+
 	E.sortTime = function ext_sortTime(a,b) { return E.sortNumbers(E.parseDate(a).getTime(), E.parseDate(b).getTime()); }; 
 	E.sortNumber = function ext_sortNumber(a,b){ return a-b; };
 	E.sortNumbers = E.sortNumber;

@@ -53,8 +53,13 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		//children:bool
 		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, children:children}, cb,cb);
 	};
+
+
 	controller.blockComment = function(id, message, cb) {
 		controller.invoke(sb.urls.COMMENT_PROPERTIES_ADD, {id:id, body:message}, cb,cb);
+	};
+	controller.blockCommentDelete = function(id, cid, cb) {
+		controller.invoke(sb.urls.COMMENT_PROPERTIES_REMOVE, {id:id, comment_id:cid}, cb,cb);
 	};
 
 

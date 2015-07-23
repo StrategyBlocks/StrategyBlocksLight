@@ -83,6 +83,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			return this._modelArray;
 		},
 
+
 		//find a single element
 		find:function(id) {
 			if(E.isStr(id)) {

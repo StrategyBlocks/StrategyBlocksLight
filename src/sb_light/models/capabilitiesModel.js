@@ -1,7 +1,7 @@
 
 /*globals define */
 
-define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
+define(['sb_light/models/_abstractModel','sb_light/globals', 'sb_light/utils/ext'], function( _Model, sb, E ) {
 	'use strict';
 
 	var E;
@@ -14,6 +14,15 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 		_addTimestamp: function() {
 			//ignore this. Not relevant to capabilities
+		},
+
+		//build an array cache of the model to make list-fetches / iterations / sorting quicker. 
+		//but preserve the model as a map for key-value queries
+		_resetArrayCache:function() {
+			this._modelArray = E.map(this._model, function(v, k) {
+				return {name:k, value:v};
+			});
+			//E.debug(this.name, this._modelArray.length);
 		},
 	});
 	

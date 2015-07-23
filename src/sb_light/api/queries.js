@@ -662,17 +662,30 @@ define(['sb_light/globals',
 		// 		)
 		// ;
 	};
+	q.blockAlertClass = function(b) {
+		b = q.block(b);
+		var res = "alert alert-active";
+		switch(b.status) {
+			case "good": res = "alert alert-success"; break;
+			case "warning": res = "alert alert-warning"; break;
+			case "bad": res  = "alert alert-danger"; break;
+		}
+		return res;
+	};
 
 	q.blockTarget = function(b) {
 		b = q.block(b);
 		if(!b || b.ownership_state == "new") { return 0; }
 		return b.expected_progress;
 	};
+
 	q.blockProgress = function(b) {
 		b = q.block(b);
 		if(!b || b.ownership_state == "new") { return 0; }
 		return b.percent_progress;
 	};
+	q.blockActual = q.blockProgress;
+	
 	q.blockVariance = function(b) {
 		var p  = q.blockProgress(b);
 		var e  = q.blockTarget(b);

@@ -60,6 +60,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			return type === "path" ? this._pathModel : this._super();
 		},
 
+
+
 		find: function(id) {
 			if(E.isStr(id) && id.match("_")) {
 				return this._pathModel ? this._pathModel[id] : null;
@@ -169,13 +171,15 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			this._properties[type] = this._properties[type] || {};
 			this._properties[type][id] = data ? data.result : this._properties[type][id];
 
-			E.each(this._properties[type][id], function(v) {
-				E.each(["date", "created_at", "updated_at"], function(d) {
-					if(v[d]) {
-						v[d] = E.moment(v[d], E.unixFormat);
- 					}
-				})
-			});
+			//EACH PROPERTY OBJECT IS BLOODY DIFFERENT........
+			//NEED TO HANDLE THIS STUFF IN A NON-generic manner
+					// E.each(this._properties[type][id], function(v) {
+					// 	E.each(["date", "created_at", "updated_at"], function(d) {
+					// 		if(v[d]) {
+					// 			v[d] = E.moment(v[d], E.unixFormat);
+					// 			}
+					// 	})
+					// });
 			
 			while(this._properties[type+"_queue"][id].length) {
 				var cb = this._properties[type+"_queue"][id].pop();
@@ -196,7 +200,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				// f(dv);
 			// });			
 		},
-			_massageNpv: function(d) {
+		_massageNpv: function(d) {
 
 		},
 		
