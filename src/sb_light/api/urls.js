@@ -192,6 +192,15 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_DELETE_COMPANY:		{url: "/admin/delete_company/%id%.js", 					post:true, deleteId: true},					
 		ADMIN_EXTEND_TRIAL:			{url: "/admin/extend_trial/%id%.js", 					post:true, deleteId: true, normalParams:true},					
 		
+		
+		ADMIN_CACHE_SERVER:			{url: "/admin/clear_cache.js", 							post:true, normalParams:true},
+		ADMIN_CACHE_COMPANY:		{url: "/admin/clear_cache_for_company.js", 				post:true, normalParams:true},
+		ADMIN_CACHE_BLOCKS:			{url: "/admin/clear_block_cache.js", 					post:true, normalParams:true},
+		ADMIN_CACHE_METRICS:		{url: "/admin/clear_kpi_cache.js", 						post:true, normalParams:true},
+		ADMIN_CACHE_REGOS:			{url: "/admin/clear_rego_tokens_cache.js", 				post:true, normalParams:true},
+		ADMIN_CACHE_SESSIONS:		{url: "/admin/clear_session_cache.js", 					post:true, normalParams:true},
+		
+
 		ADMIN_BUILDER_USERS:		{url: "/admin/builder_users.js", 						post:false},					
 		ADMIN_HTML5_USERS:			{url: "/admin/html5_users.js", 							post:false},					
 		ADMIN_ENABLE_BUILDER:		{url: "/admin/enable_builder.js", 						post:true, deleteId: true, normalParams:true},					

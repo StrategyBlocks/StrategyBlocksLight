@@ -347,6 +347,11 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 
 	//failed server response
 	state.disconnected = function() { return storage.context.session == state.session_disconnected; };
+
+	//only for users who are flagged as server admins. 
+	state.admin = function() { return state.authorized() && storage.context.user && storage.context.user.is_server_admin; }
+	state.notAdmin = function() { return state.authorized() && !state.admin(); }
+
 	
 	//returns true / false depending on whether the response session is valid
 	state.update = function(data) {

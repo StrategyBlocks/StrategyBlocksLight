@@ -220,7 +220,10 @@ define([
 			});
 		},
 
-		
+		queue: function(func, delay) {
+			delay = E.first(delay, this.delay, 0);
+			sb.queue.buffer(func, "_buffer" + this.id,delay, true);
+		},
 	
 
 
@@ -456,18 +459,20 @@ define([
 
 			if(src) {
 				try {
-
+					console.log("LOADING CHILD: ", src);
 					self.__creatingChildren[src] = true;
-					// this._consoleLogPages("DOM:CREATECHILDREN: Trying to load: ", this.id, src);
 					require([src], function(El) {
 
 						//no guarantee of order this happens
 						if(El) {
+							console.log("CREATING CHILD: ", src);
 							c.push(new El(opts));
 							delete self.__creatingChildren[src];
+						} else {
+							console.log("FAILED CREATING CHILD: ", src);
 						} 
+
 						if(redraw) {
-							//sb.queue.buffer(self.dirty.bind(self), "_buffer" + self.id, self.__delay, true);
 							self.dirty();
 						}
 					});
@@ -475,7 +480,6 @@ define([
 					E.warn("Error Loading JS: ", src);
 				}
 			} else if (redraw) {
-				// sb.queue.buffer(this.dirty.bind(this), "_buffer" + this.id, this.__delay, true);
 				this.dirty();
 			}
 		},
@@ -499,8 +503,7 @@ define([
 
 			// this._consoleLogPages("DOM WIDGET dirtying: ", this.id);
 			//queue drawing so we don't end up calling it repeatedly from different events
-			sb.queue.buffer(this._beforeDraw.bind(this), "_buffer" + this.id, delay, true);
-
+			this.queue(this.bind("_beforeDraw"), delay);
 		},
 
 		fetchData: function() {

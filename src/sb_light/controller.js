@@ -68,6 +68,10 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.METRICS_UPDATE,changes, cm,cm);
 	};
 
+	controller.riskUpdate = function( changes, cm) {
+		controller.invoke(sb.urls.RISKS_UPDATE,changes, cm,cm);
+	};
+
 
 
 	controller.userUpdate = function( changes, cb) {

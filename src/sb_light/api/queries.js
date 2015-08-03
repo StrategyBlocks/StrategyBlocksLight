@@ -57,7 +57,7 @@ define(['sb_light/globals',
 	};
 
 	q.yearEnd = function() {
-		var c = q.company();
+		var c = ST.context("company");
 		var fy = c ? c.npv.financial_year_starts_on : "1/4";
 		var ds = fy.match(/^(\d\d?)\//)[1];
 		var ms = fy.match(/\/(\d\d?)$/)[1];
@@ -70,7 +70,7 @@ define(['sb_light/globals',
 	};
 
 	q.yearStart = function() {
-		var c = q.company();
+		var c = ST.context("company");
 		var fy = c ? c.npv.financial_year_starts_on : "1/4";
 		var ds = fy.match(/^(\d\d?)\//)[1];
 		var ms = fy.match(/\/(\d\d?)$/)[1];
@@ -80,6 +80,12 @@ define(['sb_light/globals',
 			return cfy.subtract(1, "year");
 		} 
 		return cfy; 
+	};
+
+	q.risk_profile = function() {
+		var c = ST.context("company");
+		return (c &&  c.risk && c.risk.profile_properties) || null;
+
 	};
 
 
@@ -373,7 +379,7 @@ define(['sb_light/globals',
 
 	};
 
-	q._statusMap = {
+	q._metricStatusMap = {
 		"Good": "statusGood",
 		"Warning": "statusWarn",
 		"Bad": "statusBad",
@@ -383,7 +389,7 @@ define(['sb_light/globals',
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
-		return q._statusMap[m.status];
+		return q._metricStatusMap[m.status];
 	};
 
 	//DISPLAY purposes
@@ -391,7 +397,7 @@ define(['sb_light/globals',
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
-		return "<i class='" + (q._trendMap[m.trend] + " " + q._statusMap[m.status]) + "'></i>";
+		return "<i class='" + (q._trendMap[m.trend] + " " + q._metricStatusMap[m.status]) + "'></i>";
 	};
 
 	q.metricChartData = function(id) {
@@ -618,30 +624,46 @@ define(['sb_light/globals',
 		return null;
 	};
 
+
+	q._riskStatusMap = {
+		"inactive": "statusGood",
+		"warning": "statusWarn",
+		"triggered": "statusBad"
+	};
+
+		//DISPLAY purposes
+	q.riskStatusMarkup = function(id) {
+		var r = q.risk(id);
+		if(!r) { return ""; }
+
+		return "<i class='fa fa-lg fa-exclamation-triangle " + q._riskStatusMap[r.status] + "'></i>";
+	};
+
+
 	/********************************
 		BLOCKS
 	*********************************/
 
-	q.rootBlock = function(prop) {
+	q.rootBlock = function() {
 		var ba = sb.models.get("blocks").rawArray();
 		var rb = null;
 		if(ba) {
 			rb = E._.find(ba, {is_root:true});
-			return rb ? (prop ? rb[prop] : rb): null;
+			return rb ||  null;
 		}
 		var c = q.company();
 		rb = c ? (c.company_block || c.root_block || null): null;
-		return rb ? (q.block(rb.id, prop) || (prop ? rb[prop] : rb)) : null;
+		return rb ? (q.block(rb.id) || rb) : null;
 	};
 
-	q.block = function(b, prop) {
+	q.block = function(b) {
 		if(E.isNum(b)) { b = String(b); }
 		//get the string or use path in the "b" object
 		b = E.isStr(b) ? b : (b ? (b.path || b.id) : b );
-		b = (b || b === undefined) ? (b || ST.state("block")) : null;
+		b = (b || !arguments.length) ? (b || ST.state("block")) : null;
 		//takes an object or string
 		b = b ? sb.models.find("blocks", b): null;
-		return b ? (prop ? b[prop] : b) : null;
+		return b ||  null;
 	};
 
 	q.parentBlock = function(b) {

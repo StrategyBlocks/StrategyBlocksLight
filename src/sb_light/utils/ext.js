@@ -311,7 +311,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		E.deprecated("E.parseDate", "E.moment");
 	};
 	E.parseUnix = function ext_parseUnix(dn) {	return moment.unix(dn); };
-	E.moment = function ext_moment(d, format) { return moment(d, format);	};
+	E.moment = moment;
 	E.dateNumber = function ext_dateNumber(d, format) { return E.moment(d, format).valueOf();	};
 	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
 
@@ -324,8 +324,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.yearsDiff = function ext_yearsDiff(da, db) {return E.moment(da).diff(E.moment(db),"years");};
 	E.daysFrom = function ext_daysFrom(da, db, noPrefix) {return E.moment(db).from(da, noPrefix||false); };
 	E.today = function ext_today() { return new Date(); };
-	E.minDate = function ext_minDate() { return E.moment(E.slice(arguments).sort(E.sortDate)[0]); };
-	E.maxDate = function ext_maxDate() { return E.moment(E.slice(arguments).sort(E.sortDate).last()); };
+	E.minDate = function ext_minDate(dates) { 	return E.moment.min.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
+	E.maxDate = function ext_maxDate(dates) { 	return E.moment.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.serverFormat = "YYYY/MM/DD";
 	E.unixFormat = "YYYY-MM-DD HH:mm:ss Z";
 	
