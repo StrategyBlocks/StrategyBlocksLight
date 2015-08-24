@@ -65,7 +65,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 
 	controller.metricUpdate = function( changes, cm) {
-		controller.invoke(sb.urls.METRICS_UPDATE,changes, cm,cm);
+		controller.invoke(sb.urls.METRICS_UPDATE,changes, cb,cb);
+	};
+	controller.metricCreate = function( changes, cm) {
+		controller.invoke(sb.urls.METRICS_CREATE,changes, cb,cb);
+	};
+	controller.metricAttach = function( mid, bid, cb) {
+		controller.invoke(sb.urls.METRICS_ATTACH_BLOCK,{id:bid, "metric_id":mid}, cb,cb);
+	};
+	controller.metricDetach = function( mid, bid, cb) {
+		controller.invoke(sb.urls.METRICS_DETACH_BLOCK,{id:bid, "metric_id":mid}, cb,cb);
+	};
+	controller.metricHierarchy = function( mid, nid, cb) {
+		controller.invoke(sb.urls.METRICS_HIERARCHY,{id:mid, "node_ids":nid}, cb,cb);
 	};
 
 	controller.riskUpdate = function( changes, cm) {
@@ -122,7 +134,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		} else {
 			controller.invoke(sb.urls.COMPANIES_HEALTH_UPDATE, data,cb,errorCb);
 		}
-	}	
+	};	
+	controller.deleteHealthCalculation = function(id, cb, errorCb) {
+		controller.invoke(sb.urls.COMPANIES_HEALTH_DELETE, {id:id},cb,errorCb);
+	};	
+
+	controller.updateMilestoneDefinition = function(data, cb, errorCb) {
+		if(data.id == "new") {
+			delete data.id;
+			controller.invoke(sb.urls.COMPANIES_MILESTONE_CREATE, data,cb,errorCb);
+		} else {
+			controller.invoke(sb.urls.COMPANIES_MILESTONE_UPDATE, data,cb,errorCb);
+		}
+	};	
 
 
 

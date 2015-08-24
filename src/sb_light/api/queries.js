@@ -31,7 +31,7 @@ define(['sb_light/globals',
 		if(!cid && !cm) { 
 			return ST.context("company") || null;
 		}
-		cid = cid || ST.state("company_id");
+		cid = cid || ST.state("company_id") || (ST.context("company") && ST.context("company").id) || null;
 		return sb.models.find("companies", cid);
 	};
 	q.companyRollup = function() {
@@ -187,6 +187,10 @@ define(['sb_light/globals',
 		return cm && cm.role == "User";
 	};
 
+	q.isMetricAdmin = function() {
+		return q.isAdmin();
+	}
+
 	q.userActive = function(uid) {
 		var cm = q.companyMembership(uid);
 		return cm && cm.active;	
@@ -322,7 +326,7 @@ define(['sb_light/globals',
 		METRICS
 	*********************************/
 	q.metric = function(id) {
-		id = id || ST.state("metric");
+		id = id || (!arguments.length && ST.state("metric"));
 		var m = sb.models.raw("metrics");
 		if(id && m) {
 			id = E.isNum(id) ? String(id) : id;
@@ -392,6 +396,7 @@ define(['sb_light/globals',
 		return q._metricStatusMap[m.status];
 	};
 
+
 	//DISPLAY purposes
 	q.metricStatusMarkup = function(id) {
 		var m = q.metric(id);
@@ -400,7 +405,25 @@ define(['sb_light/globals',
 		return "<i class='" + (q._trendMap[m.trend] + " " + q._metricStatusMap[m.status]) + "'></i>";
 	};
 
-	q.metricChartData = function(id) {
+
+	q._metricTypeMap = {
+		"B": "fa fa-lg fa-user", 	//basic
+		"C": "fa fa-lg fa-calculator",	//calculated
+		"H": "fa fa-lg fa-sitemap",	//hierarchical
+	};
+
+
+	q.metricTypeMarkup = function(id, sortKey/*==false*/) {
+		var m = q.metric(id);
+		if(!m) { return sortKey ? "Z" : ""; }
+
+		var num = (m.hierarchy && "H") || ((m.calculation_actuals || m.calculation_targets) && "C") || "B";
+
+		return sortKey ? num : ("<i class='" + q._metricTypeMap[num] + "'></i>");
+	};
+
+
+	q.metricChartData = function(id, hierarchyData) {
 		// var timer = E.moment();
 
 		var m = q.metric(id);
@@ -686,7 +709,13 @@ define(['sb_light/globals',
 	};
 	q.blockAlertClass = function(b) {
 		b = q.block(b);
-		var res = "alert alert-active";
+		var res = "alert alert-info";
+
+		var ds = E.daysDiff(E.today(), b.start_date);
+		if(ds < 0 || b.status == "new" || b.status == "closed") {
+			return  res;
+		}
+
 		switch(b.status) {
 			case "good": res = "alert alert-success"; break;
 			case "warning": res = "alert alert-warning"; break;
@@ -694,6 +723,28 @@ define(['sb_light/globals',
 		}
 		return res;
 	};
+
+
+	q.blockStatusMessage = function(b) {
+		b = q.block(b);
+		var dd = E.daysDiff(E.today(), b.end_date);
+		if(dd > 1) {
+			//OVERDUE
+			return "Overdue by <strong>" + dd + "</strong> days."
+		} else if (dd === 0) {
+			return "Due <strong>today</strong>";
+		} else {
+			var ds = E.daysDiff(E.today(), b.start_date);
+			if(ds < 0) {
+				return "Starts in <strong>" + ds + "</strong> days.";
+			} else if (ds === 0) {
+				return "Starts <strong>today</strong>";
+			} else {
+				return "<strong>" + Math.abs(dd) + "</strong> days remaining.";
+			}
+		}
+	};
+
 
 	q.blockTarget = function(b) {
 		b = q.block(b);

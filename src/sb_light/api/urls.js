@@ -78,9 +78,15 @@ define(['sb_light/globals'], function(sb) {
 		COMPANIES_HEALTH_UPDATE :		{url: "/health_calculations/%id%/update.js", deleteId:true},
 		COMPANIES_HEALTH_DELETE: 		{url: "/health_calculations/%id%/destroy.js"},
 		COMPANIES_HEALTH_DEFAULT: 		{url: "/health_calculations/%id%/set_default.js"},
-		COMPANIES_LOGO_PREVIEW_URL: 		{url: "/upload/company_logo_preview.js"},
+		COMPANIES_LOGO_PREVIEW_URL: 	{url: "/upload/company_logo_preview.js"},
 		COMPANIES_REMOVE_PREVIEW_LOGO: 	{url: "/upload/remove_company_logo_preview.js"},
+
+		COMPANIES_MILESTONE_CREATE: 	{url: "/milestone_definitions/create.js"},
+		COMPANIES_MILESTONE_UPDATE :	{url: "/milestone_definitions/%id%/update.js", deleteId:true},
+		COMPANIES_MILESTONE_DELETE: 	{url: "/milestone_definitions/%id%/destroy.js"},
 		
+
+
 		
 		CAPABILITIES_UPDATE: 			{url: "/company_settings/update.js"},
 		
@@ -123,10 +129,11 @@ define(['sb_light/globals'], function(sb) {
 		METRICS_CREATE:  			{url: "/metrics/create.js"},
 		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js"},
 		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js", deleteId:true},
-		METRICS_ATTACH_BLOCK:  		{url: "/blocks/attach_metric/%id%.js" },
-		METRICS_DETACH_BLOCK:  		{ url: "/blocks/detach_metric/%id%.js" },
+		METRICS_ATTACH_BLOCK:  		{url: "/blocks/attach_metric/%id%.js", normalParams:true, deleteId:true },
+		METRICS_DETACH_BLOCK:  		{ url: "/blocks/detach_metric/%id%.js", normalParams:true, deleteId: true },
 		METRICS_UPDATE_GROUPS:  	{ url: "/metrics/%id%/update_group_expression.js" },
 		METRICS_DOWNLOAD:  			{ url: "/metrics.csv" },
+		METRICS_HIERARCHY:			{ url: "/metrics/hierarchy_values/%id%.js", deleteId:true, normalParams:true},
 
 	
 		KPIS_CREATE :				{url: "/kpis/create.js"},

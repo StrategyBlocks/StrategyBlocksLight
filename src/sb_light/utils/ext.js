@@ -312,6 +312,9 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	};
 	E.parseUnix = function ext_parseUnix(dn) {	return moment.unix(dn); };
 	E.moment = moment;
+	E.momentFn = function(date, format) {
+		return moment(date, format);
+	};
 	E.dateNumber = function ext_dateNumber(d, format) { return E.moment(d, format).valueOf();	};
 	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
 
@@ -344,7 +347,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.userDate = function ext_userDate(d, format) { return E.moment(d,format).format( E.userFormat()); };
 	E.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
 		if(reverse) {
-			return "(" + moment(d).fromNow() + ") " + moment(d).format(format || E.userFormat());
+			return moment(d).fromNow() + " (" +  moment(d).format(format || E.userFormat()) + ")";
 		} 
 		return moment(d).format(format || E.userFormat()) + " (" + moment(d).fromNow() + ")";
 	};
@@ -369,7 +372,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		return function ext_sortFactory_cb(a,b) {	
 			var aprop = a ? a[prop] : null;
 			var bprop = b ? b[prop] : null;
-			if(prepFunc) {
+			if(E.isFunc(prepFunc)) {
 				aprop = prepFunc(aprop);
 				bprop = prepFunc(bprop);
 			}
@@ -377,10 +380,6 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		};
 	};
 
-	E.parseUnixDate = _.curry(E.moment)(_, E.unixFormat);
-	E.sortUnixDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseUnixDate);
-	E.parseServerDate = _.curry(E.moment)(_, E.unixFormat);
-	E.sortServerDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseServerDate);
 
 	E.sortTime = function ext_sortTime(a,b) { return E.sortNumbers(E.parseDate(a).getTime(), E.parseDate(b).getTime()); }; 
 	E.sortNumber = function ext_sortNumber(a,b){ return a-b; };
@@ -423,6 +422,16 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		//Now, both have started. Return the variance diff
 		return E.sortNumbers( (a.percent_progress/aep), (b.percent_progress/bep) );
 	};
+
+	//SORT OUT THE CURRY
+	E.parseUnixDate = _.curry(E.momentFn)(_, E.unixFormat);
+	E.sortUnixDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseUnixDate);
+	E.parseServerDate = _.curry(E.momentFn)(_, E.unixFormat);
+	E.sortServerDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseServerDate);
+
+
+
+
 
 	E.bool = function ext_bool(b){ 
 		return E.isStr(b) ? (b === "true") : b;

@@ -29,8 +29,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				}
 			});
 
-		},
-
+		}
 
 	});
 	return Model;	
