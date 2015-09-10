@@ -217,11 +217,6 @@ define(['sb_light/globals',
 			return b.owner_id == uid || b.manager_id == uid;
 		});
 	};
-	q.userKpis = function(uid) {
-		return sb.models.rawArray("kpis").filter(function(b) {
-			return b.owner_id == uid || b.manager_id == uid;
-		});
-	};
 	q.userMetrics = function(uid) {
 		return sb.models.rawArray("metrics").filter(function(b) {
 			return b.owner_id == uid || b.manager_id == uid;
@@ -345,25 +340,30 @@ define(['sb_light/globals',
 		return m && m.is_manager;
 	};
 
+	q.formatMetric = function(m, value) {
+		var val = accounting.formatNumber(value);
+		return m ? 
+			(m.unit_before ? E.join("", m.unit, val) : E.join(" ", val, m.unit) ) : 
+			"--"
+		;
+
+	};
+
 	//DISPLAY purposes
 	q.metricActual = function(id) {
 		var m = q.metric(id);
-		var ma = accounting.formatNumber(m.last_actual_value);
-		return m ? 
-			(m.unit_before ? E.join("", m.unit, ma) : E.join(" ", ma, m.unit) ) : 
-			"--"
-		;
+		var ma = m.last_actual_value;
+		return q.formatMetric(m, ma);
+
 	};
 
 	//DISPLAY purposes
 	q.metricTarget = function(id) {
 		var m = q.metric(id);
-		var mt = accounting.formatNumber(m.last_target_value);
-		return m ? 
-			(m.unit_before ? E.join("", m.unit, mt) : E.join(" ", mt, m.unit) ) : 
-			"--"
-		;
+		var mt = m.last_target_value;
+		return q.formatMetric(m, mt);
 	};
+
 	q._trendMap = {
 		"Down": "fa fa-lg fa-arrow-circle-down",
 		"Up": "fa fa-lg fa-arrow-circle-up",
@@ -430,17 +430,24 @@ define(['sb_light/globals',
 		var percent = m.percentage ? true : false;
 		var start = E.min(m.range_start, m.range_end);
 		var end = E.max(m.range_start, m.range_end);
-		var today = E.moment();
-		var targets  = (m.target && m.target.length) ? E._.cloneDeep(m.target) : [{date:E.serverDate(), value:0}];
-		var actuals  = (m.actuals && m.actuals.length) ? E._.cloneDeep(m.actuals) : [{date:E.serverDate(), value:0}];
-		targets.push({date:today, value:(m.last_target_value||0)});
-		actuals.push({date:today, value:(m.last_actual_value||0), comment:"Current Actual"});
+		var today = E.serverDate(E.today());
 
-		targets.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
-		actuals.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
+		//display values
+		var targets = hierarchyData ? hierarchyData.target_total : m.target;
+		var actuals = hierarchyData ? hierarchyData.actuals_total : m.actuals;
 
-		var targetDates = E.values(targets, "date", E.serverMoment);
-		var actualDates = E.values(actuals, "date", E.serverMoment);
+		targets  = (targets && targets.length) ? E._.cloneDeep(targets) : [{date:E.serverDate(), value:0}];
+		actuals  = (actuals && actuals.length) ? E._.cloneDeep(actuals) : [{date:E.serverDate(), value:0}];
+
+
+//		targets.push({date:today, value:(m.last_target_value||0)});
+//		actuals.push({date:today, value:(m.last_actual_value||0), comment:"Current Actual"});
+
+		targets.sort(E.sortUnixDate("date", false));
+		actuals.sort(E.sortUnixDate("date", false));
+
+		var targetDatestr = E.values(targets, "date");
+		var actualDatestr = E.values(actuals, "date");
 
 		var targetValues = E.values(targets, "value");
 		var actualValues = E.values(actuals, "value");
@@ -457,45 +464,123 @@ define(['sb_light/globals',
 		});
 
 		var actualsMap = E.toObject(actuals, "date");
+
+
 		//ceate a unique, sorted list of dates. 
-		var dates = E._.union([today], targetDates, actualDates).sort(E.sortDate);
+		var datestr = E._.union([today], targetDatestr, actualDatestr).sort(function(a,b) {
+			return E.sortDate(E.serverMoment(a), E.serverMoment(b));
+		});
 
 		//convert date strings to date objects for the time scales
-		var dm = function(v) { return E.date(v); };
-		var td = targetDates.map(dm);
-		var ad = actualDates.map(dm);
-
-		var ascale = d3.time.scale().domain(ad).range(actualValues);
-		var tscale = d3.time.scale().domain(td).range(targetValues);
-		var upperScale = d3.time.scale().domain(td).range(upperValues);
-		var lowerScale = d3.time.scale().domain(td).range(lowerValues);
-
-		var res = {
-			td:targetDates,				tv:targetValues,
-			ad:actualDates,				av:actualValues,
-			as:ascale,					ts:tscale,
-			us:upperScale,				ls:lowerScale,
-			uv:upperValues,				lv:lowerValues,
+		var dm = function(v) { 
+			return E.serverMoment(v).toDate(); 
 		};
 
-		res.series = E.map(dates, function(dm) {
-			var d = E.date(dm);
-			var ds = E.serverDate(dm);
-			var t = tscale(d);
-			var a = ascale(d);
-			var v = (a ? ((a-t)/a) : Number.POSITIVE_INFINITY);
+		var targetDates = targetDatestr.map(dm);
+		var actualDates = actualDatestr.map(dm);
+
+
+		var actualDomain = actualDates;
+		var actualRange = actualValues;
+		if(actualDomain.length === 1) { 
+			actualDomain.push(E.moment().add(1, "month").toDate());
+			actualRange.push(actualValues[0]);
+		}
+		var targetDomain = targetDates;
+		var targetRange = targetValues;
+		var upperRange = upperValues;
+		var lowerRange = lowerValues;
+		if(targetDomain.length === 1) { 
+			targetDomain.push(E.moment().add(1, "month").toDate());
+			targetRange.push(targetValues[0]);
+			upperRange.push(upperValues[0]);
+			lowerRange.push(lowerValues[0]);
+		}
+
+
+		var raRange = E.values( (hierarchyData ? hierarchyData.raw_actuals_total : m.raw_actuals).sort(E.sortServerDate("date",false)), "value");
+		var rtRange = E.values( (hierarchyData ? hierarchyData.raw_target_total : m.raw_target).sort(E.sortServerDate("date",false)), "value");
+		var raDomain = E.values( (hierarchyData ? hierarchyData.raw_actuals_total : m.raw_actuals).sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+		var rtDomain = E.values( (hierarchyData ? hierarchyData.raw_target_total : m.raw_target).sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+
+		var rarRange, rtrRange, ralRange, rtlRange,
+			rarDomain, rtrDomain, ralDomain, rtlDomain,
+			rarScale, rtrScale, ralScale, rtlScale
+		;
+
+
+		var aScale = d3.time.scale().domain(actualDomain).range(actualRange).clamp(true);
+		var raScale = d3.time.scale().domain(raDomain).range(raRange).clamp(true);
+
+
+		var tScale = d3.time.scale().domain(targetDomain).range(targetRange).clamp(true);
+		var rtScale = d3.time.scale().domain(rtDomain).range(rtRange).clamp(true);
+
+
+		var upperScale = d3.time.scale().domain(targetDomain).range(upperRange).clamp(true);
+		var lowerScale = d3.time.scale().domain(targetDomain).range(lowerRange).clamp(true);
+
+
+		if(hierarchyData) {
+			// Rollup and local raw values
+			rarRange = E.values(hierarchyData.raw_actuals_rollup.sort(E.sortServerDate("date",false)), "value");
+			rtrRange = E.values(hierarchyData.raw_target_rollup.sort(E.sortServerDate("date",false)), "value");
+			ralRange = E.values(hierarchyData.raw_actuals.sort(E.sortServerDate("date",false)), "value");
+			rtlRange = E.values(hierarchyData.raw_target.sort(E.sortServerDate("date",false)), "value");
+
+			rarDomain = E.values(hierarchyData.raw_actuals_rollup.sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+			rtrDomain = E.values(hierarchyData.raw_target_rollup.sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+			ralDomain = E.values(hierarchyData.raw_actuals.sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+			rtlDomain = E.values(hierarchyData.raw_target.sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+	
+			rarScale = d3.time.scale().domain(rarDomain).range(rarRange).clamp(true);
+			ralScale = d3.time.scale().domain(ralDomain).range(ralRange).clamp(true);
+			rtrScale = d3.time.scale().domain(rtrDomain).range(rtrRange).clamp(true);
+			rtlScale = d3.time.scale().domain(rtlDomain).range(rtlRange).clamp(true);
+		}
+
+
+		var res = {
+			td:targetDates,			tv:targetValues,
+			ad:actualDates,			av:actualValues,
+			as:aScale,					ts:tScale,
+			ras:raScale,				rts:rtScale,
+			us:upperScale,				ls:lowerScale,
+			uv:upperValues,				lv:lowerValues
+		};
+
+		if(hierarchyData) {
+			res.rars = rarScale;
+			res.rals = ralScale;
+			res.rtrs = rtrScale;
+			res.rtls = rtlScale;
+		}
+
+		res.series = E.map(datestr, function(ds) {
+			var dm = E.serverMoment(ds);
+			var d = dm.toDate();
+			var dn = d.getTime();
+			var t = tScale(d);
+			var a = aScale(d);
+			var v = E.variance(a,t);
 			var u = upperScale(d);
 			var l = lowerScale(d);
-			var uv = (u ? ((u-t)/u) : Number.POSITIVE_INFINITY);
-			var lv = (l ? ((l-t)/l) : Number.POSITIVE_INFINITY);
+			var uv = E.variance(u,t);
+			var lv = E.variance(l,t);
 
-			return {
+			var el = {
 				date:d,
 				moment:dm,
-				dateStr: E.serverDate(d),
-				dateNum: d.getTime(),
+				dateStr: ds,
+				dateNum: dn,
 				target:t,
+				raw_target: rtScale(d),
+				raw_target_rollup: (rtrScale ? rtrScale(d) : null),
+				raw_target_local: (rtlScale ? rtlScale(d) : null),
 				actual:a,
+				raw_actual: raScale(d),
+				raw_actual_rollup: (rarScale ? rarScale(d) : null),
+				raw_actual_local: (ralScale ? ralScale(d) : null),
 				upper:u,
 				lower:l,
 				variance:v,
@@ -503,6 +588,8 @@ define(['sb_light/globals',
 				lowerVariance:lv,
 				comment:(actualsMap[ds] ? actualsMap[ds].comment : "")
 			};
+
+			return el;
 		});
 
 		// console.log("MetricsChart Timer: ", E.moment().diff(timer));
@@ -807,11 +894,9 @@ define(['sb_light/globals',
 		return q.canManageBlock(b) || q.canUpdateProgress(b);
 	};
 	q.canManageBlock = function(b) {
-		b = q.block(b);
 		return b.is_manager && !b.closed;
 	};
 	q.canUpdateProgress = function(b) {
-		b = q.block(b); 
 		return b.is_owner && !b.closed && b.ownership_state != "new" && b.leaf;
 	};
 	q.isBlockOwner = q.canUpdateProgress;

@@ -237,7 +237,8 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 	};
 
 	S.isSvg = function(el) {
-		return el && el.namespaceURI.match(/svg/); 
+		// return el && el.namespaceURI.match(/svg/); 
+		return el && el.ownerSVGElement;
 	};
 
 	S.multiline = function(el, text, dx,dy) {

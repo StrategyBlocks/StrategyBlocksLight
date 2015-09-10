@@ -64,10 +64,10 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 
 
-	controller.metricUpdate = function( changes, cm) {
+	controller.metricUpdate = function( changes, cb) {
 		controller.invoke(sb.urls.METRICS_UPDATE,changes, cb,cb);
 	};
-	controller.metricCreate = function( changes, cm) {
+	controller.metricCreate = function( changes, cb) {
 		controller.invoke(sb.urls.METRICS_CREATE,changes, cb,cb);
 	};
 	controller.metricAttach = function( mid, bid, cb) {

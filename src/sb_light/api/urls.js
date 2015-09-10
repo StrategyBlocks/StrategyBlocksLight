@@ -14,7 +14,6 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_EXPORTS: 		{url: "/exports.js", 					post:false},
 		MODEL_FOCUS: 		{url: "/focus.js", 						post:false},
 		MODEL_GROUPS: 		{url: "/groups.js", 					post:false},
-		MODEL_KPIS: 		{url: "/kpis.js", 						post:false},
 		MODEL_METRICS: 		{url: "/metrics.js", 					post:false},
 		MODEL_RISKS: 		{url: "/risks.js", 						post:false},
 		MODEL_LEVELS: 		{url: "/levels.js", 					post:false},

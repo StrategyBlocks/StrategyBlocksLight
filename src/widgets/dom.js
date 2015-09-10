@@ -388,6 +388,9 @@ define([
 		//you can set the options here and provide a function to call after the option has been set. 
 		opts: function(str, val, handlerFunc) {
 			if(arguments.length > 1 &&  this.__opts.hasOwnProperty(str)) {
+				//don't trigger redraw unless things have changed.
+				if(this.__opts[str] === val) { return; }
+
 				this.__opts[str] = val;
 				if(handlerFunc) { 
 					var f = E.isStr(handlerFunc) ? this.bind(handlerFunc) : handlerFunc;
@@ -459,17 +462,17 @@ define([
 
 			if(src) {
 				try {
-					console.log("LOADING CHILD: ", src);
+					// console.log("LOADING CHILD: ", src);
 					self.__creatingChildren[src] = true;
 					require([src], function(El) {
 
 						//no guarantee of order this happens
 						if(El) {
-							console.log("CREATING CHILD: ", src);
+							// console.log("CREATING CHILD: ", src);
 							c.push(new El(opts));
 							delete self.__creatingChildren[src];
 						} else {
-							console.log("FAILED CREATING CHILD: ", src);
+							// console.log("FAILED CREATING CHILD: ", src);
 						} 
 
 						if(redraw) {
@@ -551,7 +554,7 @@ define([
 					this.stateValid() && this.modelsValid() && !this.needsData();
 
 			if(!cd &&  E.length(this.__creatingChildren)) {
-				console.log("CAN'T DRAW ", this.id, this.__creatingChildren, E.length(this.__creatingChildren));
+				// console.log("CAN'T DRAW ", this.id, this.__creatingChildren, E.length(this.__creatingChildren));
 			}		
 			return cd;
 		},

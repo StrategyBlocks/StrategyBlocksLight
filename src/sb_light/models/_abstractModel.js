@@ -62,7 +62,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			if(!this._model) {
 				// E.debug("Getting the " + this.name + " model.");
 				if(this._authStateCheck() ) {
-					E.debug("Forcing the update", this.name);
+					// E.debug("Forcing the update", this.name);
 					ST.forceModelUpdate(this);
 				} else {
 					var me = this;

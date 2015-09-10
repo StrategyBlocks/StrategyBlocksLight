@@ -342,7 +342,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		return udf;
 	};
 	E.serverDate = function ext_serverDate(d,format) { return E.moment(d,format).format(E.serverFormat); };
-	E.serverMoment = function ext_serverDate(d) { return E.moment(d,E.serverFormat); };
+	E.serverMoment = function ext_serverMoment(d) { return E.moment(d,E.serverFormat); };
+	E.serverToDate = function ext_serverToDate(d) { return E.moment(d,E.serverFormat); };
 	E.month = function ext_date(d, format) { return E.moment(d,format).format("MMM (YYYY)");	};
 	E.userDate = function ext_userDate(d, format) { return E.moment(d,format).format( E.userFormat()); };
 	E.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
@@ -426,7 +427,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	//SORT OUT THE CURRY
 	E.parseUnixDate = _.curry(E.momentFn)(_, E.unixFormat);
 	E.sortUnixDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseUnixDate);
-	E.parseServerDate = _.curry(E.momentFn)(_, E.unixFormat);
+	E.parseServerDate = _.curry(E.momentFn)(_, E.serverFormat);
 	E.sortServerDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseServerDate);
 
 
@@ -577,6 +578,11 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		return E.max(min, E.min(max,num));
 	};
 
+	E.minmax = function ext_mimmax(list) {
+		return [E.min.apply(null,list), E.max.apply(null,list)];
+	}
+
+
 	//given a list of numbers, returns the one closest to "num"
 	E.snapto = function ext_snapto(list, num) {
 		var diff = Math.abs(list[0]-num);
@@ -589,6 +595,16 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		}
 		return n;
 	};
+
+	//(a-b)/b
+	//a is actual, b is target
+	E.variance = function ext_variance(a,b) {
+		if(a === b) { return 0; }
+		if(b === 0) { return a; }
+		//else 
+		return (a-b) / b;
+	}
+
 
 
 	//event handler function generator where we are using Jquery or D3 and want to bind to a class function
@@ -711,11 +727,11 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		block = block || "none";
 
 		switch(block) {
-			case "green": 	return ["#196419", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"], 
+			case "green": 	return ["#188118", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"], 
 									"<span style='color:#196419'><i class='fa fa-fw fa-lg fa-check'></i> Good</span>" ];
-			case "yellow":	return ["#7d741f", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"], 
+			case "yellow":	return ["#A18D1E", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"], 
 									"<span style='color:#7d741f'><i class='fa fa-fw fa-lg fa-warning'></i> Warning" ];
-			case "red": 	return ["#7d1f1f", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"], 
+			case "red": 	return ["#A11E1E", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"], 
 									"<span style='color:#7d1f1f'><i class='fa fa-fw fa-lg fa-warning'></i> Bad" ];
 			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		,["#999", "#aaa"]  ];
 		}
@@ -804,81 +820,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	};
 
 	
-	E.massageKpi = function ext_massageKpi(data) {
-		//fix legacy code issue
-		data.values = data.values || data.actuals;
-		data = E.massageTA(data);
-
-		var vd = data.values;
-		var td = data.target;
-		
-		// var minY = Number.POSITIVE_INFINITY;
-		// var maxY = Number.NEGATIVE_INFINITY;
-		
-		
-		if(vd.length && td.length) {
-			//push a target at the front to line up with values
-			if(E.daysDiff(data.dates[0], td[0].date) < 0) {
-				td.unshift( { value:td[0].value, upper:td[0].upper, lower:td[0].lower,
-								date:data.dates[0], comment:"(First value, interpolated)" } );
-			} 
-			//push a target at the end to line up with values
-			if(E.daysDiff(data.dates.last(), td.last().date) > 0) {
-				td.push({value:td.last().value, upper:td.last().upper, lower:td.last().lower,
-							date:data.dates.last(), comment:"(Last value, interpolated)"});
-			}
-		}
-
-		//fix the tolerance from the lame form
-		data.tolerance.percentage = data.tolerance.percentage || false;
-		data.tolerance.inverse = data.tolerance.inverse || false;
-		var pc = data.tolerance.percentage; 
-
-		
-		var minA = vd[0].value;
-		var maxA = vd[0].value;
-		E.each(vd, function(el) {
-			minA = E.min( el.value, minA );
-			maxA = E.max( el.value, maxA );
-			el.id = el.id || ("actual_" + E.unique());
-		});
-		var minT = td[0].value;
-		var maxT = td[0].value;
-		E.each(td, function(el) {
-			minT = E.min( el.value, minT );
-			maxT = E.max( el.value, maxT );
-			el.id = el.id || ("target_" + E.unique());
-		});
-		
-		var upper = E.max(data.tolerance.range_end, data.tolerance.range_start) / (pc ? 100 : 1);
-		var lower = E.min(data.tolerance.range_end, data.tolerance.range_start) / (pc ? 100 : 1);
-
-		var ml;
-		var mu;
-		if (!pc) {
-			ml = minT + lower;
-			mu = maxT + upper;
-		} else {
-			ml = minT + (lower * minT);
-			mu  = maxT + (upper * maxT);
-		}
-		
-		ml = E.min(ml, minT) - E.absDiff(minT, ml)*0.02;
-		mu = E.max(mu, maxT) + E.absDiff(maxT, mu)*0.02;
-		
-
-		data.minY = E.min(minA, minT, ml);
-		data.maxY = E.max(maxA, maxT, mu);
-		
-		
-		var offset = (E.absDiff(data.maxY, data.minY) * 0.05) || 10;
-		data.minY -= offset;
-		data.maxY += offset;
-
-		//fix legacy code issue
-		data.actuals = data.values;
-		return data;		
-	};
+	
 		
 		//fix dates and sort history for health charts
 	E.massageHealth = function ext_massageHealth(data) {
