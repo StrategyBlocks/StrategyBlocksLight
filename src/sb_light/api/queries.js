@@ -894,10 +894,10 @@ define(['sb_light/globals',
 		return q.canManageBlock(b) || q.canUpdateProgress(b);
 	};
 	q.canManageBlock = function(b) {
-		return b.is_manager && !b.closed;
+		return b.is_manager && !b.closed && !b.is_sub_company_block;
 	};
 	q.canUpdateProgress = function(b) {
-		return b.is_owner && !b.closed && b.ownership_state != "new" && b.leaf;
+		return b.is_owner && !b.closed && b.ownership_state != "new" && b.leaf && !b.is_link && !b.sub_company_block;
 	};
 	q.isBlockOwner = q.canUpdateProgress;
 	q.isBlockManager = q.canManageBlock;

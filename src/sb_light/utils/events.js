@@ -3,9 +3,13 @@ define(['sb_light/globals'], function(sb) {
 
 	var events = {};
 
-	events.stop = function(e) {
-		if(e && e.stopImmediatePropagation) {
-			e.stopImmediatePropagation();
+	events.stop = function(e, immediate) {
+		if(e ) {
+			if(immediate && e.stopImmediatePropagation) {
+				e.stopImmediatePropagation();
+			} else if (e.stopPropagation) {
+				e.stopPropagation();
+			}
 		}
 		if(e && e.preventDefault) {
 			e.preventDefault();

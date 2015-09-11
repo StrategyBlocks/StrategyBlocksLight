@@ -872,7 +872,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		return res;
 	};		
 	//same as combine but only takes two properties.
-	//A takes precedence over A when overlaps occur
+	//B takes precedence over A when overlaps occur
 	E.merge = function ext_merge(a, b, ignore) {
 		return E.combine([a||{},b||{}], ignore);	
 	};
