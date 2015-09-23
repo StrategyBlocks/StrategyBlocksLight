@@ -329,6 +329,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.today = function ext_today() { return new Date(); };
 	E.minDate = function ext_minDate(dates) { 	return E.moment.min.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.maxDate = function ext_maxDate(dates) { 	return E.moment.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
+	E.rangeDate = function ext_maxDate(date, start,end) { 	return E.minDate(start, E.maxDate(end, date)); };
 	E.serverFormat = "YYYY/MM/DD";
 	E.unixFormat = "YYYY-MM-DD HH:mm:ss Z";
 	

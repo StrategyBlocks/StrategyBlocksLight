@@ -251,9 +251,10 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				end_date_str: b.end_date,
 				start_date: E.serverMoment(b.start_date),
 				end_date: E.serverMoment(b.end_date),
-
-
 			});
+
+			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);
+			b.last_updated = E.maxDate(b.start_date, E.minDate(b.end_date, b.last_updated));
 
 			//map children ids to paths
 			b.children = b.children ? E.map(b.children, function(cpath, i) {
