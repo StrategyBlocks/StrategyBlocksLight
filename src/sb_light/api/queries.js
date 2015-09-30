@@ -255,6 +255,14 @@ define(['sb_light/globals',
 	};
 
 
+	/********************************
+		GROUPS
+	*********************************/
+	q.group = function(gid /*optional*/) {
+		var gm = sb.models.raw("groups");
+		gid = gid || ST.state("group");
+		return (gm && gid && gm[gid]) || null; 
+	};
 
 	/********************************
 		FOCUS AREAS

@@ -41,6 +41,10 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		return true;
 	});
 
+	S.extendD3("prop", function() {
+		var sel = this;
+		return sel.property.apply(sel, E.slice(arguments));
+	});
 
 	//extensions to d3
 	//adds x,y,width,height to "rect" type SVG elements
