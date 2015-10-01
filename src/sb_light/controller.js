@@ -81,9 +81,17 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.metricHierarchy = function( mid, nid, cb) {
 		controller.invoke(sb.urls.METRICS_HIERARCHY,{id:mid, "node_ids":nid}, cb,cb);
 	};
+	controller.metricUpdateGroups = function(id, groups, cb) {
+		var changes = {id:id, group_expression:groups};
+		controller.invoke(sb.urls.METRICS_UPDATE,changes, cb,cb);
+		// controller.invoke(sb.urls.METRICS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
+	};
 
 	controller.riskUpdate = function( changes, cm) {
 		controller.invoke(sb.urls.RISKS_UPDATE,changes, cm,cm);
+	};
+	controller.riskUpdateGroups = function(id, groups, cb) {
+		controller.invoke(sb.urls.RISKS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
 	};
 
 

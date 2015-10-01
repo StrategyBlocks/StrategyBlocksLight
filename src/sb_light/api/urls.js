@@ -121,6 +121,7 @@ define(['sb_light/globals'], function(sb) {
 		RISKS_SHOW_DOC :			{url: "/risks/%id%/show_document/%doc_id%.js"},
 		RISKS_DESTROY_DOC: 			{url: "/risks/%id%/destroy_document.js"},
 		RISKS_DUMMY_REFRESH :		{url: "/risks/%id%/refresh_risk.js"},
+		RISKS_UPDATE_GROUPS:  		{url: "/risks/%id%/update_group_expression.js", deleteId:true, normalParams:true },
 		RISKS_SETTINGS: 			{url: "/risk_profiles/update_risk_settings.js"},
 		RISKS_MATRIX_SIZE :			{url: "/risk_profiles/set_matrix_size.js"},
 		RISKS_PROFILES_UPDATE: 		{url: "/risk_profiles/update_batch.js"},
@@ -130,7 +131,7 @@ define(['sb_light/globals'], function(sb) {
 		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js", deleteId:true},
 		METRICS_ATTACH_BLOCK:  		{url: "/blocks/attach_metric/%id%.js", normalParams:true, deleteId:true },
 		METRICS_DETACH_BLOCK:  		{ url: "/blocks/detach_metric/%id%.js", normalParams:true, deleteId: true },
-		METRICS_UPDATE_GROUPS:  	{ url: "/metrics/%id%/update_group_expression.js" },
+		METRICS_UPDATE_GROUPS:  	{ url: "/metrics/%id%/update_group_expression.js" , deleteId:true, normalParams:true},
 		METRICS_DOWNLOAD:  			{ url: "/metrics.csv" },
 		METRICS_HIERARCHY:			{ url: "/metrics/hierarchy_values/%id%.js", deleteId:true, normalParams:true},
 
