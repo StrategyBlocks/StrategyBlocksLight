@@ -9,6 +9,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.REGISTER_COMPANY, company, cb, errCb, sb.state.any);
 	};	
 
+	controller.updateCompany = function(obj, cb) {
+		controller.invoke(sb.urls.COMPANIES_UPDATE, obj, cb, cb);
+	}
 
 	controller.createBuilder = function(args, cb, errCb) {
 		controller.invoke(sb.urls.BUILDER_CREATE, args, cb, errCb);
@@ -102,6 +105,8 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.usersCreate = function( list, cb) {
 		controller.invoke(sb.urls.USERS_CREATE_BATCH,list, cb,cb);
 	};
+
+
 
 	controller.groupsUpdate = function(o, cb) {
 		if(o.id === "new") {

@@ -444,7 +444,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			}
 		}
 		var fakeLogin = (!prevSession || prevSession == state.session_unknown || prevSession == state.session_startup); 
-		if(!fakeLogin && (data.flash.error || data.flash.warning)) {
+		if(!fakeLogin && data.flash && (data.flash.error || data.flash.warning)) {
 			//prevent updating the flash message on dummy logins
 			state.context("flash", data.flash);
 		}
@@ -470,6 +470,10 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		if(model.raw() === null && m) {
 			if(E.isArray(m)) {
 				m = m.reduce( (function(prev,el) {
+					if(!el.id) {
+						E.debug("Warning:STATE:HandleMOdelResponse: model doesn't have an id: ", model.name, el);
+						el.id = (el.id || el.name || el.key); 
+					}
 					prev[el.id] = el;
 					return prev;
 				}), {});
@@ -479,8 +483,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			data[model.name] = {
 				"added": m,
 				"timestamp": (res[model.name+"_timestamp"] || String(E.dateNumber()))
-			}
-
+			};
 			//this cleans up the timestamps and the force request buffers
 			_updateModels(data);
 		}

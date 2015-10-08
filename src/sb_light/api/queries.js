@@ -391,17 +391,21 @@ define(['sb_light/globals',
 
 	};
 
-	q._metricStatusMap = {
+	q._metricStatusClass = {
 		"Good": "statusGood",
 		"Warning": "statusWarn",
 		"Bad": "statusBad",
 	};
-
+	q._metricStatusIcon = {
+		"Bad": "fa fa-lg fa-arrow-circle-down",
+		"Good": "fa fa-lg fa-arrow-circle-up",
+		"Warning": "fa fa-lg fa-minus-circle"
+	};
 	q.metricStatusClass = function(id) {
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
-		return q._metricStatusMap[m.status];
+		return q._metricStatusClass[m.status];
 	};
 
 
@@ -410,7 +414,7 @@ define(['sb_light/globals',
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
-		return "<i class='" + (q._trendMap[m.trend] + " " + q._metricStatusMap[m.status]) + "'></i>";
+		return "<i class='" + (q._metricStatusIcon[m.status] + " " + q._metricStatusClass[m.status]) + "'></i>";
 	};
 
 
@@ -528,7 +532,7 @@ define(['sb_light/globals',
 		var upperScale = d3.time.scale().domain(targetDomain).range(upperRange).clamp(true);
 		var lowerScale = d3.time.scale().domain(targetDomain).range(lowerRange).clamp(true);
 
-
+		var scales = [aScale, tScale, raScale, rtScale, upperScale, lowerScale];
 		if(hierarchyData) {
 			// Rollup and local raw values
 			rarRange = E.values(hierarchyData.raw_actuals_rollup.sort(E.sortServerDate("date",false)), "value");
@@ -545,6 +549,19 @@ define(['sb_light/globals',
 			ralScale = d3.time.scale().domain(ralDomain).range(ralRange).clamp(true);
 			rtrScale = d3.time.scale().domain(rtrDomain).range(rtrRange).clamp(true);
 			rtlScale = d3.time.scale().domain(rtlDomain).range(rtlRange).clamp(true);
+
+			scales.put(rarScale,ralScale,rtrScale,rtlScale);
+		}
+		if(!m.interpolate_values) {
+			E.each(scales, function(s) {
+				s.interpolate(function(a,b) {
+					//step-after interpolate
+					return function(t) {
+						return t < 1 ? a : b; 
+					}
+				});
+			});
+
 		}
 
 

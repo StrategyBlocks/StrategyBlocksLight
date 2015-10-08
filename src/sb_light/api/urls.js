@@ -30,6 +30,8 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_DASHBOARD: 	{url: "/reports/dashboard_layout.js", 	post:false},
 		MODEL_HISTORY: 		{url: "/login/history.js", 				post:false},
 		MODEL_BUILDERS: 	{url: "/builders.js", 					post:false},
+		MODEL_METRICS_EXPRESSIONS: 		{url: "/metrics/calculation_functions.js", 	post:false},
+
 
 			
 		BLOCKS_CONTEXT:					{url: "/blocks/context/%id%.js", 				post:false},
@@ -71,14 +73,19 @@ define(['sb_light/globals'], function(sb) {
 		// COMPANIES_CREATE: 				{url: "/companies/create.js"},
 		COMPANIES_REGISTER: 			{url: "/companies/create.js"},
 		COMPANIES_UPDATE: 				{url: "/companies/update.js"},
+		COMPANIES_UPLOAD_LOGO: 			{url: "/companies/logo_upload.js"},
 
 		COMPANIES_HEALTH: 				{url: "/health_calculations.js"},
 		COMPANIES_HEALTH_CREATE: 		{url: "/health_calculations/create.js"},
 		COMPANIES_HEALTH_UPDATE :		{url: "/health_calculations/%id%/update.js", deleteId:true},
 		COMPANIES_HEALTH_DELETE: 		{url: "/health_calculations/%id%/destroy.js"},
 		COMPANIES_HEALTH_DEFAULT: 		{url: "/health_calculations/%id%/set_default.js"},
+
+		//DEP///////////////////
 		COMPANIES_LOGO_PREVIEW_URL: 	{url: "/upload/company_logo_preview.js"},
 		COMPANIES_REMOVE_PREVIEW_LOGO: 	{url: "/upload/remove_company_logo_preview.js"},
+		///////////////////
+
 
 		COMPANIES_MILESTONE_CREATE: 	{url: "/milestone_definitions/create.js"},
 		COMPANIES_MILESTONE_UPDATE :	{url: "/milestone_definitions/%id%/update.js", deleteId:true},

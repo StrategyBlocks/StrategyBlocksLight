@@ -11,6 +11,7 @@ define([
 	'sb_light/models/focusModel',
 	'sb_light/models/risksModel',
 	'sb_light/models/metricsModel',
+	'sb_light/models/metricsExpressionsModel',
 	'sb_light/models/companiesModel',
 	'sb_light/models/groupsModel',
 	'sb_light/models/timezonesModel',
@@ -20,7 +21,8 @@ define([
 	'sb_light/models/historyModel',
 	'sb_light/models/buildersModel',
 
-], function(sb, tags,news,users,blocks,levels,focus,risks,metrics, companies, groups,timezones,healths, milestones, capabilities, history, builders) {
+], function(sb, tags,news,users,blocks,levels,focus,risks,metrics, metricsExpressions, 
+					companies, groups,timezones,healths, milestones, capabilities, history, builders) {
 
 	'use strict';
 	
@@ -33,6 +35,7 @@ define([
 		focus:						{klass:focus},
 		risks:						{klass:risks},
 		metrics:					{klass:metrics},
+		metrics_expressions:		{klass:metricsExpressions },
 		groups:						{klass:groups},
 		companies:					{klass:companies},
 		timezones:					{klass:timezones},

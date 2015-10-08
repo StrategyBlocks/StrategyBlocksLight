@@ -23,7 +23,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			var t = E.moment();
 			//E.each(this._model, this._massageMetric.bind(this));
 
-			console.log("Massage: ", E.moment().diff(t));
+			// console.log("Massage: ", E.moment().diff(t));
 
 
 			//RESET THE HIERARCHICAL CACHE STUFF
@@ -46,6 +46,10 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		hierarchy: function(mid, nid, cb) {
 			var name = "hierarchy_"+mid+"_"+nid;
 			
+			//ONLY fetch is this is a hierarchical metric
+			var m = this._model[mid];
+			if(!m.hierarchy) { return null; }
+
 			var func = this._handleHierarchy.bind(this,mid, nid );
 			var data = this._hierarchyCache[name];
 
