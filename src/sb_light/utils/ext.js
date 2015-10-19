@@ -209,6 +209,14 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		var k;
 		for(k in map) { return k; }
 	};	
+	//return the first key from doing a for-in on the map
+	//WARNING: this may not be consisten. The order is arbitrary. 
+	//			this is only useful if you just want a valid key, and it doesn't matter which one (e.g., a default setting)
+	E.firstValue = function ext_keys(map) {
+		if(!map) { return null; }
+		var k;
+		for(k in map) { return map[k]; }
+	};	
 
 	//simplify array join syntax for when I need to create the array as well
 	E.join = function ext_join(ch /*, arguments:an array or a list of arguments to join */) {
