@@ -22,7 +22,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		_massageUpdatedModel: function() {
 			this._super();
 			E.each(this._model, function(v) {
-				v.name = E.caps(v.name.split("_").join(" "));
+				v.name = v.name.toUpperCase();
 			});
 		}
 
