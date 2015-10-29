@@ -437,6 +437,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.parseUnixDate = _.curry(E.momentFn)(_, E.unixFormat);
 	E.sortUnixDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseUnixDate);
 	E.parseServerDate = _.curry(E.momentFn)(_, E.serverFormat);
+
+	//requires property name, and whether to reverse it (newest first)
 	E.sortServerDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseServerDate);
 
 

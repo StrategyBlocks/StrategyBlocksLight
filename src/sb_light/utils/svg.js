@@ -148,6 +148,11 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 
 	S.extendD3("dim", function(name, value) {
 		if(arguments.length > 1) {
+			//prevent negative width/height errors
+			if(E.isNum(value) && (name == "width" || name == "height")) { 
+				value = E.max(value, S.ZERO); 
+			}
+
 			if( S.isSvg(this.node()) )  {
 				this.attr(name, value);
 			} else {
