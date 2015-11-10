@@ -349,8 +349,8 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		return t.join(" "); 
 	};
 	var sep = ",";
-	S.translate = 	function(x,y) { return (isNaN(y) ? ["translate(",x,")"] : ["translate(",x,", ",y,")"]).join("");  };
-	S.scale =  		function(x,y) { return (isNaN(y) ? ["scale(",x,")"] : ["scale(",x,", ",y,")"]).join(""); };
+	S.translate = 	function(x,y) { return (arguments.length == 1 ? ["translate(",x,")"] 	: ["translate(",x,", ",y,")"]	).join("");  };
+	S.scale =  		function(x,y) { return (arguments.length == 1 ? ["scale(",x,")"] 		: ["scale(",x,", ",y,")"]		).join(""); };
 	S.rotate =	 	function(x) { return "rotate("+x+")"; };
 	S.viewBox = 		function(x,y,w,h) { return [x,y,w,h].join(" "); };
 	S.l =				function(x,y) { return ["l",x,sep,y].join(""); };

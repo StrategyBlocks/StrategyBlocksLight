@@ -146,10 +146,6 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		if(val !== undefined) {
 			//we still need to return "this" when 
 			if(force || sg[type] != val) {
-				if(type == "blockMapZoom") {
-					console.log("wtf");
-				}
-
 				sg[type] = val;
 				state.publish(group, type);
 			}
