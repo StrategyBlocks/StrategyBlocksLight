@@ -4,7 +4,7 @@
 define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
 	'use strict';
 
-	var E;
+	var E, Q;
 
 	var Model = _Model.extend({
 
@@ -14,6 +14,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		init: function() {
 			this._super("metrics", sb.urls.MODEL_METRICS);
 			E = sb.ext;
+			Q = sb.queries;
 
 		},
 
@@ -31,7 +32,14 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			this._queue = {};
 
 
+			var uid = Q.user().id; 
+
 			E.each(this._model, function(v) {
+				v.status = v.status.toLowerCase();
+				v.trend = v.trend.toLowerCase();
+				v.statusNum = v.status == "good" ? 1 : (v.status == "warning" ? 2 : (v.status == "bad" ? 3 : 0)) ;
+				v.trendNum = v.trend == "up" ? 1 : (v.trend == "flat" ? 2 : (v.trend == "down" ? 3 : 0)) ;
+				v.is_mine = (v.owner_id == uid || v.manager_id == uid); 
 				v.tolerance = {
 					range_start: v.range_start,
 					range_end: v.range_end,

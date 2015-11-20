@@ -607,13 +607,16 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		return n;
 	};
 
-	//(a-b)/b
-	//a is actual, b is target
-	E.variance = function ext_variance(a,b) {
-		if(a === b) { return 0; }
-		if(b === 0) { return a; }
-		//else 
-		return (a-b) / b;
+	E.variance = function ext_variance(actual,target) {
+		var v = 0;
+		var a = actual; 
+		var b = target;
+
+		if 			(a === b) 	{ v = 0; }
+		else if 	(b === 0) 	{ v = a; }
+		else 				 	{ v = a/b - 1;}
+
+		return E.roundTo(E.range(-1, v, 1) * 100, 1);
 	}
 
 

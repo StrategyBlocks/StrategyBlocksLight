@@ -225,6 +225,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 			var csize = 0;
 
+			var uid = Q.user().id;
+
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				path:bpath,
 				parentPath:(p ? p.path : null),
@@ -238,9 +240,13 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 								b.progress_color == "red" ? "bad" : (b.progress_color == "yellow" ? "warning" : "good")
 							)
 						)),
-				overdue: E.daysDiff(E.today(), E.serverMoment(b.end_date)) > 0,
+				overdue: E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0),
 				is_root:(depth===0),
 				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
+				is_open: ((b.ownership_state == "new" || b.closed) ? false : true),
+				is_mine: (b.owner_id == uid || b.manager_id == uid),
+				is_real_owner: (b.owner_id==uid),
+				is_real_manager: (b.manager_id == uid),
 				can_move_left: (b.is_owner && (pos> 0)),
 				can_move_right: (b.is_owner && p && (pos < p.children.length-1) && p.children.length > 1),
 				can_delete: (b.is_owner && !b.closed),
@@ -251,6 +257,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				end_date_str: b.end_date,
 				start_date: E.serverMoment(b.start_date),
 				end_date: E.serverMoment(b.end_date),
+				start_date_num: E.dateNumber(E.serverMoment(b.start_date)),
+				end_date_num: E.dateNumber(E.serverMoment(b.end_date)),
+				variance_progress: E.variance(b.percent_progress, b.expected_progress)
 			});
 
 			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);

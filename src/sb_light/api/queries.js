@@ -46,6 +46,10 @@ define(['sb_light/globals',
 		var c = q.company();
 		return c ? c.default_health_calculation_id : null;
 	};
+	q.companyLicense = function() {
+		var c = ST.context("company");
+		return c ? c.license : null;
+	};
 
 	q.shortCompanyName = function(cid) {
 		var c = q.company(cid);
@@ -373,9 +377,9 @@ define(['sb_light/globals',
 	};
 
 	q._trendMap = {
-		"Down": "fa fa-lg fa-arrow-circle-down",
-		"Up": "fa fa-lg fa-arrow-circle-up",
-		"Flat": "fa fa-lg fa-minus-circle"
+		"down": "fa fa-lg fa-arrow-circle-down",
+		"up": "fa fa-lg fa-arrow-circle-up",
+		"flat": "fa fa-lg fa-minus-circle"
 	};
 
 	q.metricTrendClass = function(id) {
@@ -392,14 +396,14 @@ define(['sb_light/globals',
 	};
 
 	q._metricStatusClass = {
-		"Good": "statusGood",
-		"Warning": "statusWarn",
-		"Bad": "statusBad",
+		"good": "statusGood",
+		"warning": "statusWarn",
+		"bad": "statusBad",
 	};
 	q._metricStatusIcon = {
-		"Bad": "fa fa-lg fa-arrow-circle-down",
-		"Good": "fa fa-lg fa-arrow-circle-up",
-		"Warning": "fa fa-lg fa-minus-circle"
+		"bad": "fa fa-lg fa-arrow-circle-down",
+		"good": "fa fa-lg fa-arrow-circle-up",
+		"warning": "fa fa-lg fa-minus-circle"
 	};
 	q.metricStatusClass = function(id) {
 		var m = q.metric(id);
@@ -590,8 +594,6 @@ define(['sb_light/globals',
 			var v = E.variance(a,t);
 			var u = upperScale(d);
 			var l = lowerScale(d);
-			var uv = E.variance(u,t);
-			var lv = E.variance(l,t);
 
 			var el = {
 				date:d,
@@ -609,8 +611,6 @@ define(['sb_light/globals',
 				upper:u,
 				lower:l,
 				variance:v,
-				upperVariance:uv,
-				lowerVariance:lv,
 				comment:(actualsMap[ds] ? actualsMap[ds].comment : "")
 			};
 
@@ -623,7 +623,7 @@ define(['sb_light/globals',
 
 
 	q.progressChartData = function(progressData, bid) {
-		var pd = progressData[bid];
+		var pd = progressData[String(bid)];
 		if(!pd) { return null;}
 
 		var percent = true;
@@ -676,11 +676,9 @@ define(['sb_light/globals',
 			var d = E.date(ds);
 			var t = Math.floor(tscale(d));
 			var a = Math.floor(ascale(d));
-			var v = (a ? ((a-t)/a) : Number.POSITIVE_INFINITY);
+			var v = E.variance(a,t);
 			var u = Math.floor(upperScale(d));
 			var l = Math.floor(lowerScale(d));
-			var uv = (u ? ((u-t)/u) : Number.POSITIVE_INFINITY);
-			var lv = (l ? ((l-t)/l) : Number.POSITIVE_INFINITY);
 
 			return {
 				date:d,
@@ -691,8 +689,8 @@ define(['sb_light/globals',
 				upper:u,
 				lower:l,
 				variance:v,
-				upperVariance:uv,
-				lowerVariance:lv,
+				// upperVariance:uv,
+				// lowerVariance:lv,
 				overdue: (E.daysDiff(end, d) > 0),
 				comment:(actualsMap[ds] ? actualsMap[ds].comment : "")
 			};

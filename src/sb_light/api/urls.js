@@ -180,7 +180,7 @@ define(['sb_light/globals'], function(sb) {
 	
 		URL_SAVE_BOOKMARK :			{url: "/users/save_bookmark.js"},
 		PAYMENTS :					{url: "/purchases/index.js"},
-		PAYMENTS_QUOTE :				{url: "/purchases/quote.js"},
+		PAYMENTS_QUOTE :			{url: "/purchases/quote.js"},
 		PAYMENTS_CREATE: 			{url: "/purchases/create.js"},
 		
 		ADMIN_RAISE: 				{url:"/admin/log_client_error.js"},
