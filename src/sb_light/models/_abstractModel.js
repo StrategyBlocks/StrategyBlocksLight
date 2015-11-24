@@ -16,6 +16,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		_timestamp:null,
 		_sb:null,
 		_authStateCheck:null,
+		_filters: null,
 	
 		init: function(name, urlDef) {
 			if(!name) { 
@@ -34,6 +35,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			this._urlDef = urlDef;
 			this._selectQueue = [];
 			this._subscriptions = {};
+			this._filters = {};
 			
 			ST.registerModel(this, this._urlDef, this._handleUpdate.bind(this));
 			ST.watchContext("session", this._handleSession.bind(this));
@@ -81,6 +83,69 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		},
 		rawArray: function() {
 			return this._modelArray;
+		},
+
+		filters: function(fo) {
+			if(arguments.length) {
+				this._filters = fo;
+				this._publish();
+			}
+			return this._filters;
+		},
+
+
+		filteredList: function() {
+			var filters = this._filters || {};
+			var self = this;
+			var list = E._.filter(this.rawArray(), function(el) {
+				return E._.every(filters, function(fv, fk) {
+					if(fv === null || fv === undefined) { return true; } 
+					
+					//filter property override by the child class
+					//e.g., for blocks, it needs to override the "distance" property using the "filter_distance()" function.
+					if(E.isFunc(self["filter_"+fk])) {
+						var successFunc = self["filter_"+fk](el, fv);
+						if(!successFunc) { 
+							// console.log("FAIL FUNC", fk,fv,el.id); 
+						} 
+						return successFunc;
+					}
+
+					if(E.isArr(fv)) {
+						if(!fv.length) { return true; }
+						
+						//LIST OF STRING VALUES (ID / PROPERTY)
+						if(E.isStr(fv[0])) {
+							var successProp = fv.indexOf(el[fk]) >= 0;
+							if(!successProp) {
+								// console.log("FAIL PROP", fk,fv,el.id, el[fk]); 
+							}
+							return successProp;
+						}
+						//RANGE OF NUMBERS
+						if( E.isNum(fv[0]) && fv.length == 2) {
+							var successRange = el[fk] >= fv[0] && el[fk] <= fv[1];
+							if(!successRange) { 
+								// console.log("FAIL NUM", fk,fv,el.id, el[fk]); 
+							}
+							return successRange;
+						}
+					}
+					//NUMBER MAX
+					if(E.isNum(fv)) {
+						var successNum = el[fk] <= fv;
+						if(!successNum) { 
+							// console.log("FAIL NUM", fk,fv,el.id, el[fk]); 
+						}
+						return successNum;
+
+					}
+					// console.log("FAIL WTF?", fk,fv,el.id, el[fk]); 
+					return false
+				})
+			});
+			console.log("MODEL", this.name, list.length, JSON.stringify(filters));
+			return list;	
 		},
 
 

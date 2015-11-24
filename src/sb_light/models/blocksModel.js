@@ -62,6 +62,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 
 
+
 		find: function(id) {
 			if(E.isStr(id) && id.match("_")) {
 				return this._pathModel ? this._pathModel[id] : null;
@@ -69,6 +70,26 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				return this._super(id);
 			}
 		},
+
+		//*******************FILTER FUNCTION OVERRIDES************************************
+		filter_distance: function(b, maxDistance) {
+			var dist = Q.blockDistance(b);
+			return dist <= maxDistance;			
+		},
+
+		filter_search: function(b, searchString) {
+			return true;
+		},
+		filter_tags: function(b, tagsList) {
+			if(!tagsList || !tagsList.length) { return true; }
+			var tags = E._.filter(sb.models.raw("tags"), function(t) {
+				return tagsList.indexOf(t.id) >= 0 && t.blocks.indexOf(b.id) >= 0;
+			});
+			return tags.length > 0;
+		},
+		//********************************************************************************
+
+
 
 
 		_handleUpdate: function(update) {
@@ -259,7 +280,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				end_date: E.serverMoment(b.end_date),
 				start_date_num: E.dateNumber(E.serverMoment(b.start_date)),
 				end_date_num: E.dateNumber(E.serverMoment(b.end_date)),
-				variance_progress: E.variance(b.percent_progress, b.expected_progress)
+				variance_progress: E.variance(b.percent_progress, b.expected_progress),
+				groups: b.group_ids.concat(sb.groups.parseExpression(b.group_expression_inherited, true)),
+				ownership: 	(b.owner_id == uid ? "owned" : 
+							(b.manager_id == uid ? "managed" : 
+							(b.ownership_state == "watched" ? "watched" : "none") ) )
 			});
 
 			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);

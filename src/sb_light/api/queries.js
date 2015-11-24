@@ -807,6 +807,20 @@ define(['sb_light/globals',
 		return null;
 	};
 
+	//if b is not passed, it's asssumed to be the current block
+	q.blockDistance = function(a, b) {
+		var a = q.block(a);
+		var b = b ? q.block(b) : q.block();
+		if(!a || !b) { return 9999999; } // big number;
+		a = a.path.split("_"); b = b.path.split("_");
+
+		while(a.length && b.length && a[0] == b[0]) {
+			a.shift();
+			b.shift();
+		}
+		var d = (a.length + b.length) + ((a.length > 0 && b.length > 0) ? -1 : 0);
+		return d;
+	}
 
 	q.blockStatusClass= function(b) {
 		b = q.block(b);

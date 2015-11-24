@@ -927,13 +927,24 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	};
 
 
+	E.compare = function(a,b) {
+		///yup == not ===
+		if(a == b) { return true; }
+		if(E.isArray(a) && E.isArray(b)) {
+			return a.length == b.length && E._.difference(a,b).length === 0;
+		};
+		return false;
+	}; 
+
+
+
 	//return the number of differences from diff to orig
 	E.changes = function ext_changes(diff,orig, keys) {
 		keys = keys || [];
 		var res = {};
 		orig = orig || {};
 		E.each(diff, function(v,k) {
-			if( (!keys.length || keys.indexOf(k) >-1) &&  orig[k] != v) {
+			if( (!keys.length || keys.indexOf(k) >-1) &&  !E.compare(orig[k], v)) {
 				res[k] = v;
 			}
 		});
