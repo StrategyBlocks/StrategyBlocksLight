@@ -50,6 +50,10 @@ define(['sb_light/globals',
 		var c = ST.context("company");
 		return c ? c.license : null;
 	};
+	q.companyRisk = function() {
+		var c = ST.context("company");
+		return c ? c.risk : null;
+	};
 
 	q.shortCompanyName = function(cid) {
 		var c = q.company(cid);

@@ -97,6 +97,15 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.RISKS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
 	};
 
+	controller.riskMatrixSizeUpdate = function(size, cb) {
+		var args = {size:size};
+		if(size == 3) { 
+			args.impact_map = [2,2];
+			args.likelihood_map = [2,2];
+		}
+		controller.invoke(sb.urls.RISKS_MATRIX_SIZE, args, cb, cb);
+
+	};
 
 
 	controller.userUpdate = function( changes, cb) {

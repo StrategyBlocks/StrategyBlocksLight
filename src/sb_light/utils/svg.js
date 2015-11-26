@@ -93,6 +93,9 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 		}, {});
 	});
 
+	S.extendD3("parent", function() {
+		return d3.select(this.node().parentNode);
+	});
 	//takes an object taking the subscribe call(who),
 		//a string describing what to subscribe to (what), and
 		//a cb function to handle the subscription (where)
