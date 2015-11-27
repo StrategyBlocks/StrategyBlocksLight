@@ -106,6 +106,14 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.RISKS_MATRIX_SIZE, args, cb, cb);
 
 	};
+	controller.riskMatrixProfileUpdate = function(data, cb) {
+		controller.invoke(sb.urls.RISKS_PROFILES_UPDATE, data, cb, cb);
+
+	};
+	controller.riskMatrixSettingsUpdate = function(data, cb) {
+		controller.invoke(sb.urls.RISKS_SETTINGS, data, cb, cb);
+
+	};
 
 
 	controller.userUpdate = function( changes, cb) {
