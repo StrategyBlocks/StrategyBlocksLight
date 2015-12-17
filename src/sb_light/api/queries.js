@@ -50,6 +50,10 @@ define(['sb_light/globals',
 		var c = ST.context("company");
 		return c ? c.license : null;
 	};
+	q.companyLogo = function() {
+		var c = ST.context("company");
+		return c ? c.logo_path : null;
+	};
 	q.companyRisk = function() {
 		var c = ST.context("company");
 		return c ? c.risk : null;

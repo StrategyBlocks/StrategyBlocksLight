@@ -1,5 +1,8 @@
 
+/*globals define */
+
 define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
+	"use strict";
 	var controller = {};
 
 	controller.createCompany = function(obj, cb, errCb) {
@@ -11,7 +14,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 	controller.updateCompany = function(obj, cb) {
 		controller.invoke(sb.urls.COMPANIES_UPDATE, obj, cb, cb);
-	}
+	};
 
 	controller.createBuilder = function(args, cb, errCb) {
 		controller.invoke(sb.urls.BUILDER_CREATE, args, cb, errCb);
@@ -41,13 +44,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		//{"rating":[0-5], "comment":String}
 		controller.invoke(sb.urls.BLOCKS_CLOSE, sb.ext.mixin({id:id}, closeObj), cb,cb);
 	};
-	// controller.blockMove = function(id, left, cb) {
-	// 	// var vars:Object = { relative_to_id:s.id, parent_id:p.id };
-	// 	var pb = sb.queries.
-	// 	var args = {id: id, }
-
-	// 	controller.invoke(sb.urls.BLOCKS_MOVE, sb.ext.mixin({id:id}, closeObj), cb,cb);
-	// };
+	controller.blockMove = function(args, cb) {
+		controller.invoke(sb.urls.BLOCKS_MOVE, args, cb,cb);
+	};
 	controller.blockMoveRight = function(id, closeObj, cb) {
 		//{"rating":[0-5], "comment":String}
 		controller.invoke(sb.urls.BLOCKS_CLOSE, sb.ext.mixin({id:id}, closeObj), cb,cb);
@@ -67,6 +66,12 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 	controller.blockUpdateGroups = function(id, groups, cb) {
 		controller.invoke(sb.urls.BLOCKS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
+	};
+	controller.blockRelocate = function(args, cb) {
+		//id: block_id
+		//parent_id: new parentm
+		//start_date/end_date server date strings for the new block
+		controller.invoke(sb.urls.BLOCKS_RELOCATE, args, cb, cb);
 	};
 
 	controller.metricUpdate = function( changes, cb) {
@@ -132,7 +137,10 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		} else {
 			controller.invoke(sb.urls.GROUPS_UPDATE, o, cb,cb);
 		}
-	}
+	};
+	controller.groupsDelete = function(id, cb) {
+		controller.invoke(sb.urls.GROUPS_DELETE, {id:id}, cb);
+	};
 	
 	controller.changeDefaultCompany = function(id,cb, errCb) {
 		controller.invoke(sb.urls.USERS_CHANGE_DEFAULT_COMPANY, {id:sb.state.state("user_id"),default_company_id:id}, cb,errCb);
@@ -149,20 +157,28 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 
 
-	controller.updateLevels = function(data, cb,errCb) {
-		data = E.map(data, function(v,i) {
+	controller.updateLevels = function(data, cb) {
+		data = E.map(data, function(v) {
 			return {
 				title:v.title,
 				color:E.from_color(v.color)
-			}
+			};
 		});
-		controller.invoke(sb.urls.LEVELS_UPDATE, data, cb,errCb);
+		controller.invoke(sb.urls.LEVELS_UPDATE, data, cb);
 	};
 
 
 
-	controller.updateFocus = function(data, cb,errCb) {
-		controller.invoke(sb.urls.FOCUS_UPDATE, data, cb,errCb);
+	controller.updateFocusArea = function(data, cb) {
+		if(data.id === "new") {
+			delete data.id;
+			controller.invoke(sb.urls.FOCUS_CREATE, data, cb,cb);
+		} else {
+			controller.invoke(sb.urls.FOCUS_UPDATE, data, cb,cb);
+		}
+	};
+	controller.deleteFocusArea = function(id, cb) {
+		controller.invoke(sb.urls.FOCUS_DELETE, {id:id}, cb,cb);
 	};
 	
 

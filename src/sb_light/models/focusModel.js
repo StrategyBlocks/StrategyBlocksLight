@@ -23,7 +23,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		_massageHierarchy:function(v) {
 			var p = v.parent_id ? this._model[v.parent_id] : null;
 			if(p) {
-				p.children = p.children || [];
+				p.children = [];
 				p.children.push(v.id);
 			}
 		},

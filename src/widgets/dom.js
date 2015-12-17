@@ -4,7 +4,8 @@ define([
 	'sb_light/utils/Class', 
 	"sb_light/main",
 	//no args
-	"d3"
+	"d3",
+	"jquery.tooltipster"
 ], function( Class, sb ) {
 	
 	'use strict';
@@ -147,6 +148,7 @@ define([
 				// console.log("Template", this.id, this.__opts.templatePath);
 				this.addBeforeDraw("loadTemplate");
 				this.addBeforeDraw("parseChildren");
+				this.addBeforeDraw("loadTooltips");
 			}
 
 			this.__created = true;
@@ -172,7 +174,7 @@ define([
 					// console.log("Open external browser");
 					window.open(href, "_system");
 					return false;
-				})
+				});
 			}
 
 
@@ -299,7 +301,7 @@ define([
 				}
 				ss[v] = ST.watch(type, v, function() {
 					// self._consoleLogPages("HANDLE ", funcName, type, v, self.id);
-					df()
+					df();
 				});
 			});
 		},
@@ -379,7 +381,7 @@ define([
 
 		//done first after init. This allows the caller and subclass to override / add properties
 		initOpts: function(opts) {
-			var opts = E.merge(OPTS, opts);
+			opts = E.merge(OPTS, opts);
 			// console.log("*********************INIT", opts.id, opts.stateFunction);
 			return opts;
 		},
@@ -389,15 +391,16 @@ define([
 		opts: function(str, val, handlerFunc) {
 			if(arguments.length > 1 &&  this.__opts.hasOwnProperty(str)) {
 				//don't trigger redraw unless things have changed.
-				if(this.__opts[str] === val) { return; }
-
-				this.__opts[str] = val;
-				if(handlerFunc) { 
-					var f = E.isStr(handlerFunc) ? this.bind(handlerFunc) : handlerFunc;
-					if(E.isFunc(f)) {
-						f();
+				if(this.__opts[str] !== val) { 
+					this.__opts[str] = val;
+					if(handlerFunc) { 
+						var f = E.isStr(handlerFunc) ? this.bind(handlerFunc) : handlerFunc;
+						if(E.isFunc(f)) {
+							f();
+						}
 					}
 				}
+				return this;
 			}
 			return this.__opts.hasOwnProperty(str) ? this.__opts[str] : null;
 		},
@@ -444,6 +447,25 @@ define([
 					var el = $(this);
 					func(el, el.data());
 				});
+			});
+			this.beforeDrawDone();
+		},
+
+		loadTooltips: function() {
+			var self = this;
+			this.$.find(".tooltipster").each(function() {
+				var el = $(this);
+				var opts = {
+					trigger:"click"
+				};
+
+				var contentFunc = el.data("tooltip-content"); 
+				if(contentFunc && self[contentFunc]) {
+					//wrap the HTML response in a jquery object: $()
+					opts.content = $( (self.bind(contentFunc))(this) );
+				} 
+
+				el.tooltipster(opts);
 			});
 			this.beforeDrawDone();
 		},

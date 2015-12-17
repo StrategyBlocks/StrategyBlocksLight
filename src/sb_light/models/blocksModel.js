@@ -132,12 +132,24 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			this._data(cb, "_npv", sb.urls.BLOCKS_NPV);
 		},
 			
-		comments: function(id, cb, force) {	this._property(cb, "comments", id, force);		},
-		news: function(id, cb, force) {		this._property(cb, "news", id, force);		},
-		tags: function(id, cb, force) {		this._property(cb, "tags", id, force);		},
-		documents: function(id, cb, force) {	this._property(cb, "documents", id, force);		},
-		context: function(id, cb, force) {		this._property(cb, "context", id, force);		},
-		watching: function(id, cb, force) {		this._property(cb, "watching_users", id, force);		},
+		comments: function(id, cb, force) {	
+			this._property(cb, "comments", id, force);		
+		},
+		news: function(id, cb, force) {		
+			this._property(cb, "news", id, force);		
+		},
+		tags: function(id, cb, force) {		
+			this._property(cb, "tags", id, force);		
+		},
+		documents: function(id, cb, force) {	
+			this._property(cb, "documents", id, force);		
+		},
+		context: function(id, cb, force) {		
+			this._property(cb, "context", id, force);		
+		},
+		watching: function(id, cb, force) {		
+			this._property(cb, "watching_users", id, force);		
+		},
 		
 		_property: function(cb, type, id, force) {
 			if(this._propertiesList.indexOf(type) >= 0) {

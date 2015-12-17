@@ -43,9 +43,9 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_INVITE 	:				{url: "/blocks/invite/%id%.js"},
 		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/make_public/%id%.js", normalParams:true},
 		//BLOCKS_MOVE_POSITION 			{url: "/blocks/move_position_%dir%/%id%.js"},
-		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true},
+		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true, deleteId: true},
 		BLOCKS_PROPERTIES: 				{url: "/blocks/%type%/%id%.js"},
-		BLOCKS_RELOCATE: 				{url: "/blocks/reassign_parent/%id%.js", normalParams:true},
+		BLOCKS_RELOCATE: 				{url: "/blocks/reassign_parent/%id%.js", normalParams:true, deleteId:true},
 		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", 				post:true,		deleteId: true},
 		BLOCKS_UNWATCH: 				{url: "/blocks/unwatch/%id%.js"},
 		BLOCKS_WATCHING_USERS: 			{url: "/blocks/watching_users/%id%.js"},
@@ -107,7 +107,7 @@ define(['sb_light/globals'], function(sb) {
 		FOCUS_DELETE :				{url: "/focus/destroy/%id%.js", deleteId: true},
 		FOCUS_REPARENT :			{url: "/focus/reparent/%id%.js"},
 		
-		GROUPS_CREATE: 				{url: "/groups/create.js"},
+		GROUPS_CREATE: 				{url: "/groups/create.js", 				post:true},
 		GROUPS_DELETE :				{url: "/groups/%id%/destroy.js", deleteId: true},
 		GROUPS_UPDATE: 				{url: "/groups/%id%/update.js", deleteId: true},
 		GROUPS_ADD 	:				{url: "/groups/%id%/add.js"},
@@ -154,14 +154,19 @@ define(['sb_light/globals'], function(sb) {
 		MEASURES_BLOCKS: 			{url: "/blocks/measure_values/%id%.js"},
 		
 		USERS_CREATE :				{url: "/users/create.js"},
-		USERS_CREATE_BATCH: 			{url: "/users/create_batch.js"},
+		USERS_CREATE_BATCH: 		{url: "/users/create_batch.js"},
 		USERS_ADD_GROUP: 			{url: "/users/%id%/add_group.js", normalParams:true},
-		USERS_REMOVE_GROUP: 			{url: "/users/%id%/remove_group.js", normalParams:true},
-		USERS_ACTIVATE :				{url: "/users/%id%/activate.js"},
+		USERS_REMOVE_GROUP: 		{url: "/users/%id%/remove_group.js", normalParams:true},
+		USERS_ACTIVATE :			{url: "/users/%id%/activate.js"},
 		USERS_DEACTIVATE: 			{url: "/users/%id%/deactivate.js"},
 		USERS_UPDATE: 				{url: "/users/%id%/update.js", deleteId: true},
+		USERS_REASSIGN: 			{url: "/users/reassign_ownership.js?"},
+		USERS_DELETE: 				{url: "/users/%id%/delete_user.js", deleteId:true},		
 		USERS_REMOVE_MEMBERSHIP: 	{url: "/users/%id%/delete_membership.js"},
 		USERS_CHANGE_MEMBERSHIP: 	{url: "/users/%id%/update_membership.js", deleteId: true},
+		USERS_UPLOAD_LOGO: 			{url: "/users/logo_upload.js"},
+		USERS_REMOVE_LOGO: 			{url: "/users/remove_logo.js"},
+
 		
 		USERS_CHANGE_DEFAULT_COMPANY:	{url: "/users/%id%/change_default_company.js", normalParams:true},
 		
