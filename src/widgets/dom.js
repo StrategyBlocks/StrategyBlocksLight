@@ -627,8 +627,10 @@ define([
 						this.drawBusy();
 					} else {
 						//THIS IS INVALID -- REMOVE ALL ITEMS
+						this._consoleLogPages( ("CAN'T Draw? " + this.__dirty + " "), this.id);
+
 						if(this.__dirty) {
-							// this._consoleLogPages("DOM IS INVALID:", this.id);
+							this._consoleLogPages("DOM IS INVALID:", this.id);
 							this.cleanup();
 						}
 						
@@ -675,8 +677,8 @@ define([
 		},
 
 		_consoleLogPages: function(str, id) {
-			if(id.match(/^blocksTable/)) {
-				console.log.apply(null, E.slice(arguments));
+			if(id.match(/loading/)) {
+				console.log(str, id);
 			}
 		}
 

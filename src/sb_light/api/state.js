@@ -326,9 +326,15 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 	state.startup = function() {	return storage.context.session == state.session_startup; };
 	
 	//any state but unknown / startup
-	state.known = function() {	return state.unknown() == false && state.disconnected() == false;	};
+	state.connected = function() {	return state.known() && !state.disconnected();	};
+
+	//tried auth. 
+	state.known = function() {	return  !state.unknown(); };
+
 	//not tried auth yet. 
 	state.unknown = function() {	return storage.context.session == state.session_unknown || storage.context.session == state.session_startup;	};
+
+
 	//no auth
 	state.unauthorized = function() {	return  state.authorized() == false;	};
 	//invalid

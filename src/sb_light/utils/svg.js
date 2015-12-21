@@ -466,7 +466,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 			var ctm = S.utils.ctm;
 
 			var loc = evt.touches ? evt.touches[0] : evt;
-			console.log(loc.clientX, loc.pageX);
+			// console.log(loc.clientX, loc.pageX);
 
 			pt.x = E.first(loc.clientX,loc.pageX); 
 			pt.y = E.first(loc.clientY, loc.pageY);
@@ -485,7 +485,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 				var d = b.call(this, a, i);
 				var arc = arcs ? arcs[i] : a._prevArc;
 				if(!arc) {
-					console.log("wtf");
+					// console.log("wtf");
 				}
 				var interpolate = d3.interpolate(arc, d);
 				E.mixin(arc,d);
