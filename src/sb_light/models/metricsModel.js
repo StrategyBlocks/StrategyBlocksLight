@@ -35,6 +35,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			var uid = Q.user().id; 
 
 			E.each(this._model, function(v) {
+				v.is_owner = E.isBool(v.is_owner) ? v.is_owner : (v.is_owner === "true");
+				v.is_manager = E.isBool(v.is_manager) ? v.is_manager : (v.is_manager === "true");
 				v.status = v.status.toLowerCase();
 				v.trend = v.trend.toLowerCase();
 				v.statusNum = v.status == "good" ? 1 : (v.status == "warning" ? 2 : (v.status == "bad" ? 3 : 0)) ;

@@ -71,9 +71,41 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			}
 		},
 
+
+
+		filteredList: function(type) {
+			return type != "path" ? this._super() : this.filteredTree(); 
+		},
+
+
+		filteredTree: function() {
+			var filters = this._filters || {};
+			var ff = this.filterItem.bind(this, filters);
+			var list = E._.filter(this._pathArray, ff); 
+			var self = this;
+
+			//add information about placeholder nodes
+			var rb = E._.find(this._model, {is_root:true});
+			var recurse = function(parent) {
+				var childPassed = (!parent.children && !parent.children.length) || E.reduce(parent.children, function(prev, c) {
+					var cb = self.find(c);
+					recurse(cb);
+					return prev || cb.FILTER_SHOW || cb.FILTER_PLACEHOLDER;
+				}, false)
+
+				parent.FILTER_PLACEHOLDER = !parent.FILTER_SHOW && (childPassed || Q.block().path == parent.path);
+				parent.FILTER_HIDDEN = !parent.FILTER_PLACEHOLDER && !parent.FILTER_SHOW;
+			}
+			recurse(rb);
+
+			return list;	
+		},
+
 		//*******************FILTER FUNCTION OVERRIDES************************************
 		filter_distance: function(b, maxDistance) {
 			var dist = Q.blockDistance(b);
+
+			console.log("DISTANCE", b.title, dist);
 			return dist <= maxDistance;			
 		},
 
@@ -273,17 +305,18 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 								b.progress_color == "red" ? "bad" : (b.progress_color == "yellow" ? "warning" : "good")
 							)
 						)),
+				percent_health: (b.percent_health || 0),
 				overdue: E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0),
 				is_root:(depth===0),
 				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
+				is_company: b.sub_company_block,
 				is_open: ((b.ownership_state == "new" || b.closed) ? false : true),
 				is_mine: (b.owner_id == uid || b.manager_id == uid),
 				is_real_owner: (b.owner_id==uid),
 				is_real_manager: (b.manager_id == uid),
-				can_move_left: (b.is_owner && (pos> 0)),
-				can_move_right: (b.is_owner && p && (pos < p.children.length-1) && p.children.length > 1),
+				can_move_left: (b.is_manager && (pos> 0)),
+				can_move_right: (b.is_manager && p && (pos < p.children.length-1) && p.children.length > 1),
 				can_delete: (b.is_owner && !b.closed),
-				progress_status_class: (b.closed ? "closed" : (b.ownership_state == "new" ? "private" : b.progress_color)),
 				parent_title: (p ? p.title : ""),
 				schema:schema,
 				start_date_str: b.start_date,

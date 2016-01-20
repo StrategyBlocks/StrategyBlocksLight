@@ -49,8 +49,17 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			user:null
 		},
 
-		// local cache of app data -- stuff that you might store in a cookie. or non-model data that unrelated
-		// objects might need access to
+		//this is session-based information. A page reload will not clear it, but when you restart your browser completely
+		//it should be removed. 
+		//probably stored using "sessionStorage" vs a session cookie, but same effective result 
+		//https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API
+		cookie: {
+
+		},
+
+		// local cache of app data -- this is stuff that you want to persist between sessions
+		//this is probably storage using "localStorage"
+		//https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API
 		data: {
 			flashHistory:[]
 		}
@@ -60,6 +69,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 	var watching = {
 		state:{},
 		context: {},
+		cookie: {},
 		data:{}
 	};
 
@@ -82,38 +92,43 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		}
 	};
 
+	E.each(storage, function(v,k) {
+		var capsKey = E.caps(k);
 
-	//ACCESSS
-	state.state = function(type, val,force)	{		return _accessStorage("state", type, val, force);			};
-	state.context = function(type, val,force)	{	return _accessStorage("context", type, val, force);	 		};
-	state.data = function(type, val,force)	{		return _accessStorage("data", type, val, force);			};
+		//ACCESSS
+		state[k] =  function(type, val,force)	{		
+			return _accessStorage(k, type, val, force);			
+		};
+
+		//INIT STORAGE
+		//these functions are needed to initialize at an application level without specifically watching for changes
+		//e.g., we know we'll need the properties and we want to set a default without having to specify it in 
+		//each sub component that needs it. 
+		state["init"+capsKey] = function(type, _default) {		
+			return _initStorage(k, type,_default);	
+		};
+
+
+		//WATCH
+		//* for "type" means it will watch everything in the group
+		//watching a property will initialize it as well. 
+		state["watch"+capsKey] = function(type, cb, _default, _urgent)	{		
+			return state.watch(k, type,cb, _default, _urgent);	
+		};	
+
+		
+		//REMOVE
+		// When "remove" is a func, it will not work unless the function definition
+		// has not changed. E.g., if you create a temporary
+		// function using func.bind, then you need to store
+		// that instance and use it for unsubscribing
+		state["unwatch"+capsKey] = function(type, remove) {		
+			return state.unwatch(k, type,remove);		
+		};
+	});
 
 	
-	//init
-	//these functions are needed to initialize at an application level without specifically watching for changes
-	//e.g., we know we'll need the properties and we want to set a default without having to specify it in 
-	//each sub component that needs it. 
-	state.initState = function(type, _default)		{		return _initStorage("state", type,_default);	};
-	state.initContext = function(type, _default)	{		return _initStorage("context", type, _default);		};
-	state.initData = function(type, _default)		{		return _initStorage("data", type, _default);		};
-
-	//WATCH
-	//* for "type" means it will watch everything in the group
-	//watching a property will initialize it as well. 
-	state.watchState = function(type, cb, _default, _urgent)	{		return state.watch("state", type,cb, _default, _urgent);	};
-	state.watchContext = function(type, cb, _default, _urgent)	{		return state.watch("context", type,cb, _default, _urgent);	};
-	state.watchData = function(type, cb, _default, _urgent)		{		return state.watch("data", type,cb, _default, _urgent);		};
 	
-
-	//REMOVE
-	// When "remove" is a func, it will not work unless the function definition
-	// has not changed. E.g., if you create a temporary
-	// function using func.bind, then you need to store
-	// that instance and use it for unsubscribing
-	state.unwatchState = function(type, remove)			{		return state.unwatch("state", type,remove);		};
-	state.unwatchContext = function(type, remove)		{		return state.unwatch("context", type,remove);	};
-	state.unwatchData = function(type, remove)			{		return state.unwatch("data", type,remove);		};
-
 	state.publish = function(group, type) {
 		var s = watching[group];
 		//var list = s[type] || [];
@@ -219,7 +234,8 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 	state.setTimestamp = function(name, timestamp) {
 		var m = models;
 		if(m[name]) {
-			return m[name].timestamp  = timestamp;
+			m[name].timestamp  = timestamp;
+			return timestamp;
 		}
 	};
 	state.resetTimestamp = function(name) {
@@ -256,13 +272,13 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			if(cb) {
 				cb.apply(null, E.slice(arguments));	
 			}
-		}
+		};
 		var errorCbf = function() { 
 			state._loginBusy = false; 
 			if(errCb) {
 				errCb.apply(null, E.slice(arguments));	
 			}
-		}
+		};
 
 		sb.queue.add(sb.api.post.bind(sb.api, url, params, cbf, errorCbf, state.unauthorized), "sblight_state_login");
 	};
@@ -336,23 +352,23 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 
 
 	//no auth
-	state.unauthorized = function() {	return  state.authorized() == false;	};
+	state.unauthorized = function() {	return  !state.authorized();	};
 	//invalid
 	state.invalid = function() {	return  storage.context.session == state.session_invalid;	};
 	//has user/company
 	state.authorized = function() {	return storage.context.session == state.session_normal || storage.context.session == state.session_payment; };
 
 	//has user/company
-	state.normal = function() {		return storage.context.session == state.session_normal  };
-	state.payment = function() {	return storage.context.session == state.session_payment  };
+	state.normal = function() {		return storage.context.session == state.session_normal;  };
+	state.payment = function() {	return storage.context.session == state.session_payment;  };
 
 
 	//failed server response
 	state.disconnected = function() { return storage.context.session == state.session_disconnected; };
 
 	//only for users who are flagged as server admins. 
-	state.admin = function() { return state.authorized() && storage.context.user && storage.context.user.is_server_admin; }
-	state.notAdmin = function() { return state.authorized() && !state.admin(); }
+	state.admin = function() { return state.authorized() && storage.context.user && storage.context.user.is_server_admin; };
+	state.notAdmin = function() { return state.authorized() && !state.admin(); };
 
 	
 	//returns true / false depending on whether the response session is valid
@@ -467,7 +483,9 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 	//Handle the response from a model which doesn't use timestamps. 
 	function _handleModelResponse (model, result) {
 		var res = result && result.result;
-		var m = res[model.name] || res;
+
+		var key = model.responseKey || model.name;
+		var m = res[key] || res;
 		
 		if(model.raw() === null && m) {
 			if(E.isArray(m)) {
@@ -484,7 +502,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			var data = {};
 			data[model.name] = {
 				"added": m,
-				"timestamp": (res[model.name+"_timestamp"] || String(E.dateNumber()))
+				"timestamp": (res[key+"_timestamp"] || String(E.dateNumber()))
 			};
 			//this cleans up the timestamps and the force request buffers
 			_updateModels(data);

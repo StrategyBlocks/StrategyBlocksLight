@@ -334,7 +334,7 @@ define([
 				busy:false,
 				// id:"audits",
 				//url: sb.urls.ADMIN_AUDITS,
-				collect:E.fidentity({}), //function for fetching, default just returns an empty object
+				collect:E.fidentity({}), //function for generating arugments for the data fetching, default just returns an empty object
 			}, opts);
 			this.__data[opts.id] = opts;
 		},
@@ -671,6 +671,8 @@ define([
 
 		cleanup: function() {
 			this.sel.html("");
+
+			this.__data = {};
 			
 			this._rebuildBeforeDrawList();
 			this.__dirty = false;

@@ -170,6 +170,13 @@ define(['sb_light/globals',
 		}).sort(sb.ext.sortUsers);
 	};
 
+	q.userLogoSrc = function(uid, size) {
+		var u = q.user(uid);
+
+		return u.logo_path || q.gravatar(uid, size);
+	};
+
+
 	q.gravatar = function(uid, size) {
 		var u = q.user(uid);
 		return "http://www.gravatar.com/avatar/" +  (u ? u.gravatar : "") + "?d=identicon&s="+ (size||50);
@@ -370,50 +377,59 @@ define(['sb_light/globals',
 	};
 
 	//DISPLAY purposes
-	q.metricActual = function(id) {
-		var m = q.metric(id);
+	q.metricActual = function(id, hierarchyData) {
+		var m = hierarchyData ||  q.metric(id);
 		var ma = m.last_actual_value;
 		return q.formatMetric(m, ma);
 
 	};
 
 	//DISPLAY purposes
-	q.metricTarget = function(id) {
-		var m = q.metric(id);
+	q.metricTarget = function(id, hierarchyData) {
+		var m = hierarchyData ||  q.metric(id);
 		var mt = m.last_target_value;
 		return q.formatMetric(m, mt);
 	};
 
 	q._trendMap = {
 		"down": "fa fa-lg fa-arrow-circle-down",
+		"Down": "fa fa-lg fa-arrow-circle-down",
 		"up": "fa fa-lg fa-arrow-circle-up",
-		"flat": "fa fa-lg fa-minus-circle"
+		"Up": "fa fa-lg fa-arrow-circle-up",
+		"flat": "fa fa-lg fa-minus-circle",
+		"Flat": "fa fa-lg fa-minus-circle"
 	};
 
-	q.metricTrendClass = function(id) {
-		var m = q.metric(id);
+	q.metricTrendClass = function(id, hierarchyData) {
+		var m = hierarchyData ||  q.metric(id);
 		if(!m) { return ""; }
 		return "trend" + m.trend;
 	};
 
 	//DISPLAY purposes
-	q.metricTrendMarkup = function(id) {
-		var m = q.metric(id);
+	q.metricTrendMarkup = function(id, hierarchyData) {
+		var m = hierarchyData ||  q.metric(id);
 		return "<i class='" + (q._trendMap[m.trend]) + "'></i>";
 
 	};
 
 	q._metricStatusClass = {
 		"good": "statusGood",
+		"Good": "statusGood",
 		"warning": "statusWarn",
+		"Warning": "statusWarn",
 		"bad": "statusBad",
+		"Bad": "statusBad",
 	};
 	q._metricStatusIcon = {
 		"bad": "fa fa-lg fa-arrow-circle-down",
+		"Bad": "fa fa-lg fa-arrow-circle-down",
 		"good": "fa fa-lg fa-arrow-circle-up",
-		"warning": "fa fa-lg fa-minus-circle"
+		"Good": "fa fa-lg fa-arrow-circle-up",
+		"warning": "fa fa-lg fa-minus-circle",
+		"Warning": "fa fa-lg fa-minus-circle"
 	};
-	q.metricStatusClass = function(id) {
+	q.metricStatusClass = function(id, hierarchyData) {
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
@@ -422,7 +438,7 @@ define(['sb_light/globals',
 
 
 	//DISPLAY purposes
-	q.metricStatusMarkup = function(id) {
+	q.metricStatusMarkup = function(id, hierarchyData) {
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
@@ -580,10 +596,10 @@ define(['sb_light/globals',
 		var res = {
 			td:targetDates,			tv:targetValues,
 			ad:actualDates,			av:actualValues,
-			as:aScale,					ts:tScale,
-			ras:raScale,				rts:rtScale,
-			us:upperScale,				ls:lowerScale,
-			uv:upperValues,				lv:lowerValues
+			as:aScale,				ts:tScale,
+			ras:raScale,			rts:rtScale,
+			us:upperScale,			ls:lowerScale,
+			uv:upperValues,			lv:lowerValues
 		};
 
 		if(hierarchyData) {
@@ -756,13 +772,15 @@ define(['sb_light/globals',
 		RISKS
 	*********************************/
 	
-	q.risk = function(id) {
-		id = id || ST.state("risk");
-		var m = sb.models.raw("risks");
-		if(id && m) {
-			return m[id];
-		}
-		return null;
+	q.risk = function(r) {
+		if(E.isNum(r)) { r = String(r); }
+		//get the string 
+
+		r = E.isStr(r) ? r : (r ? r.id : r );
+		r = (r || !arguments.length) ? (r || ST.state("risk")) : null;
+		//takes an object or string
+		r = r ? sb.models.find("risks", r): null;
+		return r ||  null;
 	};
 
 
@@ -773,13 +791,21 @@ define(['sb_light/globals',
 	};
 
 		//DISPLAY purposes
-	q.riskStatusMarkup = function(id) {
-		var r = q.risk(id);
+	q.riskStatusMarkup = function(r) {
+		var r = q.risk(r);
 		if(!r) { return ""; }
 
 		return "<i class='fa fa-lg fa-exclamation-triangle " + q._riskStatusMap[r.status] + "'></i>";
 	};
 
+
+	q.riskStatusMessage = function(r) {
+		var r = q.risk(r);
+
+		return r.status =="triggered" ? "<strong>Triggered </strong>" : (
+			r.status =="warning" ? "<strong>Warning</strong>" : "<span class='text-muted'>Inactive</span>"
+		);   
+	}
 
 	/********************************
 		BLOCKS
@@ -828,11 +854,16 @@ define(['sb_light/globals',
 		}
 		var d = (a.length + b.length) + ((a.length > 0 && b.length > 0) ? -1 : 0);
 		return d;
-	}
+	};
+
 
 	q.blockStatusClass= function(b) {
 		b = q.block(b);
-		return "status" + E.caps(b.status);
+		var status = "status" + E.caps(b.status);
+		if(b.FILTER_PLACEHOLDER) {
+			status += " placeholder";
+		} 
+		return status;
 		// return b.ownership_state == "new" ? "statusPrivate" : 
 		// 		(b.closed ? "statusClosed" : 
 		// 			("status" + E.caps(b.progress_color))
@@ -872,7 +903,7 @@ define(['sb_light/globals',
 			} else if (ds === 0) {
 				return "Starts <strong>today</strong>";
 			} else {
-				return "<strong>" + Math.abs(dd) + "</strong> days remaining.";
+				return "<strong>" + Math.abs(dd) + "</strong> days remaining. <strong>" + b.expected_progress + "% </strong> expected.";
 			}
 		}
 	};
@@ -942,7 +973,7 @@ define(['sb_light/globals',
 		return b.is_manager && !b.closed && !b.is_sub_company_block;
 	};
 	q.canUpdateProgress = function(b) {
-		return b.is_owner && !b.closed && b.ownership_state != "new" && b.leaf && !b.is_link && !b.sub_company_block;
+		return b.is_owner && !b.closed && b.ownership_state != "new" && b.leaf &&  !b.sub_company_block;
 	};
 	q.isBlockOwner = q.canUpdateProgress;
 	q.isBlockManager = q.canManageBlock;
@@ -1298,7 +1329,10 @@ define(['sb_light/globals',
 	
 	q.buildStrategyTree = function(prevBlockId) {
 		var b = q.block();
-		var blocks = sb.models.raw("blocks", "path"); 
+		var filteredBlocks = sb.models.filteredList("blocks", "path");
+		// console.log("filteredBlocks", filteredBlocks); 
+		var blocks = sb.models.raw("blocks", "path");
+
 		if(!b || !blocks) { return null; }
 		
 
@@ -1314,6 +1348,7 @@ define(['sb_light/globals',
 		var dy = -(centerList.length-1);
 		if(b.children.length) {
 			var cidx = b.children.indexOf(prevBlockId);
+
 			var cpath = b.children[cidx < 0 ? 0 : cidx];
 			centerList.push(cpath);
 		}
@@ -1323,18 +1358,24 @@ define(['sb_light/globals',
 
 		var superRoot = {list:[]};
 		var pnode = superRoot;
+
 		
 
 		//walk down the center
 		centerList.forEach(function(cpath) {
 			var b = q.block(cpath);
+
 			var p = b.parent ? q.block(b.parent) : null;
 			
 			var siblings = p ? p.children : [cpath];
-			var cidx = siblings.indexOf(cpath);
 			
+
 			pnode.children = siblings.map(function(path, idx) {
 				var cb = blocks[path];
+				if(siblings[0] == cpath) {
+					// console.log("Root B", cb);					
+				}
+
 				return {
 					_parsed:true,
 					id:path,
@@ -1342,18 +1383,34 @@ define(['sb_light/globals',
 					parent:cb.parent,
 					name:cb.title,
 					dy:dy,
-					dx:(idx - cidx),
-					data: cb,
+					// dx:(idx - cidx),
+					data: cb
 				};
 			});
-			//
+			//clone the list in case it's needed.
+			pnode.originalChildren = ([]).concat(pnode.children);
+
+			//filter the hidden ones from the children list
+			E._.remove(pnode.children, function(d) {
+				return d.data.FILTER_HIDDEN;
+			});
+
+			//find X-postion after filters
+			var cidx = E.max(0, E._.findIndex(pnode.children, {path:cpath}));
+			E.each(pnode.children, function(v,i) {
+				v.dx = (i - cidx);
+			});
+
+			//concat to the main flat list
 			superRoot.list = superRoot.list.concat(pnode.children);
 
 			dy += 1;
 			pnode = pnode.children[cidx];
 		});
 		// return superRoot.children[0];
-		return superRoot.list;
+
+
+		return superRoot.list.length ? superRoot.list[0] : null;
 	};
 
 

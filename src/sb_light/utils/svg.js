@@ -188,7 +188,11 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 	S.extendD3("class", function(classA/*...*/) {
 		var args = E.slice(arguments);
 		if(args.length) {
-			this.attr("class", args.join(" "));
+			if(args.length > 1) {
+				this.attr("class", args.join(" "));
+			} else {
+				this.attr.call(this, "class", args[0]);
+			}
 			return this;
 		}
 		return this.attr("class");

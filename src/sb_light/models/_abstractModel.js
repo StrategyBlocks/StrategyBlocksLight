@@ -8,6 +8,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 
 	var Abstract = Class.extend({
 		name: null,
+		responseKey: null,			//used in special cases where the response (model) key from server is different than the intended model name
 		_model: null,
 		_modelArray: null,
 		_urlDef: null,
@@ -17,6 +18,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		_sb:null,
 		_authStateCheck:null,
 		_filters: null,
+
 	
 		init: function(name, urlDef) {
 			if(!name) { 
@@ -96,58 +98,62 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 
 		filteredList: function() {
 			var filters = this._filters || {};
-			var self = this;
-			var list = E._.filter(this.rawArray(), function(el) {
-				return E._.every(filters, function(fv, fk) {
-					if(fv === null || fv === undefined) { return true; } 
-					
-					//filter property override by the child class
-					//e.g., for blocks, it needs to override the "distance" property using the "filter_distance()" function.
-					if(E.isFunc(self["filter_"+fk])) {
-						var successFunc = self["filter_"+fk](el, fv);
-						if(!successFunc) { 
-							// console.log("FAIL FUNC", fk,fv,el.id); 
-						} 
-						return successFunc;
-					}
-
-					if(E.isArr(fv)) {
-						if(!fv.length) { return true; }
-						
-						//LIST OF STRING VALUES (ID / PROPERTY)
-						if(E.isStr(fv[0])) {
-							var successProp = fv.indexOf(el[fk]) >= 0;
-							if(!successProp) {
-								// console.log("FAIL PROP", fk,fv,el.id, el[fk]); 
-							}
-							return successProp;
-						}
-						//RANGE OF NUMBERS
-						if( E.isNum(fv[0]) && fv.length == 2) {
-							var successRange = el[fk] >= fv[0] && el[fk] <= fv[1];
-							if(!successRange) { 
-								// console.log("FAIL NUM", fk,fv,el.id, el[fk]); 
-							}
-							return successRange;
-						}
-					}
-					//NUMBER MAX
-					if(E.isNum(fv)) {
-						var successNum = el[fk] <= fv;
-						if(!successNum) { 
-							// console.log("FAIL NUM", fk,fv,el.id, el[fk]); 
-						}
-						return successNum;
-
-					}
-					// console.log("FAIL WTF?", fk,fv,el.id, el[fk]); 
-					return false
-				})
-			});
-			console.log("MODEL", this.name, list.length, JSON.stringify(filters));
+			var ff = this.filterItem.bind(this, filters);
+			var list = E._.filter(this.rawArray(), ff); 
+			// console.log("MODEL", this.name, list.length, JSON.stringify(filters));
 			return list;	
 		},
 
+		filterItem:function(filters, el) {
+			var self = this;
+			var show = E._.every(filters, function(fv, fk) {
+				if(fv === null || fv === undefined) { return true; } 
+				
+				//filter property override by the child class
+				//e.g., for blocks, it needs to override the "distance" property using the "filter_distance()" function.
+				if(E.isFunc(self["filter_"+fk])) {
+					var successFunc = self["filter_"+fk](el, fv);
+					if(!successFunc) { 
+						// console.log("FAIL FUNC", fk,fv,el.id); 
+					} 
+					return successFunc;
+				}
+
+				if(E.isArr(fv)) {
+					if(!fv.length) { return true; }
+					
+					//LIST OF STRING VALUES (ID / PROPERTY)
+					if(E.isStr(fv[0])) {
+						var successProp = fv.indexOf(el[fk]) >= 0;
+						if(!successProp) {
+							// console.log("FAIL PROP", fk,fv,el.id, el[fk]); 
+						}
+						return successProp;
+					}
+					//RANGE OF NUMBERS
+					if( E.isNum(fv[0]) && fv.length == 2) {
+						var successRange = el[fk] >= fv[0] && el[fk] <= fv[1];
+						if(!successRange) { 
+							// console.log("FAIL NUM", fk,fv,el.id, el[fk]); 
+						}
+						return successRange;
+					}
+				}
+				//NUMBER MAX
+				if(E.isNum(fv)) {
+					var successNum = el[fk] <= fv;
+					if(!successNum) { 
+						// console.log("FAIL NUM", fk,fv,el.id, el[fk]); 
+					}
+					return successNum;
+
+				}
+				// console.log("FAIL WTF?", fk,fv,el.id, el[fk]); 
+				return false
+			});
+			el.FILTER_SHOW = show;
+			return show; 
+		},
 
 		//find a single element
 		find:function(id) {
@@ -346,17 +352,19 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		},
 		
 		_addTimestamp: function() {
-			var ts = ST.getTimestamp(this.name) || E.time();
+			var self = this; 
+
+			var ts = E.to_f(ST.getTimestamp(this.name)) || E.time();
 
 			this._timestamp = ts;
 
 			// console.log("Model Timestamp", this.name, this._timestamp);
 			E.map(this._model, (function(v) {
 				if(!v) {
-					console.log("wtf?", v, this._model);
+					console.log("wtf?", v, self._model);
 				}
 				//this can be used for performance reasons to check whether a model has been updated
-				v.__timestamp = ts;
+				v.TIMESTAMP = ts;
 			}));
 		}
 

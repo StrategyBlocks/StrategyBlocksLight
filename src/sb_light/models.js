@@ -20,9 +20,10 @@ define([
 	'sb_light/models/capabilitiesModel',
 	'sb_light/models/historyModel',
 	'sb_light/models/buildersModel',
+	'sb_light/models/libraryModel',
 
 ], function(sb, tags,news,users,blocks,levels,focus,risks,metrics, metricsExpressions, 
-					companies, groups,timezones,healths, milestones, capabilities, history, builders) {
+					companies, groups,timezones,healths, milestones, capabilities, history, builders, library) {
 
 	'use strict';
 	
@@ -44,6 +45,7 @@ define([
 		milestone_definitions:		{klass:milestones},
 		history:					{klass:history},
 		builders:					{klass:builders},
+		library:					{klass:library},
 	};
 	
 	var models = {};
@@ -94,6 +96,13 @@ define([
 			return m.model.raw(type);
 		}
 	};
+
+	models.filteredList = function(modelName, type) {
+		var m = _verifyModel(modelName);
+		if(m.model) {
+			return m.model.filteredList(type);
+		}
+	}
 	
 	//one-off selection that will wait until the model is ready
 	//types:

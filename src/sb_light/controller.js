@@ -67,6 +67,12 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.blockUpdateGroups = function(id, groups, cb) {
 		controller.invoke(sb.urls.BLOCKS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
 	};
+
+	controller.blockDelete = function(args, cb) {
+		args.type = "delete"; //legacy url format requires this.
+		controller.invoke(sb.urls.BLOCKS_DELETE, args, cb,cb );
+	}
+
 	controller.blockRelocate = function(args, cb) {
 		//id: block_id
 		//parent_id: new parentm

@@ -537,7 +537,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	
 	//quick version of E.number for just strings. 
 	E.to_num = function ext_to_num(str) {
-		return +str;
+		var num = +str;
+		return E.isNum(num) ? num : str;
 	};
 
 	// The argument [n] can be:
@@ -742,20 +743,21 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.healthColor = function ext_healthColor(data) { return (["#b41f27","#d3a900","#67b41f"])[data.status+1]; };
 	E.healthText = function ext_healthText(data) { return (["Bad","Warning","Good"])[data.status+1]; };
 	E.progressColor = function ext_progressColor(block) {
-		//support passing just the color
+		// //support passing just the color
 		block = block || "none";
 		block = E.isStr(block) ? block : ( (block.closed || block.ownership_state=="new") ? "" : block.progress_color);
 		block = block || "none";
+		return sb.colors.statusColor(block);
 
-		switch(block) {
-			case "green": 	return ["#188118", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"], 
-									"<span style='color:#196419'><i class='fa fa-fw fa-lg fa-check'></i> Good</span>" ];
-			case "yellow":	return ["#A18D1E", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"], 
-									"<span style='color:#7d741f'><i class='fa fa-fw fa-lg fa-warning'></i> Warning" ];
-			case "red": 	return ["#A11E1E", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"], 
-									"<span style='color:#7d1f1f'><i class='fa fa-fw fa-lg fa-warning'></i> Bad" ];
-			default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		,["#999", "#aaa"]  ];
-		}
+		// switch(block) {
+		// 	case "green": 	return ["#188118", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"], 
+		// 							"<span style='color:#196419'><i class='fa fa-fw fa-lg fa-check'></i> Good</span>" ];
+		// 	case "yellow":	return ["#A18D1E", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"], 
+		// 							"<span style='color:#7d741f'><i class='fa fa-fw fa-lg fa-warning'></i> Warning" ];
+		// 	case "red": 	return ["#A11E1E", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"], 
+		// 							"<span style='color:#7d1f1f'><i class='fa fa-fw fa-lg fa-warning'></i> Bad" ];
+		// 	default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		,["#999", "#aaa"]  ];
+		// }
 	};
 
 
@@ -854,6 +856,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		
 		data.dates = E.values(data.series, "date");
 		data.dates.push(Date.parse(data.end_date));
+
+		data.status = data.status > 0 ? "good" : (data.status < 0 ? "bad" : "warning");
 	
 		return data;
 	

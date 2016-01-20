@@ -11,7 +11,7 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_BLOCKS:		{url: "/blocks.js", 					post:false},
 		MODEL_COMPANIES:	{url: "/companies.js", 					post:false},
 		MODEL_CAPABILITIES: {url: "/company_settings.js", 			post:false},
-		MODEL_EXPORTS: 		{url: "/exports.js", 					post:false},
+		MODEL_LIBRARY: 		{url: "/exports.js", 					post:false},
 		MODEL_FOCUS: 		{url: "/focus.js", 						post:false},
 		MODEL_GROUPS: 		{url: "/groups.js", 					post:false},
 		MODEL_METRICS: 		{url: "/metrics.js", 					post:false},
@@ -129,6 +129,8 @@ define(['sb_light/globals'], function(sb) {
 		RISKS_DESTROY_DOC: 			{url: "/risks/%id%/destroy_document.js"},
 		RISKS_DUMMY_REFRESH :		{url: "/risks/%id%/refresh_risk.js"},
 		RISKS_UPDATE_GROUPS:  		{url: "/risks/%id%/update_group_expression.js", deleteId:true, normalParams:true },
+		RISKS_NEWS: 				{url: "/risks/%id%/news.js", deleteId:true},
+		
 		RISKS_SETTINGS: 			{url: "/risk_profiles/update_risk_settings.js"},
 		RISKS_MATRIX_SIZE :			{url: "/risk_profiles/set_matrix_size.js"},
 		RISKS_PROFILES_UPDATE: 		{url: "/risk_profiles/update_batch.js"},
@@ -137,10 +139,11 @@ define(['sb_light/globals'], function(sb) {
 		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js"},
 		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js", deleteId:true},
 		METRICS_ATTACH_BLOCK:  		{url: "/blocks/attach_metric/%id%.js", normalParams:true, deleteId:true },
-		METRICS_DETACH_BLOCK:  		{ url: "/blocks/detach_metric/%id%.js", normalParams:true, deleteId: true },
-		METRICS_UPDATE_GROUPS:  	{ url: "/metrics/%id%/update_group_expression.js" , deleteId:true, normalParams:true},
-		METRICS_DOWNLOAD:  			{ url: "/metrics.csv" },
-		METRICS_HIERARCHY:			{ url: "/metrics/hierarchy_values/%id%.js", deleteId:true, normalParams:true},
+		METRICS_DETACH_BLOCK:  		{url: "/blocks/detach_metric/%id%.js", normalParams:true, deleteId: true },
+		METRICS_UPDATE_GROUPS:  	{url: "/metrics/%id%/update_group_expression.js" , deleteId:true, normalParams:true},
+		METRICS_DOWNLOAD:  			{url: "/metrics.csv" },
+		METRICS_HIERARCHY:			{url: "/metrics/hierarchy_values/%id%.js", deleteId:true, normalParams:true},
+		METRICS_NEWS: 				{url: "/metrics/%id%/news.js", deleteId:true},
 
 	
 		KPIS_CREATE :				{url: "/kpis/create.js"},
@@ -189,6 +192,8 @@ define(['sb_light/globals'], function(sb) {
 		PAYMENTS_CREATE: 			{url: "/purchases/create.js"},
 		
 		ADMIN_RAISE: 				{url:"/admin/log_client_error.js"},
+		ADMIN_SUPPORT:				{ url:"/admin/log_support.js", post:true},
+
 
 
 		//BUILDER 
