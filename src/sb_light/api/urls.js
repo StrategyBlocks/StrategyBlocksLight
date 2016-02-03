@@ -56,9 +56,11 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_HEALTH :					{url: "/blocks/health.js", normalParams:true},
 		BLOCKS_PROGRESS :				{url: "/blocks/progress.js", normalParams:true},
 	
-		BLOCK_FILES_UPLOAD_URL: 		{url: "/blocks/%id%/documents/create.js"},
-		BLOCK_FILES_DOWNLOAD_URL: 		{url: "/blocks/%id%/documents/show/%doc_id%.js"},
-		BLOCK_FILES_DELETE: 			{url: "/blocks/%id%/documents/destroy/%doc_id%.js"},
+		//singular block for controller convenience
+		BLOCK_FILE_ADD: 				{url: "/blocks/%id%/documents/create.js", deleteId:true, post:true},
+		BLOCK_FILE_UPDATE: 				{url: "/blocks/%id%/documents/update/%doc_id%.js", deleteId:true, post:true},
+		BLOCK_FILE_DOWNLOAD: 			{url: "/blocks/%id%/documents/show/%doc_id%.js"},
+		BLOCK_FILE_DELETE: 				{url: "/blocks/%id%/documents/destroy/%doc_id%.js", deleteId:true, post:true},
 		
 		BOOKMARKS:						{url: "/saved_client_states/index.js"},
 		BOOKMARK_CREATE_DYNAMIC:		{url: "/saved_client_states/create_dynamic.js"},
@@ -124,9 +126,13 @@ define(['sb_light/globals'], function(sb) {
 		RISKS_UPDATE_STATUS: 		{url: "/risks/%id%/update_status.js"},
 		RISKS_ADD_IMPACT :			{url: "/risks/%id%/add_impact.js"},
 		RISKS_REMOVE_IMPACT: 		{url: "/risks/%id%/remove_impact.js"},
-		RISKS_ATTACH_DOC: 			{url: "/risks/%id%/attach_document.js"},
-		RISKS_SHOW_DOC :			{url: "/risks/%id%/show_document/%doc_id%.js"},
-		RISKS_DESTROY_DOC: 			{url: "/risks/%id%/destroy_document.js"},
+
+		//singular risk for controller convenience
+		RISK_FILE_ADD: 				{url: "/risks/%id%/attach_document.js", deleteId:true, post:true},
+		RISK_FILE_UPDATE:			{url: "/risks/%id%/update_document/%doc_id%.js", deleteId:true, post:true},
+		RISK_FILE_DOWNLOAD:			{url: "/risks/%id%/show_document/%doc_id%.js"},
+		RISK_FILE_DELETE: 			{url: "/risks/%id%/destroy_document.js", deleteId:true, post:true},
+		
 		RISKS_DUMMY_REFRESH :		{url: "/risks/%id%/refresh_risk.js"},
 		RISKS_UPDATE_GROUPS:  		{url: "/risks/%id%/update_group_expression.js", deleteId:true, normalParams:true },
 		RISKS_NEWS: 				{url: "/risks/%id%/news.js", deleteId:true},
@@ -145,12 +151,12 @@ define(['sb_light/globals'], function(sb) {
 		METRICS_HIERARCHY:			{url: "/metrics/hierarchy_values/%id%.js", deleteId:true, normalParams:true},
 		METRICS_NEWS: 				{url: "/metrics/%id%/news.js", deleteId:true},
 
+		METRIC_FILE_ADD: 			{url: "/metrics/%id%/attach_document.js", deleteId:true, post:true},
+		METRIC_FILE_UPDATE:			{url: "/metrics/%id%/update_document/%doc_id%.js", deleteId:true, post:true},
+		METRIC_FILE_DOWNLOAD:		{url: "/metrics/%id%/show_document/%doc_id%.js"},
+		METRIC_FILE_DELETE: 		{url: "/metrics/%id%/destroy_document.js", deleteId:true, post:true},
+
 	
-		KPIS_CREATE :				{url: "/kpis/create.js"},
-		KPIS_DESTROY: 				{url: "/kpis/%id%/destroy.js"},
-		KPIS_UPDATE :				{url: "/kpis/%id%/update.js"},
-		KPIS_ATTACH_BLOCK: 			{url: "/kpis/%id%/attach.js"},
-		KPIS_DETACH_BLOCK :			{url: "/kpis/%id%/detach.js"},
 		
 		LEVELS_UPDATE: 				{url: "/levels/update.js"},
 		
@@ -194,6 +200,9 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_RAISE: 				{url:"/admin/log_client_error.js"},
 		ADMIN_SUPPORT:				{ url:"/admin/log_support.js", post:true},
 
+		SSO_REFRESH: 				{ url:"/sso/refresh.js" },
+		SSO_GOOGLE_REDIRECT: 		{ url:"/sso/google_sso_flash_login_redirect.js" },
+		SSO_GOOGLE_FILES: 			{ url:"/sso/google_drive_files.js" },
 
 
 		//BUILDER 

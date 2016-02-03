@@ -899,7 +899,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	//same as combine but only takes two properties.
 	//B takes precedence over A when overlaps occur
 	E.merge = function ext_merge(a, b, ignore) {
-		return E.combine([a||{},b||{}], ignore);	
+		return $.extend({}, a,b); //E.combine([a||{},b||{}], ignore);	
 	};
 
 	//cherry pick the key/values of an object and clone them into a new one

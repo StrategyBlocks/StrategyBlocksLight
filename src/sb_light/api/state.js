@@ -155,7 +155,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 
 		var sg = storage[group];
 		if(!sg.hasOwnProperty(type)) {
-			E.warn("SBLIGHT::State - Trying to access a state property that hasn't been initialized. " + group + "::" + type);
+			// E.warn("SBLIGHT::State - Trying to access a state property that hasn't been initialized. " + group + "::" + type);
 		}
 
 		if(val !== undefined) {
@@ -306,7 +306,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		state.reset();
 	};
 	state.persistSession = function() {
-		sb.api.post(sb.urls.urls(sb.urls.LOGIN_REMEMBER_ME));
+		sb.api.post(sb.urls.url(sb.urls.LOGIN_REMEMBER_ME));
 	};
 	
 	state.changeCompany = function(cid) {

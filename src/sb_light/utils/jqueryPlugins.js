@@ -18,8 +18,8 @@ define(["sb_light/globals", "sb_light/utils/ext", "jquery"], function(sb, E) {
 			x.x = x.left;
 			x.y = x.top;
 
-			x.screenX = offset.left;
-			x.screenY = offset.top;
+			x.screenX = offset ? offset.left : 0;
+			x.screenY = offset ? offset.top : 0;
 
 			return x;
 		};

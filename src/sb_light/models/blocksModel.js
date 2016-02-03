@@ -79,7 +79,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 
 		filteredTree: function() {
-			var filters = this._filters || {};
+			var filters = this.filters() || {};
 			var ff = this.filterItem.bind(this, filters);
 			var list = E._.filter(this._pathArray, ff); 
 			var self = this;
@@ -105,7 +105,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		filter_distance: function(b, maxDistance) {
 			var dist = Q.blockDistance(b);
 
-			console.log("DISTANCE", b.title, dist);
+			// console.log("DISTANCE", b.title, dist);
 			return dist <= maxDistance;			
 		},
 
@@ -246,8 +246,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 					// 	})
 					// });
 			
-			while(this._properties[type+"_queue"][id].length) {
-				var cb = this._properties[type+"_queue"][id].pop();
+			var q = this._properties[type+"_queue"];
+			while(q && q[id] && q[id].length) {
+				var cb = q[id].pop();
 				cb(this._properties[type][id]);
 			}
 		},

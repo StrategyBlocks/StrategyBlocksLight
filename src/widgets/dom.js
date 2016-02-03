@@ -300,7 +300,7 @@ define([
 					return;
 				}
 				ss[v] = ST.watch(type, v, function() {
-					// self._consoleLogPages("HANDLE ", funcName, type, v, self.id);
+					self._consoleLogPages("HANDLE ", funcName, type, v, self.id);
 					df();
 				});
 			});

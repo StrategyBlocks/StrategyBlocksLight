@@ -17,7 +17,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		_timestamp:null,
 		_sb:null,
 		_authStateCheck:null,
-		_filters: null,
+		// _filters: null,
 
 	
 		init: function(name, urlDef) {
@@ -37,7 +37,6 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			this._urlDef = urlDef;
 			this._selectQueue = [];
 			this._subscriptions = {};
-			this._filters = {};
 			
 			ST.registerModel(this, this._urlDef, this._handleUpdate.bind(this));
 			ST.watchContext("session", this._handleSession.bind(this));
@@ -89,15 +88,15 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 
 		filters: function(fo) {
 			if(arguments.length) {
-				this._filters = fo;
+				ST.cookie(this.name + "_filters", fo);
 				this._publish();
 			}
-			return this._filters;
+			return ST.cookie(this.name + "_filters");
 		},
 
 
 		filteredList: function() {
-			var filters = this._filters || {};
+			var filters = this.filters() || {};
 			var ff = this.filterItem.bind(this, filters);
 			var list = E._.filter(this.rawArray(), ff); 
 			// console.log("MODEL", this.name, list.length, JSON.stringify(filters));

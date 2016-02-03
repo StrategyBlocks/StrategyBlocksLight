@@ -677,6 +677,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', "d3"], function(sb, E, d3) {
 
 		},
 
+		healthTriangle: "M8.5,71.0 L18.0,16.0 	Q21.7,7.0,32.0,13.0 	L68.0,39.0 	Q75.0,46.0,66.0,51.0 	L19.0,76.0 	Q9.0,80.0,8.5,71.0	Z",
 
 		//angles for a tachometer (3/4 circle starting at 3/4PI)
 		tachoAngles: [	{"startAngle":1.5707963267948966,"endAngle":3.9269908169872414},

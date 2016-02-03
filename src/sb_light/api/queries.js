@@ -59,6 +59,11 @@ define(['sb_light/globals',
 		return c ? c.risk : null;
 	};
 
+	q.companyMaxSessionDays = function() {
+		var c = ST.context("company");
+		return c ? c.stay_logged_in_duration : 0;
+	}
+
 	q.shortCompanyName = function(cid) {
 		var c = q.company(cid);
 		var t = c ? c.name : null;
@@ -199,11 +204,11 @@ define(['sb_light/globals',
 	};
 	q.isAuthor = function(uid) {
 		var cm = q.companyMembership(uid);
-		return cm && cm.role == "Author";
+		return cm && (cm.role == "Author" || cm.role == "Administrator");
 	};
 	q.isUser = function(uid) {
 		var cm = q.companyMembership(uid);
-		return cm && cm.role == "User";
+		return cm && (cm.role == "User" || cm.role == "Author" || cm.role == "Administrator");
 	};
 
 	q.isMetricAdmin = function() {

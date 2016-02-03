@@ -71,7 +71,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.blockDelete = function(args, cb) {
 		args.type = "delete"; //legacy url format requires this.
 		controller.invoke(sb.urls.BLOCKS_DELETE, args, cb,cb );
-	}
+	};
 
 	controller.blockRelocate = function(args, cb) {
 		//id: block_id
@@ -213,6 +213,39 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 
 
+	controller.uploadFile = function(file, object, object_type, cb) {
+		var url;
+		if(file.doc_id) {
+			//UPDATE
+			url = sb.urls[object_type.toUpperCase() + "_FILE_UPDATE"];
+			controller.invoke(url, E.merge(file, {id:object.id}), 	cb, cb);
+
+		} else {
+			//ADD
+			url = sb.urls[object_type.toUpperCase() + "_FILE_ADD"];
+			controller.invoke(url, E.merge(file, {id:object.id}), 	cb, cb);
+		}
+	};
+
+	controller.downloadFile = function(oid, fid, object_type) {
+		var urlObj = sb.urls[object_type.toUpperCase() + "_FILE_DOWNLOAD"];
+		var url = sb.urls.url(urlObj, {id:oid, doc_id:fid});
+
+		// var frame = d3.select("body iframe.downloadHack");
+		// if(frame.empty) {
+		// 	frame = d3.select("body").append("iframe").class("downloadHack");
+		// }
+		// frame.attr("src", url);
+
+		window.open(url);
+
+		// controller.invoke(url, {id:oid, doc_id:fid});
+	};
+
+	controller.deleteFile = function(file, object_type, cb) {
+		var url = sb.urls[object_type.toUpperCase() + "_FILE_DELETE"];
+		controller.invoke(url, file, cb, cb);
+	};
 
 	controller.fetch = function(urlObj, args, successCb, errorCb, stateCheck, overrides) {
 		args = args || {};
