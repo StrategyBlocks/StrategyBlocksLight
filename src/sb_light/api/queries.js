@@ -211,6 +211,12 @@ define(['sb_light/globals',
 		return cm && (cm.role == "User" || cm.role == "Author" || cm.role == "Administrator");
 	};
 
+	//checks *ONLY* if they're a user
+	q.isLimitedUser = function(uid) {
+		var cm = q.companyMembership(uid);
+		return cm && (cm.role == "User");
+	};
+
 	q.isMetricAdmin = function() {
 		return q.isAdmin();
 	}

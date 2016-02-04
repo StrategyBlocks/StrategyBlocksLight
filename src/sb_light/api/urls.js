@@ -40,15 +40,14 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_DELETE :					{url: "/blocks/%type%/%id%.js", 				post:true,		normalParams:true},
 		BLOCKS_DOCUMENTS: 				{url: "/blocks/documents/%id%.js",				post:false},
 		BLOCKS_IMPORT 	:				{url: "/blocks/import/%id%.js",					post:true},
-		BLOCKS_INVITE 	:				{url: "/blocks/invite/%id%.js"},
 		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/make_public/%id%.js", normalParams:true},
 		//BLOCKS_MOVE_POSITION 			{url: "/blocks/move_position_%dir%/%id%.js"},
 		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true, deleteId: true},
 		BLOCKS_PROPERTIES: 				{url: "/blocks/%type%/%id%.js"},
 		BLOCKS_RELOCATE: 				{url: "/blocks/reassign_parent/%id%.js", normalParams:true, deleteId:true},
 		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", 				post:true,		deleteId: true},
-		BLOCKS_UNWATCH: 				{url: "/blocks/unwatch/%id%.js"},
-		BLOCKS_WATCHING_USERS: 			{url: "/blocks/watching_users/%id%.js"},
+
+		// BLOCKS_WATCHING_USERS: 			{url: "/blocks/watching_users/%id%.js"},
 		BLOCKS_TAGGED: 					{url: "/blocks_for_tag/%name%.js"},
 		BLOCKS_UPDATE_GROUPS :			{url: "/blocks/update_group_expression/%id%.js", normalParams:true},
 		BLOCKS_CHANGE_CHARTED_KPI: 		{url: "/blocks/set_default_kpi/%id%.js"},
@@ -61,6 +60,8 @@ define(['sb_light/globals'], function(sb) {
 		BLOCK_FILE_UPDATE: 				{url: "/blocks/%id%/documents/update/%doc_id%.js", deleteId:true, post:true},
 		BLOCK_FILE_DOWNLOAD: 			{url: "/blocks/%id%/documents/show/%doc_id%.js"},
 		BLOCK_FILE_DELETE: 				{url: "/blocks/%id%/documents/destroy/%doc_id%.js", deleteId:true, post:true},
+		BLOCK_INVITE :					{url: "/blocks/%id%/invite.js",					post:true, normalParams:true},
+		BLOCK_UNWATCH: 					{url: "/blocks/%id%/unwatch.js",				post:true},
 		
 		BOOKMARKS:						{url: "/saved_client_states/index.js"},
 		BOOKMARK_CREATE_DYNAMIC:		{url: "/saved_client_states/create_dynamic.js"},
@@ -127,11 +128,15 @@ define(['sb_light/globals'], function(sb) {
 		RISKS_ADD_IMPACT :			{url: "/risks/%id%/add_impact.js"},
 		RISKS_REMOVE_IMPACT: 		{url: "/risks/%id%/remove_impact.js"},
 
+
+
 		//singular risk for controller convenience
 		RISK_FILE_ADD: 				{url: "/risks/%id%/attach_document.js", deleteId:true, post:true},
 		RISK_FILE_UPDATE:			{url: "/risks/%id%/update_document/%doc_id%.js", deleteId:true, post:true},
 		RISK_FILE_DOWNLOAD:			{url: "/risks/%id%/show_document/%doc_id%.js"},
 		RISK_FILE_DELETE: 			{url: "/risks/%id%/destroy_document.js", deleteId:true, post:true},
+		RISK_INVITE :				{url: "/risks/invite/%id%.js",		post:true, normalParams:true},
+		RISK_UNWATCH: 				{url: "/risks/unwatch/%id%.js",		post:true},
 		
 		RISKS_DUMMY_REFRESH :		{url: "/risks/%id%/refresh_risk.js"},
 		RISKS_UPDATE_GROUPS:  		{url: "/risks/%id%/update_group_expression.js", deleteId:true, normalParams:true },
@@ -155,8 +160,9 @@ define(['sb_light/globals'], function(sb) {
 		METRIC_FILE_UPDATE:			{url: "/metrics/%id%/update_document/%doc_id%.js", deleteId:true, post:true},
 		METRIC_FILE_DOWNLOAD:		{url: "/metrics/%id%/show_document/%doc_id%.js"},
 		METRIC_FILE_DELETE: 		{url: "/metrics/%id%/destroy_document.js", deleteId:true, post:true},
+		METRIC_INVITE :				{url: "/metrics/invite/%id%.js",		post:true, normalParams:true},
+		METRIC_UNWATCH: 			{url: "/metrics/unwatch/%id%.js",		post:true},
 
-	
 		
 		LEVELS_UPDATE: 				{url: "/levels/update.js"},
 		

@@ -79,6 +79,14 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		//start_date/end_date server date strings for the new block
 		controller.invoke(sb.urls.BLOCKS_RELOCATE, args, cb, cb);
 	};
+	controller.blocksInvite = function(modelType, args, cb) {
+		var url = sb.urls[modelType.toUpperCase()+"_INVITE"];
+		controller.invoke(url, args, cb, cb);
+	};
+	controller.blocksUnwatch = function(modelType, args, cb) {
+		var url = sb.urls[modelType.toUpperCase()+"_UNWATCH"];
+		controller.invoke(url, args, cb, cb);
+	};
 
 	controller.metricUpdate = function( changes, cb) {
 		controller.invoke(sb.urls.METRICS_UPDATE,changes, cb,cb);
