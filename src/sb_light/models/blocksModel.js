@@ -255,8 +255,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		
 		_massageHealth: function(d) {
 			var f = E.massageHealth;
-			E.each(d, function(dv) {
-				f(dv);
+			var model = this._model;
+			E.each(d, function(dv, id) {
+				model[id].health_data = f(dv);
 			});
 
 		},

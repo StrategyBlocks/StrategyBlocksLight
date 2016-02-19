@@ -31,6 +31,8 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_HISTORY: 		{url: "/login/history.js", 				post:false},
 		MODEL_BUILDERS: 	{url: "/builders.js", 					post:false},
 		MODEL_METRICS_EXPRESSIONS: 		{url: "/metrics/calculation_functions.js", 	post:false},
+		MODEL_DOCUMENTS: 	{url: "/documents.js", 					post:false},
+		MODEL_DASHBOARDS: 	{url: "/dashboards.js", 				post:false},
 
 
 			

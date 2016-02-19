@@ -23,6 +23,26 @@ define(['sb_light/globals',
 	'use strict';
 	var q = {};
 	
+
+
+
+
+	/********************************
+		DASHBOARDS
+	*********************************/
+	q.dashboard = function() {
+		var cdb = ST.data("dashboard");
+
+		if(!cdb ) {
+			ST.data("dashboard", {id:"new", widgets:[]});
+			cdb = ST.data("dashboard");
+			
+		}
+		return cdb;
+	};
+
+
+
 	/********************************
 		COMPANIES
 	*********************************/

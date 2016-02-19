@@ -477,7 +477,7 @@ define([
 
 			redraw = (arguments.length < 3) || (redraw === true);
 
-			var src = opts.require; 
+			var src = opts.require || el.data("require"); 
 			el.data("require", null);
 			el.removeAttr("data-require");
 			delete opts.require;
@@ -514,6 +514,13 @@ define([
 				dom = this.$.find(dom).get(0);
 			}
 			return E._.find(this.__children, {dom:dom});
+		},
+
+
+		destroyChildren:function() {
+			E.each(this.__children, function(c) {
+				c.destroy();
+			});
 		},
 
 		beforeDrawDone: function() {
@@ -669,7 +676,11 @@ define([
 
 		},
 
+
+
 		cleanup: function() {
+			this.destroyChildren();
+
 			this.sel.html("");
 
 			this.__data = {};

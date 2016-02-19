@@ -26,12 +26,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	//return a unique number /id
 	E.unique = function ext_unique(prefix, suffix) {
 		if(arguments.length) {
-			var str = [++E._unique];
+			var str = [Date.now()+(E._unique++)];
 			if(prefix) { str.unshift(prefix); }
 			if(suffix) { str.push(suffix); }
 			return str.join("_");
 		} else {
-			return (++E._unique);
+			return (Date.now()+(E._unique++));
 		}
 	};
 
