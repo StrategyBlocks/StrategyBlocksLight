@@ -491,7 +491,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			if(E.isArray(m)) {
 				m = m.reduce( (function(prev,el) {
 					if(!el.id) {
-						E.debug("Warning:STATE:HandleMOdelResponse: model doesn't have an id: ", model.name, el);
+// 						E.debug("Warning:STATE:HandleMOdelResponse: model doesn't have an id: ", model.name, el);
 						el.id = (el.id || el.name || el.key); 
 					}
 					prev[el.id] = el;

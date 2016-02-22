@@ -196,7 +196,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			var m = this.get();
 			var q = sb.queue;
 
-			console.log("MODEL IS BEING PUBLISHED: ", this.name);
+			// console.log("MODEL IS BEING PUBLISHED: ", this.name);
 			E.each(this._subscriptions, function(cb,k) {
 				// q.add(cb, k, 0);
 				cb.bindDelay(null, 0);

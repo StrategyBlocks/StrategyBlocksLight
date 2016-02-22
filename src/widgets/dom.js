@@ -1,4 +1,5 @@
 /* globals define, $, d3, require */
+'use strict';
 
 define([
 	'sb_light/utils/Class', 
@@ -8,7 +9,6 @@ define([
 	"jquery.tooltipster"
 ], function( Class, sb ) {
 	
-	'use strict';
 
 	var E, ST, M;
 	var DOM_REGISTER = {};
@@ -166,7 +166,7 @@ define([
 
 			//on devices, we want to open HTML links in a new system browser window
 			if(sb.options.isDevice) {
-				this.$.find("a[target='_blank']").on("click", function(el) {
+				this.$.find("a[target='_blank']").on("click", function() {
 					var href = $(this).attr("href");
 					if(href.match(/^\//)) {
 						href = sb.state.host + href;
@@ -220,9 +220,13 @@ define([
 					this[k] = null;
 				}
 			});
+
+			this.__binds = {};
 		},
 
 		queue: function(func, delay) {
+			if(!func) { return; }
+
 			delay = E.first(delay, this.delay, 0);
 			sb.queue.buffer(func, "_buffer" + this.id,delay, true);
 		},
@@ -253,7 +257,7 @@ define([
 		hasDifferences: function() {
 			if(!this.__differences) { return true;}
 
-			return E._.some(this.__differences, function(v, k) {
+			return E._.some(this.__differences, function(v) {
 				var res = v.func();	
 				var diff = v.cache != res;
 				// if(diff) {
@@ -369,6 +373,10 @@ define([
 		//create a context-bound function for handling events.
 		//warning: this is purely convenience and won't be appropriate when you need to bind extra arguments
 		bind: function(name) {
+			if(!this || !this.__binds) {
+				return null;
+			}
+
 			if(!this.__binds[name]) {
 				if(!this[name]) {
 					throw new Error("SB_Light Widget (" + name + ") is not a function of : " + this.id);
@@ -690,8 +698,8 @@ define([
 		},
 
 		_consoleLogPages: function(str, id) {
-			if(id.match(/loading/)) {
-				console.log(str, id);
+			if(id.match(/DON"T SHOW/)) {
+				E.debug(str, id);
 			}
 		}
 
@@ -705,7 +713,7 @@ define([
 	}; 
 	Dom.cleanup = function() {
 		var time = E.time();
-		E.each(DOM_REGISTER, function(v, k) {
+		E.each(DOM_REGISTER, function(v) {
 			var dom = v.dom;
 
 			if (E.minutesDiff(time, v.__age) > 1 &&  !$.contains(document, dom)) {
@@ -713,7 +721,7 @@ define([
  			   // this._consoleLogPages("DOM CLEANUP----REMOVED ", k, E.minutesDiff(time, dom.__age), E.length(DOM_REGISTER));
 			}
 		});
-	}
+	};
 
 
 	return Dom;
