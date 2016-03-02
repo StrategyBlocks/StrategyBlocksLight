@@ -698,7 +698,7 @@ define([
 		},
 
 		_consoleLogPages: function(str, id) {
-			if(id.match(/DON"T SHOW/)) {
+			if(id && id.match(/DON"T SHOW/)) {
 				E.debug(str, id);
 			}
 		}
