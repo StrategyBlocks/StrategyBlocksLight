@@ -22,11 +22,11 @@ define([
 	'sb_light/models/buildersModel',
 	'sb_light/models/libraryModel',
 	'sb_light/models/documentsModel',
-	// 'sb_light/models/dashboardModel',
+	'sb_light/models/dashboardsModel',
 
 ], function(sb, tags,news,users,blocks,levels,focus,risks,metrics, metricsExpressions, 
 					companies, groups,timezones,healths, milestones, capabilities, history, 
-					builders, library, documents/*, dashboards*/) {
+					builders, library, documents, dashboards) {
 
 	'use strict';
 	
@@ -50,7 +50,7 @@ define([
 		builders:					{klass:builders},
 		library:					{klass:library},
 		documents:					{klass:documents},
-		// dashboards:					{klass:dashboards},
+		dashboards:					{klass:dashboards},
 	};
 	
 	var models = {};

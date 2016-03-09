@@ -142,7 +142,17 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.USERS_CREATE_BATCH,list, cb,cb);
 	};
 
-
+	controller.dashboardsUpdate = function(o, cb) {
+		if(o.id === "new") {
+			delete o.id; 
+			controller.invoke(sb.urls.DASHBOARD_CREATE, o, cb,cb);
+		} else {
+			controller.invoke(sb.urls.DASHBOARD_UPDATE, o, cb,cb);
+		}
+	};
+	controller.dashboardsDelete = function(id, cb) {
+		controller.invoke(sb.urls.GROUPS_DELETE, {id:id}, cb);
+	};	
 
 	controller.groupsUpdate = function(o, cb) {
 		if(o.id === "new") {

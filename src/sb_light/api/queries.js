@@ -31,12 +31,29 @@ define(['sb_light/globals',
 		DASHBOARDS
 	*********************************/
 	q.dashboard = function() {
-		var cdb = ST.data("dashboard");
+		//see if there's a dashboard in the context storage
+		var cdb = ST.context("dashboard");
+		var did = ST.state("dashboard");
+		if(!cdb && did != "new" ) {
+			var dm = sb.models.rawArray("dashboards");
+			//find the selected dashboard
+			if(did) {
+				cdb = E._.find(dm, {id:ST.state("dashboard")})
+			}
+			//find the default dashboard
+			if(!cdb) {
+				cdb = E._.find(dm, {"default":true});
+				if(!cdb && dm.length) {
+					//take the first one
+					cdb = dm[0];
+				}
+			}
+		}
+		//create a new temporary one
 
-		if(!cdb ) {
-			ST.data("dashboard", {id:"new", widgets:[]});
-			cdb = ST.data("dashboard");
-			
+		if(!cdb) {
+			cdb = {id:"new", title:"", manager_id:q.user().id, widgets:[]};
+			// ST.context("dashboard", cdb);
 		}
 		return cdb;
 	};

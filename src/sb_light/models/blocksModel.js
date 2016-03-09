@@ -308,7 +308,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 							)
 						)),
 				percent_health: (b.percent_health || 0),
-				overdue: E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0),
+				overdue: (!b.closed && E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0)),
 				is_root:(depth===0),
 				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
 				is_company: b.sub_company_block,

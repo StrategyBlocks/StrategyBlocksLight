@@ -1,4 +1,4 @@
-
+/*globals define */
 
 define(['sb_light/globals'], function(sb) {
 	'use strict';
@@ -96,12 +96,12 @@ define(['sb_light/globals'], function(sb) {
 		COMPANIES_MILESTONE_UPDATE :	{url: "/milestone_definitions/%id%/update.js", deleteId:true},
 		COMPANIES_MILESTONE_DELETE: 	{url: "/milestone_definitions/%id%/destroy.js"},
 		
-
-
 		
 		CAPABILITIES_UPDATE: 			{url: "/company_settings/update.js"},
 		
-		
+		DASHBOARD_CREATE :				{url: "/dashboards/create.js", post:true},
+		DASHBOARD_UPDATE :				{url: "/dashboards/%id%/update.js", deleteId:true, post:true},
+		DASHBOARD_DESTROY :				{url: "/dashboards/%id%/destroy.js", deleteId:true, post:true},
 		
 		EXPORTS_CREATE :			{url: "/exports/%id%/create.js"},
 		EXPORTS_REPORT :			{url: "/exports/%id%/create.js"},
@@ -354,8 +354,8 @@ define(['sb_light/globals'], function(sb) {
 	urls.o_to_params = function(obj) {
 		return sb.ext.map(obj, function(v,k){
 			return k + "=" + encodeURIComponent(v);
-		}).join("&")
-	}
+		}).join("&");
+	};
 	
 	return urls;
 });

@@ -10,12 +10,18 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		init: function() {
 			E = sb.ext;
 		
-			this._super("documents", sb.urls.MODEL_DASHBOARDS);
+			this._super("dashboards", sb.urls.MODEL_DASHBOARDS);
 		},
 
 
 		_massageUpdatedModel: function() {
 			this._super();
+
+			E.each(this._model, function(d) {
+				E.each(d.widgets, function(w) {
+					w.id = w.id || E.unique("widget");
+				})
+			});
 
 		}		
 
