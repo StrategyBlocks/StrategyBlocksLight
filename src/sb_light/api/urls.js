@@ -121,7 +121,7 @@ define(['sb_light/globals'], function(sb) {
 	
 		//type: IMAGE  : pdf
 		//email: true|FALSE
-		HTML_REPORT:				{url: "/html/generate_report.js"},
+		HTML_REPORT:				{url: "/html/generate_report.js", post:true,normalParams:true},
 
 		RISKS_CREATE :				{url: "/risks/create.js"},
 		RISKS_DESTROY :				{url: "/risks/%id%/destroy.js"},

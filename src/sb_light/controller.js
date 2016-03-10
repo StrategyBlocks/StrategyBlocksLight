@@ -154,6 +154,12 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.DASHBOARD_DESTROY, {id:id}, cb);
 	};	
 
+
+	controller.dashboardPrint = function(data, cb) {
+		controller.invoke(sb.urls.HTML_REPORT, data, cb);
+	};
+
+
 	controller.groupsUpdate = function(o, cb) {
 		if(o.id === "new") {
 			delete o.id; 
