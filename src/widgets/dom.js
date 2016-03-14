@@ -206,6 +206,8 @@ define([
 				});
 			});
 
+			// this.__data = null;
+
 			//unsubscribe from models
 			E.each(m, function(ref,k) {
 				ms.unsubscribe(k, ref);
@@ -691,7 +693,9 @@ define([
 
 			this.sel.html("");
 
-			this.__data = {};
+			E.each(this.__data, function(v,k) {
+				v.data = null;
+			});
 			
 			this._rebuildBeforeDrawList();
 			this.__dirty = false;
