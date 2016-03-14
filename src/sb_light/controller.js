@@ -155,10 +155,6 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};	
 
 
-	controller.dashboardPrint = function(data, cb) {
-		controller.invoke(sb.urls.HTML_REPORT, data, cb);
-	};
-
 
 	controller.groupsUpdate = function(o, cb) {
 		if(o.id === "new") {
