@@ -147,6 +147,11 @@ define(['sb_light/globals'], function(sb) {
 		RISKS_SETTINGS: 			{url: "/risk_profiles/update_risk_settings.js"},
 		RISKS_MATRIX_SIZE :			{url: "/risk_profiles/set_matrix_size.js"},
 		RISKS_PROFILES_UPDATE: 		{url: "/risk_profiles/update_batch.js"},
+
+		RISKS_COMMENTS:				{url: "/risks/%id%/comments.js", deleteId:true},
+		RISKS_COMMENT_ADD:			{url: "/risks/%id%/comment.js", deleteId:true, normalParams:true},
+		RISKS_COMMENT_REMOVE:		{url: "/risks/%id%/delete_comment.js", deleteId:true, normalParams:true},
+
 		
 		METRICS_CREATE:  			{url: "/metrics/create.js"},
 		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js"},
@@ -157,6 +162,12 @@ define(['sb_light/globals'], function(sb) {
 		METRICS_DOWNLOAD:  			{url: "/metrics.csv" },
 		METRICS_HIERARCHY:			{url: "/metrics/hierarchy_values/%id%.js", deleteId:true, normalParams:true},
 		METRICS_NEWS: 				{url: "/metrics/%id%/news.js", deleteId:true},
+
+
+		METRICS_COMMENTS:			{url: "/metrics/%id%/comments.js", deleteId:true},
+		METRICS_COMMENT_ADD:		{url: "/metrics/%id%/comment.js", deleteId:true, normalParams:true},
+		METRICS_COMMENT_REMOVE:		{url: "/metrics/%id%/delete_comment.js", deleteId:true, normalParams:true},
+
 
 		METRIC_FILE_ADD: 			{url: "/metrics/%id%/attach_document.js", deleteId:true, post:true},
 		METRIC_FILE_UPDATE:			{url: "/metrics/%id%/update_document/%doc_id%.js", deleteId:true, post:true},

@@ -57,11 +57,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 
 
-	controller.blockComment = function(id, message, cb) {
-		controller.invoke(sb.urls.COMMENT_PROPERTIES_ADD, {id:id, body:message}, cb,cb);
+	controller.comment = function(type, id, message, cb) {
+		var url = type == "block" ?  sb.urls.COMMENT_PROPERTIES_ADD : (
+			type == "metric" ? sb.urls.METRICS_COMMENT_ADD : sb.urls.RISKS_COMMENT_ADD
+		);
+
+		controller.invoke(url, {id:id, body:message}, cb,cb);
 	};
-	controller.blockCommentDelete = function(id, cid, cb) {
-		controller.invoke(sb.urls.COMMENT_PROPERTIES_REMOVE, {id:id, comment_id:cid}, cb,cb);
+	controller.commentDelete = function(type, id, cid, cb) {
+		var url = type == "block" ?  sb.urls.COMMENT_PROPERTIES_REMOVE : (
+			type == "metric" ? sb.urls.METRICS_COMMENT_REMOVE : sb.urls.RISKS_COMMENT_REMOVE
+		);
+
+		controller.invoke(url, {id:id, comment_id:cid}, cb,cb);
 	};
 
 	controller.blockUpdateGroups = function(id, groups, cb) {

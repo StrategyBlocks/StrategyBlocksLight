@@ -257,6 +257,9 @@ define(['sb_light/globals',
 	q.isMetricAdmin = function() {
 		return q.isAdmin();
 	}
+	q.isRiskAdmin = function() {
+		return q.isAdmin();
+	}
 
 	q.userActive = function(uid) {
 		var cm = q.companyMembership(uid);
