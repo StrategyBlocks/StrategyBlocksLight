@@ -1,4 +1,4 @@
-/*globals define, Ti, console, moment, d3*/
+/*globals define, Ti, console, d3*/
 /*jslint passfail: false */
 
 
@@ -197,7 +197,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.union = function(a, b, prop) {
 		var res = E.map(a, E.identity);
 		var match = {}; 
-		return E._.union(res, E.filter(b, function(v) {
+		return E._.union(res, E.filter(b, function() {
 			match[prop] = b[prop];
 			return !E._.find(a, match); 
 		}));
@@ -334,6 +334,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
 
 	//number is positive when db is earlier than da
+	E.isFuture = function ext_isFuture(d) { return E.moment(d).diff(E.today(), "days") > 0; };
 	E.minutesDiff = function ext_minutesDiff(da, db) {return E.moment(da).diff(E.moment(db),"minutes");};
 	E.hoursDiff = function ext_hoursDiff(da, db) {return E.moment(da).diff(E.moment(db),"hours");};
 	E.daysDiff = function ext_daysDiff(da, db) {return E.moment(da).diff(E.moment(db),"days");};
@@ -476,6 +477,10 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		var val = Math.pow(10,E.number(dec,0));
 		return Math.ceil(number * val)/val;
 	};
+
+	E.roundEven = function ext_roundEven(number) {
+		return 2 * Math.round(number/2);
+	}
 
 	//http://stackoverflow.com/questions/10454518/javascript-how-to-retrieve-the-number-of-decimals-of-a-string-number
 	E.decimals = function ext_decimalCount(num) {
@@ -698,20 +703,24 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	};
 
 
-	E.domain = function ext_domain(type,min,max, pc) {
-		pc = E.first(pc, 0);
-		var pad;
+	E.domain = function ext_domain(type,min,max, pcA, pcB) {
+		pcA = E.first(pcA, 0);
+		pcB = E.first(pcB, pcA, 0);
+
+		var padA, padB;
 		if(type === "date") {
 			min = E.moment(min);
 			max = E.moment(max);
-			pad = E.daysDiff(max, min) * pc;
-			min = min.subtract(pad, "days").toDate();
-			max = max.add(pad, "days").toDate();
+			padA = E.daysDiff(max, min) * pcA;
+			padB = E.daysDiff(max, min) * pcB;
+			min = min.subtract(padA, "days").toDate();
+			max = max.add(padB, "days").toDate();
 		} else { 
 			//(!type || type === "number") {
-			pad = (max - min) * pc;
-			min -= pad;
-			max += pad;
+			padA = (max - min) * pcA;
+			padB = (max - min) * pcB;
+			min -= padA;
+			max += padB;
 		}
 		return [min,max];
 	};

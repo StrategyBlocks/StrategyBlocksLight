@@ -294,6 +294,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 			var uid = Q.user().id;
 
+			var hs = ["bad", "warning", "good"];
+
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				path:bpath,
 				parentPath:(p ? p.path : null),
@@ -307,7 +309,10 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 								b.progress_color == "red" ? "bad" : (b.progress_color == "yellow" ? "warning" : "good")
 							)
 						)),
+				status_health: hs[E.first(b.status_health,0) + 1],
 				percent_health: (b.percent_health || 0),
+				count_metrics: (b.count_metrics || 0),
+				count_risks: (b.count_risks || 0),
 				overdue: (!b.closed && E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0)),
 				is_root:(depth===0),
 				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
