@@ -75,7 +75,7 @@ define([
 				sb.queue.buffer(Dom.cleanup, "DOM_CLEANUP_REGISTRY", 500);
 				// console.log("Adding to the DOM", E.length(DOM_REGISTER));
 			} else {
-				throw new Error("DOM Widget with the same id already exists", this.__id);
+				throw new Error("DOM Widget with the same id already exists " + this.__id);
 			}
 
 
