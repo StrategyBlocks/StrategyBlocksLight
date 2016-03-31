@@ -757,16 +757,6 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		block = E.isStr(block) ? block : ( (block.closed || block.ownership_state=="new") ? "" : block.progress_color);
 		block = block || "none";
 		return sb.colors.statusColor(block);
-
-		// switch(block) {
-		// 	case "green": 	return ["#188118", 		"url(#progressGood)", 		"url(#progressHatchGood)" 		,["#67b41f", "#508121"], 
-		// 							"<span style='color:#196419'><i class='fa fa-fw fa-lg fa-check'></i> Good</span>" ];
-		// 	case "yellow":	return ["#A18D1E", 		"url(#progressWarning)",	"url(#progressHatchWarning)"	,["#d3a900", "#95780d"], 
-		// 							"<span style='color:#7d741f'><i class='fa fa-fw fa-lg fa-warning'></i> Warning" ];
-		// 	case "red": 	return ["#A11E1E", 		"url(#progressBad)",		"url(#progressHatchBad)" 		,["#b41f27", "#812127"], 
-		// 							"<span style='color:#7d1f1f'><i class='fa fa-fw fa-lg fa-warning'></i> Bad" ];
-		// 	default: 		return ["#999", 		"url(#progressNone)",		"url(#progressHatchNone)" 		,["#999", "#aaa"]  ];
-		// }
 	};
 
 

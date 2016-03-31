@@ -921,6 +921,11 @@ define(['sb_light/globals',
 		// 		)
 		// ;
 	};
+
+	q.blockTypeClass= function(b) {
+		b = q.block(b);
+		return b.is_company ? "blockTypeCompany" : (b.is_link ? "blockTypeLink" : "blockTypeNormal");
+	};
 	q.blockAlertClass = function(b) {
 		b = q.block(b);
 		var res = "alert alert-info";
