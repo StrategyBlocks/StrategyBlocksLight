@@ -328,6 +328,9 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.parseUnix = function ext_parseUnix(dn) {	return moment.unix(dn); };
 	E.moment = moment;
 	E.momentFn = function(date, format) {
+		if(E.isStr(date) && !format) {
+			format = E.serverFormat;
+		}
 		return moment(date, format);
 	};
 	E.dateNumber = function ext_dateNumber(d, format) { return E.moment(d, format).valueOf();	};
