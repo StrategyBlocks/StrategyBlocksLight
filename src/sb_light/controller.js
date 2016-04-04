@@ -53,7 +53,8 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 	controller.blockPublish = function(id, children, cb) {
 		//children:bool
-		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, children:children}, cb,cb);
+		//"recurse" is expected by server... 
+		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, recurse:children}, cb,cb);
 	};
 
 

@@ -399,6 +399,10 @@ define([
 
 		//you can set the options here and provide a function to call after the option has been set. 
 		opts: function(str, val, handlerFunc) {
+			//destroyed (TIMING ISSUE)
+			if(!this.__opts) { return; }
+
+
 			if(arguments.length > 1 &&  this.__opts.hasOwnProperty(str)) {
 				//don't trigger redraw unless things have changed.
 				if(this.__opts[str] !== val) { 
