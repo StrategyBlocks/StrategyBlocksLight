@@ -11,7 +11,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 	var E;
 	var Model = _Model.extend({
 		init: function() {
-			this._authStateCheck = this._authStateCheck || sb.state.authorized;
+			this._authStateCheck = this._authStateCheck || sb.state.normal;
 
 			this.responseKey = "exports";
 			E = sb.ext;
