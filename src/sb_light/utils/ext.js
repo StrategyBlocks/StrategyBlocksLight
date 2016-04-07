@@ -453,6 +453,11 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.sortServerDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseServerDate);
 
 
+	E.sortByOrder = function(list, props, orders) {
+		return E._.sortByOrder.call(null, list,props,orders);
+		// return E._.orderBy(list, props, E._.map(orders, function(el) { return el ? "desc" : "asc"; }));
+	};
+
 
 
 
@@ -483,7 +488,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 
 	E.roundEven = function ext_roundEven(number) {
 		return 2 * Math.round(number/2);
-	}
+	};
 
 	//http://stackoverflow.com/questions/10454518/javascript-how-to-retrieve-the-number-of-decimals-of-a-string-number
 	E.decimals = function ext_decimalCount(num) {
@@ -607,7 +612,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 
 	E.minmax = function ext_mimmax(list) {
 		return [E.min.apply(null,list), E.max.apply(null,list)];
-	}
+	};
 
 
 	//given a list of numbers, returns the one closest to "num"
@@ -633,7 +638,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		else 				 	{ v = a/b - 1;}
 
 		return E.roundTo(E.range(-1, v, 1) * 100, 1);
-	}
+	};
 
 
 
