@@ -841,6 +841,10 @@ define(['sb_light/globals',
 		"triggered": "statusBad"
 	};
 
+	q.riskStatusClass = function(r) {
+		return q._riskStatusMap[r.status];
+	};
+
 		//DISPLAY purposes
 	q.riskStatusMarkup = function(r) {
 		var r = q.risk(r);
