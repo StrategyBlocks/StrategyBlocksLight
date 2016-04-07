@@ -20,7 +20,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			this._timestamp = d ? d.timestamp: 0;
 
 
-			this._model = E._.keyBy(this._modelArray, "created_at");
+ 			this._model = E._.indexBy(this._modelArray, "created_at");
 
 			this._massageUpdatedModel();
 			//do this last because massage will cause changes			
