@@ -1,4 +1,5 @@
 
+
 /*globals define */
 
 define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
@@ -118,6 +119,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		// controller.invoke(sb.urls.METRICS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
 	};
 
+	controller.riskCreate = function( changes, cm) {
+		controller.invoke(sb.urls.RISKS_CREATE,changes, cm,cm);
+	};
 	controller.riskUpdate = function( changes, cm) {
 		controller.invoke(sb.urls.RISKS_UPDATE,changes, cm,cm);
 	};

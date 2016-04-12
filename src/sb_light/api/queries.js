@@ -335,6 +335,16 @@ define(['sb_light/globals',
 	};
 
 	/********************************
+		CAPABILITY
+	*********************************/
+	q.capability = function(key) {
+		var cm = sb.models.raw("capabilities");
+		var c = cm[key];
+		return c && c.value === true;
+
+	};
+
+	/********************************
 		FOCUS AREAS
 	*********************************/
 	q.focusArea = function(fid) {

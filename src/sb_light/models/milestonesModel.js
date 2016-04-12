@@ -8,6 +8,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 	var Model = _Model.extend({
 		init: function() {
+			E = sb.ext;
+			
 			this._super("milestone_definitions", sb.urls.MODEL_MILESTONES);
 		},
 
@@ -19,8 +21,14 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		},
 		
 
-		_processResponse: function(data) {
-			return this._super(data);
+		_massageUpdatedModel: function(data) {
+			this._super();
+
+			E.each(this._model, function(m) {
+				m.progress_total = E.reduce(m.milestones, function(prev,curr) {
+					return prev += curr.progress_value;
+				}, 0);
+			});
 		}
 	});
 	
