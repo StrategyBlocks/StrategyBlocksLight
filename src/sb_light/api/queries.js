@@ -38,7 +38,7 @@ define(['sb_light/globals',
 			var dm = sb.models.rawArray("dashboards");
 			//find the selected dashboard
 			if(did) {
-				cdb = E._.find(dm, {id:ST.state("dashboard")})
+				cdb = E._.find(dm, {id:ST.state("dashboard")});
 			}
 			//find the default dashboard
 			if(!cdb) {
@@ -99,7 +99,7 @@ define(['sb_light/globals',
 	q.companyMaxSessionDays = function() {
 		var c = ST.context("company");
 		return c ? c.stay_logged_in_duration : 0;
-	}
+	};
 
 	q.shortCompanyName = function(cid) {
 		var c = q.company(cid);
@@ -256,10 +256,10 @@ define(['sb_light/globals',
 
 	q.isMetricAdmin = function() {
 		return q.isAdmin();
-	}
+	};
 	q.isRiskAdmin = function() {
 		return q.isAdmin();
-	}
+	};
 
 	q.userActive = function(uid) {
 		var cm = q.companyMembership(uid);
@@ -623,16 +623,34 @@ define(['sb_light/globals',
 
 		var scales = [aScale, tScale, raScale, rtScale, upperScale, lowerScale];
 		if(hierarchyData) {
-			// Rollup and local raw values
-			rarRange = E.values(hierarchyData.raw_actuals_rollup.sort(E.sortServerDate("date",false)), "value");
-			rtrRange = E.values(hierarchyData.raw_target_rollup.sort(E.sortServerDate("date",false)), "value");
-			ralRange = E.values(hierarchyData.raw_actuals.sort(E.sortServerDate("date",false)), "value");
-			rtlRange = E.values(hierarchyData.raw_target.sort(E.sortServerDate("date",false)), "value");
+			var rarList = E._.clone(hierarchyData.raw_actuals_rollup.sort(E.sortServerDate("date",false)));
+			var rtrList = E._.clone(hierarchyData.raw_target_rollup.sort(E.sortServerDate("date",false)));
+			var ralList = E._.clone(hierarchyData.raw_actuals.sort(E.sortServerDate("date",false)));
+			var rtlList = E._.clone(hierarchyData.raw_target.sort(E.sortServerDate("date",false)));
 
-			rarDomain = E.values(hierarchyData.raw_actuals_rollup.sort(E.sortServerDate("date",false)), "date", E.serverToDate);
-			rtrDomain = E.values(hierarchyData.raw_target_rollup.sort(E.sortServerDate("date",false)), "date", E.serverToDate);
-			ralDomain = E.values(hierarchyData.raw_actuals.sort(E.sortServerDate("date",false)), "date", E.serverToDate);
-			rtlDomain = E.values(hierarchyData.raw_target.sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+			//make sure each list has at least two items
+			E.each([rarList, rtrList, ralList, rtlList], function(list) {
+				if(!list.length) {
+					list.push({date:E.serverDate(E.today()), value:0});
+				}
+				if(list.length < 2) {
+					list.push({date:E.serverMoment(list[0].date).subtract(1, "day"), value:0});	
+				}
+			});
+
+			// Rollup and local raw values
+			rarRange = E.values(rarList, "value");
+			rtrRange = E.values(rtrList, "value");
+			ralRange = E.values(ralList, "value");
+			rtlRange = E.values(rtlList, "value");
+
+			rarDomain = E.values(rarList, "date", E.serverToDate);
+			rtrDomain = E.values(rtrList, "date", E.serverToDate);
+			ralDomain = E.values(ralList, "date", E.serverToDate);
+			rtlDomain = E.values(rtlList, "date", E.serverToDate);
+
+
+
 	
 			rarScale = d3.time.scale().domain(rarDomain).range(rarRange).clamp(true);
 			ralScale = d3.time.scale().domain(ralDomain).range(ralRange).clamp(true);
@@ -641,13 +659,14 @@ define(['sb_light/globals',
 
 			scales.put(rarScale,ralScale,rtrScale,rtlScale);
 		}
+
 		if(!m.interpolate_values) {
 			E.each(scales, function(s) {
 				s.interpolate(function(a,b) {
 					//step-after interpolate
 					return function(t) {
 						return t < 1 ? a : b; 
-					}
+					};
 				});
 			});
 
@@ -857,7 +876,7 @@ define(['sb_light/globals',
 
 		//DISPLAY purposes
 	q.riskStatusMarkup = function(r) {
-		var r = q.risk(r);
+		r = q.risk(r);
 		if(!r) { return ""; }
 
 		return "<i class='fa fa-lg fa-exclamation-triangle " + q._riskStatusMap[r.status] + "'></i>";
@@ -865,12 +884,12 @@ define(['sb_light/globals',
 
 
 	q.riskStatusMessage = function(r) {
-		var r = q.risk(r);
+		r = q.risk(r);
 
 		return r.status =="triggered" ? "<strong>Triggered </strong>" : (
 			r.status =="warning" ? "<strong>Warning</strong>" : "<span class='text-muted'>Inactive</span>"
 		);   
-	}
+	};
 
 	/********************************
 		BLOCKS
@@ -908,8 +927,8 @@ define(['sb_light/globals',
 
 	//if b is not passed, it's asssumed to be the current block
 	q.blockDistance = function(a, b) {
-		var a = q.block(a);
-		var b = b ? q.block(b) : q.block();
+		a = q.block(a);
+		b = b ? q.block(b) : q.block();
 		if(!a || !b) { return 9999999; } // big number;
 		a = a.path.split("_"); b = b.path.split("_");
 
@@ -963,7 +982,7 @@ define(['sb_light/globals',
 		var dd = E.daysDiff(E.today(), b.end_date);
 		if(dd > 1) {
 			//OVERDUE
-			return "Overdue by <strong>" + dd + "</strong> days."
+			return "Overdue by <strong>" + dd + "</strong> days.";
 		} else if (dd === 0) {
 			return "Due <strong>today</strong>";
 		} else {
