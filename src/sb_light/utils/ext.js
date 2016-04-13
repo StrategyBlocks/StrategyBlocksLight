@@ -2,7 +2,7 @@
 /*jslint passfail: false */
 
 
-define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
+define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	"use strict";
 
 	//console.log("ext", sb.version);
@@ -286,7 +286,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.isNumber = E.isNum;
 	
 	E.isDate = function ext_isDate(obj) {
-		return E.moment.isMoment(obj) || Object.prototype.toString.call(obj) == "[object Date]";
+		return MOMENT.isMoment(obj) || Object.prototype.toString.call(obj) == "[object Date]";
 	};
 	
 	
@@ -325,13 +325,13 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.parseDate = function ext_moment() {
 		E.deprecated("E.parseDate", "E.moment");
 	};
-	E.parseUnix = function ext_parseUnix(dn) {	return moment.unix(dn); };
-	E.moment = moment;
+	E.parseUnix = function ext_parseUnix(dn) {	return MOMENT.unix(dn); };
+	E.moment = MOMENT;
 	E.momentFn = function(date, format) {
 		if(E.isStr(date) && !format) {
 			format = E.serverFormat;
 		}
-		return moment(date, format);
+		return E.moment(date, format);
 	};
 	E.dateNumber = function ext_dateNumber(d, format) { return E.moment(d, format).valueOf();	};
 	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
@@ -346,8 +346,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.yearsDiff = function ext_yearsDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"years");};
 	E.daysFrom = function ext_daysFrom(da, db, noPrefix) {return E.momentFn(db).from(da, noPrefix||false); };
 	E.today = function ext_today() { return new Date(); };
-	E.minDate = function ext_minDate(dates) { 	return E.moment.min.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
-	E.maxDate = function ext_maxDate(dates) { 	return E.moment.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
+	E.minDate = function ext_minDate(dates) { 	return MOMENT.min.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
+	E.maxDate = function ext_maxDate(dates) { 	return MOMENT.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.rangeDate = function ext_maxDate(date, start,end) { 	return E.minDate(start, E.maxDate(end, date)); };
 	E.serverFormat = "YYYY/MM/DD";
 	E.unixFormat = "YYYY-MM-DD HH:mm:ss Z";
@@ -367,16 +367,16 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 	E.month = function ext_date(d, format) { return E.moment(d,format).format("MMM (YYYY)");	};
 	E.userDate = function ext_userDate(d, format) { return E.moment(d,format).format( E.userFormat()); };
 	E.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
-		d = momentFn(d, format);
+		d = E.momentFn(d, format);
 		if(reverse) {
 			return d.fromNow() + " (" +  d.format(format || E.userFormat()) + ")";
 		} 
 		return d.format(format || E.userFormat()) + " (" + d.fromNow() + ")";
 	};
-	E.fromNow = function ext_fromNow(d, format) {		return moment(d, format).fromNow();	};
+	E.fromNow = function ext_fromNow(d, format) {		return E.moment(d, format).fromNow();	};
 
 	//return a standard format for searching via dates
-	E.filterDateString = function ext_fromNow(d) {		return momentFn(d).format("YYYY MMMM DD");	};
+	E.filterDateString = function ext_fromNow(d) {		return E.momentFn(d).format("YYYY MMMM DD");	};
 
 
 		/************  REGEXPS ***************************/
@@ -951,7 +951,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, moment) {
 		if(a == b) { return true; }
 		if(E.isArray(a) && E.isArray(b)) {
 			return a.length == b.length && E._.difference(a,b).length === 0;
-		};
+		}
 		return false;
 	}; 
 
