@@ -997,6 +997,9 @@ define(['sb_light/globals',
 		}
 	};
 
+	q.blocksOpen = function() {
+		return E._.filter(sb.models.rawArray("blocks"), {is_open:true});
+	};
 
 	q.blockTarget = function(b) {
 		b = q.block(b);
