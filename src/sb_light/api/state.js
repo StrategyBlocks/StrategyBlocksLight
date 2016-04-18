@@ -431,6 +431,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			
 			storage.context.user = data.user || null;
 			storage.context.company = data.company || null;
+			storage.context.settings = data.settings || null;
 
 
 			//if we have a block id in the response and there's no block defined in the state, OR 

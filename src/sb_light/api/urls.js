@@ -126,7 +126,7 @@ define(['sb_light/globals'], function(sb) {
 		RISKS_CREATE :				{url: "/risks/create.js"},
 		RISKS_DESTROY :				{url: "/risks/%id%/destroy.js"},
 		RISKS_UPDATE :				{url: "/risks/%id%/update.js"},
-		RISKS_UPDATE_STATUS: 		{url: "/risks/%id%/update_status.js"},
+		RISKS_UPDATE_STATUS: 		{url: "/risks/%id%/update_status.js", post:true, deleteId:true},
 		RISKS_ADD_IMPACT :			{url: "/risks/%id%/add_impact.js"},
 		RISKS_REMOVE_IMPACT: 		{url: "/risks/%id%/remove_impact.js"},
 

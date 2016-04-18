@@ -125,6 +125,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.riskUpdate = function( changes, cm) {
 		controller.invoke(sb.urls.RISKS_UPDATE,changes, cm,cm);
 	};
+	controller.riskUpdateStatus = function( changes, cm) {
+		controller.invoke(sb.urls.RISKS_UPDATE_STATUS,changes, cm,cm);
+	};
 	controller.riskUpdateGroups = function(id, groups, cb) {
 		controller.invoke(sb.urls.RISKS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
 	};
