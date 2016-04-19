@@ -453,12 +453,12 @@ define(['sb_light/globals',
 	};
 
 	q._trendMap = {
-		"down": "fa fa-lg fa-arrow-circle-down",
-		"Down": "fa fa-lg fa-arrow-circle-down",
-		"up": "fa fa-lg fa-arrow-circle-up",
-		"Up": "fa fa-lg fa-arrow-circle-up",
-		"flat": "fa fa-lg fa-minus-circle",
-		"Flat": "fa fa-lg fa-minus-circle"
+		"down": "fa fa-lg fa-fw fa-arrow-circle-down",
+		"Down": "fa fa-lg fa-fw fa-arrow-circle-down",
+		"up": "fa fa-lg fa-fw fa-arrow-circle-up",
+		"Up": "fa fa-lg fa-fw fa-arrow-circle-up",
+		"flat": "fa fa-lg fa-fw fa-minus-circle",
+		"Flat": "fa fa-lg fa-fw fa-minus-circle"
 	};
 
 	q.metricTrendClass = function(id, hierarchyData) {
@@ -483,12 +483,12 @@ define(['sb_light/globals',
 		"Bad": "statusBad",
 	};
 	q._metricStatusIcon = {
-		"bad": "fa fa-lg fa-arrow-circle-down",
-		"Bad": "fa fa-lg fa-arrow-circle-down",
-		"good": "fa fa-lg fa-arrow-circle-up",
-		"Good": "fa fa-lg fa-arrow-circle-up",
-		"warning": "fa fa-lg fa-minus-circle",
-		"Warning": "fa fa-lg fa-minus-circle"
+		"bad": "fa fa-lg fa-fw fa-arrow-circle-down",
+		"Bad": "fa fa-lg fa-fw fa-arrow-circle-down",
+		"good": "fa fa-lg fa-fw fa-arrow-circle-up",
+		"Good": "fa fa-lg fa-fw fa-arrow-circle-up",
+		"warning": "fa fa-lg fa-fw fa-minus-circle",
+		"Warning": "fa fa-lg fa-fw fa-minus-circle"
 	};
 	q.metricStatusClass = function(id, hierarchyData) {
 		var m = q.metric(id);
@@ -508,9 +508,9 @@ define(['sb_light/globals',
 
 
 	q._metricTypeMap = {
-		"B": "fa fa-lg fa-user", 	//basic
-		"C": "fa fa-lg fa-calculator",	//calculated
-		"H": "fa fa-lg fa-sitemap",	//hierarchical
+		"B": "fa fa-lg fa-fw fa-user", 	//basic
+		"C": "fa fa-lg fa-fw fa-calculator",	//calculated
+		"H": "fa fa-lg fa-fw fa-sitemap",	//hierarchical
 	};
 
 
@@ -879,7 +879,7 @@ define(['sb_light/globals',
 		r = q.risk(r);
 		if(!r) { return ""; }
 
-		return "<i class='fa fa-lg fa-exclamation-triangle " + q._riskStatusMap[r.status] + "'></i>";
+		return "<i class='fa fa-lg fa-fw fa-exclamation-triangle " + q._riskStatusMap[r.status] + "'></i>";
 	};
 
 

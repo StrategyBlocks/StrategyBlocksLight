@@ -313,6 +313,23 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		return s;
 	
 	};
+
+
+	E._escapeMap = {
+	    "&": "&amp;",
+	    "<": "&lt;",
+	    ">": "&gt;",
+	    '"': '&quot;',
+	    "'": '&#39;',
+	    "/": '&#x2F;'
+	};
+
+	E.escapeHTML = function ext_escapeHTML(string) {
+		return String(string).replace(/[&<>"'\/]/g, function (s) {
+    		return E._escapeMap[s];
+    	});
+	};
+
 	
 		/************  DATES ***************************/
 	E.time = (function() { 

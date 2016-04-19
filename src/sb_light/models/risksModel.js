@@ -29,6 +29,17 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				E.each(["description", "impact_description", "mitigation_steps", "response_steps"], function(key) {
 					v[key+"_html"] =  v[key] ? v[key].replace(/(?:\r\n|\r|\n)/g, '<br />') : "";  
 				})
+
+				if(!v.impact_description_html) {
+					v.impact_description_html = "<em>No impact description.</em>";
+				}
+				if(!v.mitigation_steps_html) {
+					v.mitigation_steps_html = "<em>No mitigation steps.</em>";
+				}
+				if(!v.response_steps_html) {
+					v.response_steps_html = "<em>No response steps.</em>";
+				}
+
 			});
 
 		},
