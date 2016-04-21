@@ -110,6 +110,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.metricDetach = function( mid, bid, cb) {
 		controller.invoke(sb.urls.METRICS_DETACH_BLOCK,{id:bid, "metric_id":mid}, cb,cb);
 	};
+	controller.metricDownload = function( o,  cb) {
+		controller.invoke(sb.urls.METRICS_DOWNLOAD,o, cb,cb, null, {dataType:"text"});
+	};
 	controller.metricHierarchy = function( mid, nid, cb) {
 		controller.invoke(sb.urls.METRICS_HIERARCHY,{id:mid, "node_ids":nid}, cb,cb);
 	};
@@ -157,6 +160,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.usersCreate = function( list, cb) {
 		controller.invoke(sb.urls.USERS_CREATE_BATCH,list, cb,cb);
 	};
+	controller.usersSendReport = function( o, cb) {
+		controller.invoke(sb.urls.USERS_SEND_REPORT,o, cb,cb);
+	};
 
 	controller.dashboardsUpdate = function(o, cb) {
 		if(o.id === "new") {
@@ -167,9 +173,11 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		}
 	};
 	controller.dashboardsDelete = function(id, cb) {
-		controller.invoke(sb.urls.DASHBOARD_DESTROY, {id:id}, cb);
+		controller.invoke(sb.urls.DASHBOARD_DESTROY, {id:id}, cb, cb);
 	};	
-
+	controller.dashboardShare = function(o, cb) {
+		controller.invoke(sb.urls.DASHBOARD_SHARE, o, cb, cb);
+	}
 
 
 	controller.groupsUpdate = function(o, cb) {
@@ -181,7 +189,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		}
 	};
 	controller.groupsDelete = function(id, cb) {
-		controller.invoke(sb.urls.GROUPS_DELETE, {id:id}, cb);
+		controller.invoke(sb.urls.GROUPS_DELETE, {id:id}, cb, cb);
 	};
 	
 	controller.changeDefaultCompany = function(id,cb, errCb) {
@@ -206,7 +214,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 				color:E.from_color(v.color)
 			};
 		});
-		controller.invoke(sb.urls.LEVELS_UPDATE, data, cb);
+		controller.invoke(sb.urls.LEVELS_UPDATE, data, cb, cb);
 	};
 
 

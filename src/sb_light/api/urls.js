@@ -102,6 +102,7 @@ define(['sb_light/globals'], function(sb) {
 		DASHBOARD_CREATE :				{url: "/dashboards/create.js", post:true},
 		DASHBOARD_UPDATE :				{url: "/dashboards/%id%/update.js", deleteId:true, post:true},
 		DASHBOARD_DESTROY :				{url: "/dashboards/%id%/destroy.js", deleteId:true, post:true},
+		DASHBOARD_SHARE :				{url: "/dashboards/%id%/share.js",  deleteId:true, post:true, normalParams:true},
 		
 		EXPORTS_CREATE :			{url: "/exports/%id%/create.js"},
 		EXPORTS_REPORT :			{url: "/exports/%id%/create.js"},
@@ -192,6 +193,10 @@ define(['sb_light/globals'], function(sb) {
 		USERS_DELETE: 				{url: "/users/%id%/delete_user.js", deleteId:true},		
 		USERS_REMOVE_MEMBERSHIP: 	{url: "/users/%id%/delete_membership.js"},
 		USERS_CHANGE_MEMBERSHIP: 	{url: "/users/%id%/update_membership.js", deleteId: true},
+		USERS_CALENDAR_TOKEN:		{url: "/users/enable_todo_calendar.js"},
+		USERS_SEND_REPORT:			{url: "/users/send_report.js"},
+		USERS_DOWNLOAD_SQLITE:		{url: "/exports/sqlite.db"},
+
 		USERS_UPLOAD_LOGO: 			{url: "/users/logo_upload.js"},
 		USERS_REMOVE_LOGO: 			{url: "/users/remove_logo.js"},
 
