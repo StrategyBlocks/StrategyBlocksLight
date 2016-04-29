@@ -378,7 +378,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		//E.debug("User date format: ", udf);
 		return udf;
 	};
-	E.serverDate = function ext_serverDate(d,format) { return E.moment(d,format).format(E.serverFormat); };
+	E.serverDate = function ext_serverDate(d,format) { return E.moment(d,format||(E.isStr(d) ? E.serverFormat: undefined)) .format(E.serverFormat); };
 	E.serverMoment = function ext_serverMoment(d) { return E.moment(d,E.serverFormat); };
 	E.serverToDate = function ext_serverToDate(d) { return E.moment(d,E.serverFormat); };
 	E.month = function ext_date(d, format) { return E.moment(d,format).format("MMM (YYYY)");	};

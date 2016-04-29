@@ -23,10 +23,11 @@ define([
 	'sb_light/models/libraryModel',
 	'sb_light/models/documentsModel',
 	'sb_light/models/dashboardsModel',
+	'sb_light/models/bookmarksModel',
 
 ], function(sb, tags,news,users,blocks,levels,focus,risks,metrics, metricsExpressions, 
 					companies, groups,timezones,healths, milestones, capabilities, history, 
-					builders, library, documents, dashboards) {
+					builders, library, documents, dashboards, bookmarks) {
 
 	'use strict';
 	
@@ -51,6 +52,7 @@ define([
 		library:					{klass:library},
 		documents:					{klass:documents},
 		dashboards:					{klass:dashboards},
+		bookmarks:					{klass:bookmarks},
 	};
 	
 	var models = {};

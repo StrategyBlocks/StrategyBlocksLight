@@ -119,6 +119,17 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			});
 			return tags.length > 0;
 		},
+
+
+		filter_status: function(b, statusList) {
+			if(!statusList || !statusList.length) { return b.status !== "closed"; }
+			if(statusList.indexOf(b.status) > -1) { return true; }
+			if(b.overdue && statusList.indexOf("overdue") > -1) { return true; }
+
+			statusList = E._.filter(statusList, function(v) { return v !== "closed"; });
+
+			return statusList.length === 0; 
+		},
 		//********************************************************************************
 
 

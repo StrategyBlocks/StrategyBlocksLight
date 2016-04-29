@@ -389,25 +389,6 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 
 
 	
-	//only used for settings where we want to check the single value in a group of many
-	//e.g., State.value(type) = <key 1>!<value 1>-<key 2>!<value 2>-...
-	// 1223_232_222!bp-2232-223-233!bk-...
-	state.getStateKey = function(type, key) {
-		//$sblog("Get Value Key: ", type, key);
-		var val = sb.urls.s_to_o(state.state(type));
-		return val[key] || null;
-	};
-	
-	state.setStateKey = function(type, key, value) {
-		var val = sb.urls.s_to_o(state.state(type));
-		if(value === null) {
-			delete val[key];
-		} else {
-			val[key] = value;
-		}
-		state.state(type, sb.urls.o_to_s(val));
-	};
-	
 
 	
 	state.addTimestamps = function(params) {

@@ -1033,29 +1033,24 @@ define(['sb_light/globals',
 	};
 
 	q.defaultBlockType = function(type) {
-		ST.initState("blockType", "status");
+		var ds = ST.cookie("displaySettings");
+		var bt = ds.blockType || "status";
+		// ST.initState("blockType", "status");
 		
 		var kn = type || null;
 		var types = sb.consts.blockTypes();
-		var val = types.findKey("key", ST.state("blockType")).value;
+		var val = types.findKey("key", bt).value;
 		val = val || types[0];
 		return kn ? val[kn] : val;
 		
 	};
 
 	q.blockType = function(path) {
-		//make sure this property exists before we use it. 
-		ST.initState("blockType", "status");
-		ST.initState("blockSettings", "");
+		var defaultType = q.defaultBlockType("key");
+		var blockSettings = ST.cookie("blockSettings");
+		var bs = blockSettings[path] || {};		
 
-		//var types = sb.consts.blockTypes({key:"shortkey"});
-
-		var defaultType = q.defaultBlockType("shortkey");
-		var localType = ST.getStateKey("blockSettings", path);
-		if(localType) {
-			localType = localType.match(/b\w/)[0];
-		}
-		return localType || defaultType;
+		return bs.blockType || defaultType;
 	};
 
 	q.canEditBlock = function(b) {
@@ -1504,31 +1499,6 @@ define(['sb_light/globals',
 
 		return superRoot.list.length ? superRoot.list[0] : null;
 	};
-
-
-	// q.defaultBlockType = function(type) {
-	// 	var kn = type || null;
-	// 	var types = sb.consts.blockTypes();
-	// 	var val = types.findKey("key", ST.state("blockType")).value;
-	// 	val = val || types[0];
-	// 	return kn ? val[kn] : val;
-		
-	// };
-
-	// q.blockType = function(path) {
-	// 	//make sure this property exists before we use it. 
-	// 	ST.initState("blockType", "status");
-	// 	ST.initState("blockSettings", "");
-
-	// 	var types = sb.consts.blockTypes({key:"shortkey"});
-
-	// 	var defaultType = q.defaultBlockType("shortkey");
-	// 	var localType = ST.getStateKey("blockSettings", path);
-	// 	if(localType) {
-	// 		localType = localType.match(/b\w/)[0];
-	// 	}
-	// 	return localType || defaultType;
-	// }
 
 	return q;
 });

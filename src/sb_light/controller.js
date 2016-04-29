@@ -29,6 +29,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 
 
+	controller.createBookmark = function(o, cb) {
+		controller.invoke(sb.urls.BOOKMARK_CREATE, o, cb,cb);
+	};
+
+	controller.updateBookmark = function(o, cb) {
+		controller.invoke(sb.urls.BOOKMARK_UPDATE, o, cb,cb);
+	};
+	controller.deleteBookmark = function(id, cb) {
+		controller.invoke(sb.urls.BOOKMARK_DELETE, {id:id}, cb,cb);
+	};
+
+
+
 	controller.forgotPassword =  function(email,cb,errCb) {
 		controller.invoke(sb.urls.LOGIN_FORGOT_PASSWORD, {username:email}, cb,errCb, sb.state.invalid);
 	};
@@ -104,6 +117,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.metricCreate = function( changes, cb) {
 		controller.invoke(sb.urls.METRICS_CREATE,changes, cb,cb);
 	};
+	controller.metricDelete = function( id, cb) {
+		controller.invoke(sb.urls.METRICS_DESTROY,{id:id}, cb,cb);
+	};
 	controller.metricAttach = function( mid, bid, cb) {
 		controller.invoke(sb.urls.METRICS_ATTACH_BLOCK,{id:bid, "metric_id":mid}, cb,cb);
 	};
@@ -122,14 +138,17 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		// controller.invoke(sb.urls.METRICS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
 	};
 
-	controller.riskCreate = function( changes, cm) {
-		controller.invoke(sb.urls.RISKS_CREATE,changes, cm,cm);
+	controller.riskCreate = function( changes, cb) {
+		controller.invoke(sb.urls.RISKS_CREATE,changes, cb,cb);
 	};
-	controller.riskUpdate = function( changes, cm) {
-		controller.invoke(sb.urls.RISKS_UPDATE,changes, cm,cm);
+	controller.riskUpdate = function( changes, cb) {
+		controller.invoke(sb.urls.RISKS_UPDATE,changes, cb,cb);
 	};
-	controller.riskUpdateStatus = function( changes, cm) {
-		controller.invoke(sb.urls.RISKS_UPDATE_STATUS,changes, cm,cm);
+	controller.riskDelete = function( id, cb) {
+		controller.invoke(sb.urls.RISKS_DESTROY,{id:id}, cb,cb);
+	};
+	controller.riskUpdateStatus = function( changes, cb) {
+		controller.invoke(sb.urls.RISKS_UPDATE_STATUS,changes, cb,cb);
 	};
 	controller.riskUpdateGroups = function(id, groups, cb) {
 		controller.invoke(sb.urls.RISKS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);

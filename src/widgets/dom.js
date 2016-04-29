@@ -94,6 +94,7 @@ define([
 			this.__watchers = {
 				"state":{},
 				"context":{},
+				"cookie": {},
 				"data":{}
 			};
 
@@ -297,7 +298,7 @@ define([
 			var args = E.slice(arguments, 2);
 			var ss = this.__watchers[type];
 			if(!ss) {
-				// this._consoleLogPages("DOM:WATCH", type, this.id, ss);
+				// self._consoleLogPages("DOM:WATCH", type, this.id, ss);
 			}
 			var df = this.bind(funcName);
 			args.forEach(function(v) {

@@ -40,6 +40,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			
 			ST.registerModel(this, this._urlDef, this._handleUpdate.bind(this));
 			ST.watchContext("session", this._handleSession.bind(this));
+			ST.watchCookie(name+"Filters", this._handleFilters.bind(this));
 		},
 	
 		reset: function(publish) {
@@ -76,7 +77,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 				}
 				return null;
 			} 
-			return this.rawArray()
+			return this.rawArray();
 		},
 		
 		raw: function() {
@@ -86,12 +87,11 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			return this._modelArray;
 		},
 
-		filters: function(fo) {
-			if(arguments.length) {
-				ST.cookie(this.name + "_filters", fo);
-				this._publish();
-			}
-			return ST.cookie(this.name + "_filters");
+		_handleFilters: function() {
+			this._publish();
+		},
+		filters: function() {
+			return ST.cookie(this.name + "Filters");
 		},
 
 
@@ -148,7 +148,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 
 				}
 				// console.log("FAIL WTF?", fk,fv,el.id, el[fk]); 
-				return false
+				return false;
 			});
 			el.FILTER_SHOW = show;
 			return show; 

@@ -33,6 +33,7 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_METRICS_EXPRESSIONS: 		{url: "/metrics/calculation_functions.js", 	post:false},
 		MODEL_DOCUMENTS: 	{url: "/documents.js", 					post:false},
 		MODEL_DASHBOARDS: 	{url: "/dashboards.js", 				post:false},
+		MODEL_BOOKMARKS: 	{url: "/saved_client_states/index.js", 	post:false},
 
 
 			
@@ -69,8 +70,8 @@ define(['sb_light/globals'], function(sb) {
 		BOOKMARK_CREATE_DYNAMIC:		{url: "/saved_client_states/create_dynamic.js"},
 		BOOKMARK_SAVE_DYNAMIC:			{url: "/saved_client_states/%id%/save_dynamic.js", normalParams:true},
 		BOOKMARK_CREATE:				{url: "/saved_client_states/create.js", normalParams:true},
-		BOOKMARK_UPDATE:				{url: "/saved_client_states/%id%/update.js", normalParams:true},
-		BOOKMARK_DELETE:				{url: "/saved_client_states/%id%/delete.js"},
+		BOOKMARK_UPDATE:				{url: "/saved_client_states/%id%/update.js", normalParams:true, deleteId:true},
+		BOOKMARK_DELETE:				{url: "/saved_client_states/%id%/delete.js", deleteId:true},
 				 
 		COMMENT_PROPERTIES_ADD: 		{url: "/blocks/%id%/comment.js", normalParams:true, deleteId:true},
 		COMMENT_PROPERTIES_REMOVE:		{url: "/blocks/%id%/delete_comment.js", normalParams:true, deleteId:true},
@@ -155,7 +156,7 @@ define(['sb_light/globals'], function(sb) {
 
 		
 		METRICS_CREATE:  			{url: "/metrics/create.js"},
-		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js"},
+		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js", deleteId:true},
 		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js", deleteId:true},
 		METRICS_ATTACH_BLOCK:  		{url: "/blocks/attach_metric/%id%.js", normalParams:true, deleteId:true },
 		METRICS_DETACH_BLOCK:  		{url: "/blocks/detach_metric/%id%.js", normalParams:true, deleteId: true },
