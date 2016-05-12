@@ -1,7 +1,7 @@
 
 /*globals define */
 
-define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
+define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _Model, sb, Fuse ) {
 	'use strict';
 
 	var E, Q;
@@ -71,7 +71,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			}
 		},
 
-
+		//initialize the filters with a status so that closed blocks are filtered by default. 
+		filtersInit: function() {
+			var f = this._super();
+			f.status = f.status || [];
+			return f;
+		},
 
 		filteredList: function(type) {
 			return type != "path" ? this._super() : this.filteredTree(); 
@@ -79,7 +84,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 
 
 		filteredTree: function() {
-			var filters = this.filters() || {};
+			var filters = this.filtersInit();
 			var ff = this.filterItem.bind(this, filters);
 			var list = E._.filter(this._pathArray, ff); 
 			var self = this;
@@ -110,7 +115,18 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		},
 
 		filter_search: function(b, searchString) {
-			return true;
+			if(!searchString) {
+				return true;
+			}
+
+			var fuse = new Fuse([b], {
+				keys: ["title", "body"], 
+				id:"id", 
+				include:["score"],
+				threshold:0.3}
+			);
+			var res = fuse.search(searchString); 
+			return res && res.length ? true : false;
 		},
 		filter_tags: function(b, tagsList) {
 			if(!tagsList || !tagsList.length) { return true; }

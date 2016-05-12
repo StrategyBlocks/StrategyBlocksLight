@@ -25,7 +25,6 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 				throw new Error("AbstractModel: Model name must be declared"); 
 			}
 			if(!urlDef) { 
-				console.log("wtf", arguments);
 				throw new Error("AbstractModel: Model urlDef must be declared"); 
 			}
 			
@@ -94,9 +93,16 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			return ST.cookie(this.name + "Filters");
 		},
 
+		//allows models to initialize their own default filter settings (e.g., filter closed blocks when there are no filters set...)
+		filtersInit: function() {
+			var f = this.filters() || {};
+			return f;
+		},
+
+
 
 		filteredList: function() {
-			var filters = this.filters() || {};
+			var filters = this.filtersInit();
 			var ff = this.filterItem.bind(this, filters);
 			var list = E._.filter(this.rawArray(), ff); 
 			// console.log("MODEL", this.name, list.length, JSON.stringify(filters));
@@ -360,7 +366,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			// console.log("Model Timestamp", this.name, this._timestamp);
 			E.map(this._model, (function(v) {
 				if(!v) {
-					console.log("wtf?", v, self._model);
+					E.warn("Unexpectedly missing an element in the model ", v, self._model);
 				}
 				//this can be used for performance reasons to check whether a model has been updated
 				v.TIMESTAMP = ts;

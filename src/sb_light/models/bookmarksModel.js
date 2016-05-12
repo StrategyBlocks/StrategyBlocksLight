@@ -72,7 +72,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				}
 				d.created_moment  = E.moment(d.created_at, E.unixFormat);
 
-				console.log("STATE", d.state, "\n", orig);
 			});	
 
 		},

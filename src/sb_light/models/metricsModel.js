@@ -47,42 +47,69 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 					range_end: v.range_end,
 					below_tolerance_good: v.below_tolerance_good,
 					percentage: v.percentage
-				}
+				};
 			});
 
 		},
 
-
-		hierarchy: function(mid, nid, cb) {
-			var name = "hierarchy_"+mid+"_"+nid;
-			
-			//ONLY fetch is this is a hierarchical metric
+		hierarchy: function(mid, nidList, cb) {
+			var self = this; 
 			var m = this._model[mid];
+			//ONLY fetch is this is a hierarchical metric
 			if(!m.hierarchy) { return null; }
 
-			var func = this._handleHierarchy.bind(this,mid, nid );
-			var data = this._hierarchyCache[name];
+			nidList = E.isArr(nidList) ? nidList : [nidList];
+			var fetchList = [];
+			var func = this._handleHierarchy.bind(this,mid, nidList );
 
-			if(!data) {
-				this._queue[name] = this._queue[name] || [];
-				this._queue[name].push(cb || E.noop);
+			E.each(nidList, function(nid) {
+				var name = "hierarchy_"+mid+"_"+nid;
+				var data = self._hierarchyCache[name];
 				
-				if(this._queue[name].length == 1) {
-					sb.controller.metricHierarchy(mid, nid, func);
-				}
-				return null;
-			} 
-			return data;
+				if(!data) {
+					if(!self._queue[name] ) {
+						fetchList.push(nid);
+					}
+					self._queue[name] = self._queue[name] || [];
+					self._queue[name].push(cb || E.noop);
+				} 
+			});
+
+			if(fetchList.length) {
+				sb.controller.metricHierarchy(mid, String(fetchList), func);
+				return null;	
+			}
+
+			if(nidList.length > 1) {
+				var res = {};
+				E.each(nidList, function(nid) {
+					var name = "hierarchy_"+mid+"_"+nid;
+					res[nid] = self._hierarchyCache[name];
+				});
+				return res;
+			} else {
+				var name = "hierarchy_"+mid+"_"+nidList[0];
+				return  this._hierarchyCache[name];
+			}
+
 		},
 
-		_handleHierarchy: function(mid, nid, resp) {
-			var name = "hierarchy_"+mid+"_"+nid;
-			var data = this._hierarchyCache[name] = (resp  && resp.result && resp.result[nid] ) || this._hierarchyCache[name] || null;
+		_handleHierarchy: function(mid, nidList, resp) {
+			var self = this; 
 
-			var cbs = this._queue[name] || [];
-			while(cbs.length) {
-				cbs.pop()(data);
-			}
+			resp = resp && resp.result;
+			if(!resp) { return; }
+
+			E.each(nidList, function(nid) {
+				var name = "hierarchy_"+mid+"_"+nid;
+				var data = self._hierarchyCache[name] = resp[nid] || self._hierarchyCache[name] || null;
+				var cbs = self._queue[name] || [];
+				while(cbs.length) {
+					var f = cbs.pop();
+					sb.queue.buffer(f, "metricModel"+name, 200, data);
+				}
+			});
+
 		}
 
 

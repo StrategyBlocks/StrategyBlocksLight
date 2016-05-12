@@ -1,3 +1,4 @@
+
 /* globals define, $, d3, require */
 'use strict';
 
@@ -244,6 +245,7 @@ define([
 		},
 
 		_rebuildBeforeDrawList: function() {
+			this.__beforeDrawFunctions = this.__beforeDrawFunctions || [];
 			this.__beforeDrawList = this.__beforeDrawFunctions.concat(this.__postBeforeDrawFunctions);
 		},
 
@@ -482,6 +484,10 @@ define([
 
 				el.tooltipster(opts);
 			});
+			this.$.find("[title]").each(function() {
+				$(this).tooltipster();
+			});
+
 			this.beforeDrawDone();
 		},
 

@@ -441,7 +441,7 @@ define(['sb_light/globals',
 	q.metricActual = function(id, hierarchyData) {
 		var m = hierarchyData ||  q.metric(id);
 		var ma = m.last_actual_value;
-		return q.formatMetric(m, ma);
+		return q.formatMetric(q.metric(id), ma);
 
 	};
 
@@ -449,7 +449,7 @@ define(['sb_light/globals',
 	q.metricTarget = function(id, hierarchyData) {
 		var m = hierarchyData ||  q.metric(id);
 		var mt = m.last_target_value;
-		return q.formatMetric(m, mt);
+		return q.formatMetric(q.metric(id), mt);
 	};
 
 	q._trendMap = {
@@ -494,7 +494,9 @@ define(['sb_light/globals',
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
-		return q._metricStatusClass[m.status];
+		var status = hierarchyData ? hierarchyData.status :  m.status;
+
+		return q._metricStatusClass[status];
 	};
 
 
@@ -503,7 +505,8 @@ define(['sb_light/globals',
 		var m = q.metric(id);
 		if(!m) { return ""; }
 
-		return "<i class='" + (q._metricStatusIcon[m.status] + " " + q._metricStatusClass[m.status]) + "'></i>";
+		var status = hierarchyData ? hierarchyData.status :  m.status;
+		return "<i class='" + (q._metricStatusIcon[status] + " " + q._metricStatusClass[status]) + "'></i>";
 	};
 
 
@@ -721,7 +724,6 @@ define(['sb_light/globals',
 			return el;
 		});
 
-		// console.log("MetricsChart Timer: ", E.moment().diff(timer));
 		return res;
 	};
 
@@ -800,7 +802,6 @@ define(['sb_light/globals',
 			};
 		});
 
-		// console.log("ProgressChart Timer: ", E.moment().diff(timer));
 		return res;
 	};
 
