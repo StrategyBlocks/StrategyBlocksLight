@@ -120,8 +120,8 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.metricDelete = function( id, cb) {
 		controller.invoke(sb.urls.METRICS_DESTROY,{id:id}, cb,cb);
 	};
-	controller.metricAttach = function( mid, bid, cb) {
-		controller.invoke(sb.urls.METRICS_ATTACH_BLOCK,{id:bid, "metric_id":mid}, cb,cb);
+	controller.metricAttach = function( list, bid, cb) {
+		controller.invoke(sb.urls.METRICS_ATTACH_BLOCK,{id:bid, "metric_ids":String(list)}, cb,cb);
 	};
 	controller.metricDetach = function( mid, bid, cb) {
 		controller.invoke(sb.urls.METRICS_DETACH_BLOCK,{id:bid, "metric_id":mid}, cb,cb);
@@ -215,7 +215,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.USERS_CHANGE_DEFAULT_COMPANY, {id:sb.state.state("user_id"),default_company_id:id}, cb,errCb);
 	};
 	controller.changeCompanyMembership = function(changes, cb, errCb) {
-		controller.invoke(sb.urls.USERS_CHANGE_MEMBERSHIP, changes, cb,errCb);
+		controller.invoke(sb.urls.USERS_CHANGE_MEMBERSHIP, changes, cb, errCb||cb);
 	};
 	controller.toggleUserGroup = function(id, groupId, selected, cb, errCb) {
 		if(selected) {
@@ -223,6 +223,10 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		} else {
 			controller.invoke(sb.urls.USERS_REMOVE_GROUP, {id:id, group_id:groupId}, cb,errCb);
 		}
+	};
+
+	controller.updateCapabilities = function(o, cb) {
+		controller.invoke(sb.urls.CAPABILITIES_UPDATE, o, cb,cb);
 	};
 
 
