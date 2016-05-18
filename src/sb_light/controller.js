@@ -54,9 +54,13 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.blockManageChildren = function( changes, cb) {
 		controller.invoke(sb.urls.BLOCKS_MANAGE_CHILDREN,changes, cb,cb);
 	};
-	controller.blockClose = function(id, closeObj, cb) {
+	controller.blockClose = function(o, cb) {
 		//{"rating":[0-5], "comment":String}
-		controller.invoke(sb.urls.BLOCKS_CLOSE, sb.ext.mixin({id:id}, closeObj), cb,cb);
+		controller.invoke(sb.urls.BLOCKS_CLOSE, o, cb,cb);
+	};
+	controller.blockUnclose = function(id, cb) {
+		//{"rating":[0-5], "comment":String}
+		controller.invoke(sb.urls.BLOCKS_UNCLOSE, {id:id}, cb,cb);
 	};
 	controller.blockMove = function(args, cb) {
 		controller.invoke(sb.urls.BLOCKS_MOVE, args, cb,cb);

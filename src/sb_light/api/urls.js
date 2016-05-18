@@ -39,6 +39,8 @@ define(['sb_light/globals'], function(sb) {
 			
 		BLOCKS_CONTEXT:					{url: "/blocks/context/%id%.js", 				post:false},
 		BLOCKS_CLOSE: 					{url: "/blocks/close/%id%.js", 					post:true,		deleteId: true},
+		BLOCKS_UNCLOSE:					{url: "/blocks/unclose/%id%.js", deleteId:true},
+
 		BLOCKS_MANAGE_CHILDREN: 		{url: "/blocks/manage_children/%id%.js", 		post:true,		deleteId: true},
 		BLOCKS_DELETE :					{url: "/blocks/%type%/%id%.js", 				post:true,		normalParams:true},
 		BLOCKS_DOCUMENTS: 				{url: "/blocks/documents/%id%.js",				post:false},
