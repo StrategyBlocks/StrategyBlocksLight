@@ -29,6 +29,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		},
 		_massageDepth:function(p, el, i) {
 			el = E.isStr(el) ? this._model[el] : el;
+			if(!el) { return; }
+			
 			el.depth = p ? (p.depth +1) : 0;
 			el.level_sort = p ? (p.level_sort	 + "_" + i) : "L1";
 			if(el.children) {

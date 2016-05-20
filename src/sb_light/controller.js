@@ -157,6 +157,13 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.riskUpdateGroups = function(id, groups, cb) {
 		controller.invoke(sb.urls.RISKS_UPDATE_GROUPS, {id:id, expression:groups}, cb, cb);
 	};
+	controller.riskAddImpact = function(rid, bid, cb) {
+		controller.invoke(sb.urls.RISKS_ADD_IMPACT, {id:rid, strategy_item_id:bid}, cb,cb);
+	}
+	controller.riskRemoveImpact = function(rid, bid, cb) {
+		controller.invoke(sb.urls.RISKS_REMOVE_IMPACT, {id:rid, strategy_item_id:bid}, cb,cb);
+	}
+
 
 	controller.riskMatrixSizeUpdate = function(size, cb) {
 		var args = {size:size};
@@ -246,6 +253,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 
 
+	controller.updateFocusAreaList = function(list, cb) {
+		controller.invoke(sb.urls.FOCUS_UPDATE_ALL, list, cb,cb);
+	};
 	controller.updateFocusArea = function(data, cb) {
 		if(data.id === "new") {
 			delete data.id;
@@ -254,6 +264,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 			controller.invoke(sb.urls.FOCUS_UPDATE, data, cb,cb);
 		}
 	};
+
 	controller.deleteFocusArea = function(id, cb) {
 		controller.invoke(sb.urls.FOCUS_DELETE, {id:id}, cb,cb);
 	};

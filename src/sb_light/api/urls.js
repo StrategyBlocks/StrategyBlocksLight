@@ -113,6 +113,7 @@ define(['sb_light/globals'], function(sb) {
 		
 		FOCUS_CREATE :				{url: "/focus/create.js"},
 		FOCUS_UPDATE: 				{url: "/focus/update/%id%.js", deleteId: true},
+		FOCUS_UPDATE_ALL: 			{url: "/focus/update_from_array.js"},
 		FOCUS_DELETE :				{url: "/focus/destroy/%id%.js", deleteId: true},
 		FOCUS_REPARENT :			{url: "/focus/reparent/%id%.js"},
 		
@@ -131,8 +132,8 @@ define(['sb_light/globals'], function(sb) {
 		RISKS_DESTROY :				{url: "/risks/%id%/destroy.js"},
 		RISKS_UPDATE :				{url: "/risks/%id%/update.js"},
 		RISKS_UPDATE_STATUS: 		{url: "/risks/%id%/update_status.js", post:true, deleteId:true},
-		RISKS_ADD_IMPACT :			{url: "/risks/%id%/add_impact.js"},
-		RISKS_REMOVE_IMPACT: 		{url: "/risks/%id%/remove_impact.js"},
+		RISKS_ADD_IMPACT :			{url: "/risks/%id%/add_impact.js", deleteId:true, normalParams:true},
+		RISKS_REMOVE_IMPACT: 		{url: "/risks/%id%/remove_impact.js", deleteId:true, normalParams:true},
 
 
 
