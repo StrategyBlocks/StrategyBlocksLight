@@ -367,7 +367,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	E.maxDate = function ext_maxDate(dates) { 	return MOMENT.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.rangeDate = function ext_maxDate(date, start,end) { 	return E.minDate(start, E.maxDate(end, date)); };
 	E.serverFormat = "YYYY/MM/DD";
-	E.unixFormat = "YYYY-MM-DD HH:mm:ss Z";
+	E.unixFormat = "YYYY/MM/DD HH:mm:ss Z";
 	
 	//07 Jun 2015 22:08 +0000
 	E.adminFormat = "DD MMM YYYY HH:mm Z";
