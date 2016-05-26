@@ -349,10 +349,11 @@ define([
 		},
 
 		stateValid:function() {
+			if(!this.__opts) { return; }
 			//everything needs a state function. The default is "all" which allows any state
-			var sf = this.__opts.stateFunction;
+			var sf = this.__opts && this.__opts.stateFunction;
 			sf = sf ? ST[sf] : null;
-			if(!sf) {
+			if(!sf ) {
 				throw new Error("DOM:Error (id:"  + this.id + ") has no defined stateFunction.");
 			}
 			return sf();
@@ -408,7 +409,7 @@ define([
 
 			if(arguments.length > 1 &&  this.__opts.hasOwnProperty(str)) {
 				//don't trigger redraw unless things have changed.
-				if(this.__opts[str] !== val) { 
+				if(!E._.eq(this.__opts[str], val)) { 
 					this.__opts[str] = val;
 					if(handlerFunc) { 
 						var f = E.isStr(handlerFunc) ? this.bind(handlerFunc) : handlerFunc;
@@ -496,7 +497,7 @@ define([
 			var c = this.__children;
 			opts = E.merge(opts, {root:el});
 
-			redraw = (arguments.length < 3) || (redraw === true);
+			redraw = (arguments.length < 3) || (redraw !== false);
 
 			var src = opts.require || el.data("require"); 
 			el.data("require", null);
@@ -655,7 +656,10 @@ define([
 						this.drawBusy();
 					} else {
 						//THIS IS INVALID -- REMOVE ALL ITEMS
-						this._consoleLogPages( ("CAN'T Draw? " + this.__dirty + " "), this.id);
+						this._consoleLogPages( ("CAN'T Draw? " + this.__dirty + " "), this.id, " created: ", this.__created, " busy: ",  this.__busy, 
+							" beforeDrawWaiting: ", this.__beforeDrawWaiting, " creating(len): ", E.length(this.__creatingChildren),
+							" modelvalid: ", this.modelsValid(), " needsdata: ", this.needsData(), " stateValid: ", this.stateValid()
+						);
 
 						if(this.__dirty) {
 							this._consoleLogPages("DOM IS INVALID:", this.id);
@@ -713,8 +717,9 @@ define([
 		},
 
 		_consoleLogPages: function(str, id) {
-			if(id && id.match(/DON"T SHOW/)) {
-				E.debug(str, id);
+			var args = E.slice(arguments);
+			if(id && id.match(/DONT_DRAW/)) {
+				E.debug.apply(E, args);
 			}
 		}
 

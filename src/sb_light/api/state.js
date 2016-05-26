@@ -133,7 +133,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		var s = watching[group];
 		//var list = s[type] || [];
 		var value = state[group](type);
-		// E.debug("Publish: ", type, value);
+		E.debug("Publish: ", type, value);
 		E.each(s[type], function(v) {
 			v.callback.bindDelay(null, 0/*(v.urgent?0:50)*/, value, type);
 		});
@@ -380,7 +380,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		_updateModels(data);
 
 		if(session != state.context("session")) {
-			state.publish.bindDelay(state, 100, "context", "session");
+			state.publish.bindDelay(state, 300, "context", "session");
 		}
 
 		return state.authorized();
@@ -406,8 +406,8 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			if(!state.authorized() || uid != storage.state.user_id || cid != storage.state.company_id) {
 				storage.state.user_id = data.user ? data.user.id : null;
 				storage.state.company_id = data.company ? data.company.id : storage.state.company_id;
-				state.publish.bindDelay(state, 100, "state", "user_id");
-				state.publish.bindDelay(state, 100, "state", "company_id");
+				state.publish.bindDelay(state, 300, "state", "user_id", true);
+				state.publish.bindDelay(state, 300, "state", "company_id", true);
 			}
 			
 			storage.context.user = data.user || null;
@@ -494,3 +494,4 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 	return state;
 	
 });
+		

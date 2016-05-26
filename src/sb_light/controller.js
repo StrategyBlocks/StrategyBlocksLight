@@ -329,6 +329,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(url, file, cb, cb);
 	};
 
+	controller.ssoGoogleLogin = function() {
+		window.open(sb.urls.SSO_GOOGLE_REDIRECT.url, "_blank");
+	};
+	controller.ssoSalesforceLogin = function() {
+		window.open(sb.urls.SSO_SALESFORCE_REDIRECT.url, "_blank");
+	};
+	controller.ssoRefresh = function(cb) {
+		controller.invoke(sb.urls.SSO_REFRESH, null, cb,cb);	
+	};
+	controller.ssoGoogleSearch = function(str, cb) {
+		controller.invoke(sb.urls.SSO_GOOGLE_FILES, {query:str}, cb,cb);	
+	};
+
 	controller.fetch = function(urlObj, args, successCb, errorCb, stateCheck, overrides) {
 		args = args || {};
 		if(urlObj.company) {

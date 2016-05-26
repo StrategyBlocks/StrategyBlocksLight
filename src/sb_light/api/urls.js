@@ -229,8 +229,9 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_SUPPORT:				{ url:"/admin/log_support.js", post:true},
 
 		SSO_REFRESH: 				{ url:"/sso/refresh.js" },
-		SSO_GOOGLE_REDIRECT: 		{ url:"/sso/google_sso_flash_login_redirect.js" },
-		SSO_GOOGLE_FILES: 			{ url:"/sso/google_drive_files.js" },
+		SSO_GOOGLE_REDIRECT: 		{ url:"/sso/google_sso_login_redirect.js?html=true" },
+		SSO_SALESFORCE_REDIRECT: 	{ url:"/sso/salesforce_sso_login_redirect.html?html=true" },
+		SSO_GOOGLE_FILES: 			{ url:"/sso/google_drive_files.js", normalParams:true },
 
 
 		//BUILDER 
