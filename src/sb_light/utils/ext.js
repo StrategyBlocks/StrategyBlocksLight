@@ -314,6 +314,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	
 	};
 
+	E.shorten = function ext_shorten(str, maxLen) {
+		if(!str || str.length < maxLen) { return str; }
+		var size = Math.floor( (maxLen-3) /2);
+		return [str.substr(0,size), "...", str.substr(str.length-size)].join("");
+	};
+
 
 	E._escapeMap = {
 	    "&": "&amp;",

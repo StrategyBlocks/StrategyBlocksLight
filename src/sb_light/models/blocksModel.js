@@ -348,6 +348,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				is_mine: (b.owner_id == uid || b.manager_id == uid),
 				is_real_owner: (b.owner_id==uid),
 				is_real_manager: (b.manager_id == uid),
+				position: pos,
 				can_move_left: (b.is_manager && (pos> 0)),
 				can_move_right: (b.is_manager && p && (pos < p.children.length-1) && p.children.length > 1),
 				can_delete: (b.is_owner && !b.closed),

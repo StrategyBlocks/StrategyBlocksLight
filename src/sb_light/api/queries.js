@@ -104,10 +104,7 @@ define(['sb_light/globals',
 	q.shortCompanyName = function(cid) {
 		var c = q.company(cid);
 		var t = c ? c.name : null;
-		if(t && t.length > 25) {
-			t = t.substr(0,10) + "..." + t.substr(t.length-10);
-		} 
-		return t;
+		return E.shorten(t, 25);
 	};
 
 	q.yearEnd = function() {
