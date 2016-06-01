@@ -544,8 +544,8 @@ define(['sb_light/globals',
 //		targets.push({date:today, value:(m.last_target_value||0)});
 //		actuals.push({date:today, value:(m.last_actual_value||0), comment:"Current Actual"});
 
-		targets.sort(E.sortUnixDate("date", false));
-		actuals.sort(E.sortUnixDate("date", false));
+		targets.sort(E.sortServerDate("date", false));
+		actuals.sort(E.sortServerDate("date", false));
 
 		var targetDatestr = E.values(targets, "date");
 		var actualDatestr = E.values(actuals, "date");
@@ -599,37 +599,37 @@ define(['sb_light/globals',
 		}
 
 
-		var raRange = E.values( (hierarchyData ? hierarchyData.raw_actuals_total : m.raw_actuals).sort(E.sortServerDate("date",false)), "value");
-		var rtRange = E.values( (hierarchyData ? hierarchyData.raw_target_total : m.raw_target).sort(E.sortServerDate("date",false)), "value");
-		var raDomain = E.values( (hierarchyData ? hierarchyData.raw_actuals_total : m.raw_actuals).sort(E.sortServerDate("date",false)), "date", E.serverToDate);
-		var rtDomain = E.values( (hierarchyData ? hierarchyData.raw_target_total : m.raw_target).sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+		// var raRange = E.values( (hierarchyData ? hierarchyData.actuals_total : m.raw_actuals).sort(E.sortServerDate("date",false)), "value");
+		// var rtRange = E.values( (hierarchyData ? hierarchyData.target_total : m.raw_target).sort(E.sortServerDate("date",false)), "value");
+		// var raDomain = E.values( (hierarchyData ? hierarchyData.actuals_total : m.raw_actuals).sort(E.sortServerDate("date",false)), "date", E.serverToDate);
+		// var rtDomain = E.values( (hierarchyData ? hierarchyData.target_total : m.raw_target).sort(E.sortServerDate("date",false)), "date", E.serverToDate);
 
-		var rarRange, rtrRange, ralRange, rtlRange,
-			rarDomain, rtrDomain, ralDomain, rtlDomain,
-			rarScale, rtrScale, ralScale, rtlScale
+		var arRange, trRange, alRange, tlRange,
+			arDomain, trDomain, alDomain, tlDomain,
+			arScale, trScale, alScale, tlScale
 		;
 
 
 		var aScale = d3.time.scale().domain(actualDomain).range(actualRange).clamp(true);
-		var raScale = d3.time.scale().domain(raDomain).range(raRange).clamp(true);
+		// var raScale = d3.time.scale().domain(raDomain).range(raRange).clamp(true);
 
 
 		var tScale = d3.time.scale().domain(targetDomain).range(targetRange).clamp(true);
-		var rtScale = d3.time.scale().domain(rtDomain).range(rtRange).clamp(true);
+		// var rtScale = d3.time.scale().domain(rtDomain).range(rtRange).clamp(true);
 
 
 		var upperScale = d3.time.scale().domain(targetDomain).range(upperRange).clamp(true);
 		var lowerScale = d3.time.scale().domain(targetDomain).range(lowerRange).clamp(true);
 
-		var scales = [aScale, tScale, raScale, rtScale, upperScale, lowerScale];
+		var scales = [aScale, tScale/*, raScale, rtScale*/, upperScale, lowerScale];
 		if(hierarchyData) {
-			var rarList = E._.clone(hierarchyData.raw_actuals_rollup.sort(E.sortServerDate("date",false)));
-			var rtrList = E._.clone(hierarchyData.raw_target_rollup.sort(E.sortServerDate("date",false)));
-			var ralList = E._.clone(hierarchyData.raw_actuals.sort(E.sortServerDate("date",false)));
-			var rtlList = E._.clone(hierarchyData.raw_target.sort(E.sortServerDate("date",false)));
+			var arList = E._.clone(hierarchyData.actuals_rollup.sort(E.sortServerDate("date",false)));
+			var trList = E._.clone(hierarchyData.target_rollup.sort(E.sortServerDate("date",false)));
+			var alList = E._.clone(hierarchyData.actuals.sort(E.sortServerDate("date",false)));
+			var tlList = E._.clone(hierarchyData.target.sort(E.sortServerDate("date",false)));
 
 			//make sure each list has at least two items
-			E.each([rarList, rtrList, ralList, rtlList], function(list) {
+			E.each([arList, trList, alList, tlList], function(list) {
 				if(!list.length) {
 					list.push({date:E.serverDate(E.today()), value:0});
 				}
@@ -639,25 +639,25 @@ define(['sb_light/globals',
 			});
 
 			// Rollup and local raw values
-			rarRange = E.values(rarList, "value");
-			rtrRange = E.values(rtrList, "value");
-			ralRange = E.values(ralList, "value");
-			rtlRange = E.values(rtlList, "value");
+			arRange = E.values(arList, "value");
+			trRange = E.values(trList, "value");
+			alRange = E.values(alList, "value");
+			tlRange = E.values(tlList, "value");
 
-			rarDomain = E.values(rarList, "date", E.serverToDate);
-			rtrDomain = E.values(rtrList, "date", E.serverToDate);
-			ralDomain = E.values(ralList, "date", E.serverToDate);
-			rtlDomain = E.values(rtlList, "date", E.serverToDate);
+			arDomain = E.values(arList, "date", E.serverToDate);
+			trDomain = E.values(trList, "date", E.serverToDate);
+			alDomain = E.values(alList, "date", E.serverToDate);
+			tlDomain = E.values(tlList, "date", E.serverToDate);
 
 
 
 	
-			rarScale = d3.time.scale().domain(rarDomain).range(rarRange).clamp(true);
-			ralScale = d3.time.scale().domain(ralDomain).range(ralRange).clamp(true);
-			rtrScale = d3.time.scale().domain(rtrDomain).range(rtrRange).clamp(true);
-			rtlScale = d3.time.scale().domain(rtlDomain).range(rtlRange).clamp(true);
+			arScale = d3.time.scale().domain(arDomain).range(arRange).clamp(true);
+			alScale = d3.time.scale().domain(alDomain).range(alRange).clamp(true);
+			trScale = d3.time.scale().domain(trDomain).range(trRange).clamp(true);
+			tlScale = d3.time.scale().domain(tlDomain).range(tlRange).clamp(true);
 
-			scales.put(rarScale,ralScale,rtrScale,rtlScale);
+			scales.put(arScale,alScale,trScale,tlScale);
 		}
 
 		if(!m.interpolate_values) {
@@ -677,16 +677,16 @@ define(['sb_light/globals',
 			td:targetDates,			tv:targetValues,
 			ad:actualDates,			av:actualValues,
 			as:aScale,				ts:tScale,
-			ras:raScale,			rts:rtScale,
+			// ras:raScale,			rts:rtScale,
 			us:upperScale,			ls:lowerScale,
 			uv:upperValues,			lv:lowerValues
 		};
 
 		if(hierarchyData) {
-			res.rars = rarScale;
-			res.rals = ralScale;
-			res.rtrs = rtrScale;
-			res.rtls = rtlScale;
+			res.ars = arScale;
+			res.als = alScale;
+			res.trs = trScale;
+			res.tls = tlScale;
 		}
 
 		res.series = E.map(datestr, function(ds) {
@@ -705,13 +705,13 @@ define(['sb_light/globals',
 				dateStr: ds,
 				dateNum: dn,
 				target:t,
-				raw_target: rtScale(d),
-				raw_target_rollup: (rtrScale ? rtrScale(d) : null),
-				raw_target_local: (rtlScale ? rtlScale(d) : null),
+				// raw_target: rtScale(d),
+				target_rollup: (trScale ? trScale(d) : null),
+				target_local: (tlScale ? tlScale(d) : null),
 				actual:a,
-				raw_actual: raScale(d),
-				raw_actual_rollup: (rarScale ? rarScale(d) : null),
-				raw_actual_local: (ralScale ? ralScale(d) : null),
+				// raw_actual: raScale(d),
+				actual_rollup: (arScale ? arScale(d) : null),
+				actual_local: (alScale ? alScale(d) : null),
 				upper:u,
 				lower:l,
 				variance:v,

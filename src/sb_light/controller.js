@@ -134,7 +134,11 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.METRICS_DOWNLOAD,o, cb,cb, null, {dataType:"text"});
 	};
 	controller.metricHierarchy = function( mid, nid, cb, errCb) {
-		controller.invoke(sb.urls.METRICS_HIERARCHY,{id:mid, "node_ids":nid}, cb,errCb);
+		var o  = {id:mid};
+		if(nid) {
+			o.node_ids = nid;
+		}
+		controller.invoke(sb.urls.METRICS_HIERARCHY,o, cb,errCb);
 	};
 	controller.metricUpdateGroups = function(id, groups, cb) {
 		var changes = {id:id, group_expression:groups};

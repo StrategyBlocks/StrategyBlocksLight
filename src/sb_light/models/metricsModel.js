@@ -76,7 +76,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			});
 
 			if(fetchList.length) {
-				sb.controller.metricHierarchy(mid, String(fetchList), func);
+				console.log("Fetching HIERARCHY", mid, nidList,this._queue);
+				sb.controller.metricHierarchy(mid, /*String(fetchList)*/null, func);
 				return null;	
 			}
 
