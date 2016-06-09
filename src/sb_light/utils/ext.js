@@ -367,6 +367,22 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	E.weeksDiff = function ext_weeksDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"weeks");};
 	E.monthsDiff = function ext_monthsDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"months");};
 	E.yearsDiff = function ext_yearsDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"years");};
+
+	//returns a string showing the time difference in the most logical format
+	E.dateDifference =	function ext_difference(da,db) {
+		var dd = E.roundTo(Math.abs(da.diff(db, "days", true)),0);
+		var wd = E.roundTo(Math.abs(da.diff(db, "weeks", true)),0);
+		var md = E.roundTo(Math.abs(da.diff(db, "months", true)),0);
+		var yd = E.roundTo(Math.abs(da.diff(db, "years", true)),0);
+
+		//show days if less than 2 weeks
+		if(dd < 14) { return dd + " days"; }
+		if(wd < 10) { return wd + " weeks"; }
+		if(md < 18) { return md + " months"; }
+
+		return yd + " years";
+	}
+
 	E.daysFrom = function ext_daysFrom(da, db, noPrefix) {return E.momentFn(db).from(da, noPrefix||false); };
 	E.today = function ext_today() { return new Date(); };
 	E.minDate = function ext_minDate(dates) { 	return MOMENT.min.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
@@ -657,10 +673,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		var a = actual; 
 		var b = target;
 
+
 		if 			(a === b) 	{ v = 0; }
 		else if 	(b === 0) 	{ v = a; }
 		else 				 	{ v = a/b - 1;}
 
+		// console.log("VARIANCE", a, b, v);
 		return E.roundTo(E.range(-1, v, 1) * 100, 1);
 	};
 

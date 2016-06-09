@@ -23,7 +23,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			E.each(this._model, function(v) {
 				v.is_mine = v.owner_id == uid || v.manager_id == uid;
 				v.status = v.status.toLowerCase();
-				v.statusNum = v.status == "inactive" ? 1 : (v.status == "warning" ? 2 : (v.status == "triggered" ? 3 : 0));
+				v.d3statusNum = v.status == "inactive" ? 1 : (v.status == "warning" ? 2 : (v.status == "triggered" ? 3 : 0));
 				
 				//add new keys for each textarea item and add "<br/>" for each line break.
 				E.each(["description", "impact_description", "mitigation_steps", "response_steps"], function(key) {
@@ -39,6 +39,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				if(!v.response_steps_html) {
 					v.response_steps_html = "<em>No response steps.</em>";
 				}
+
+
+				v.message = [v.impact_description_html, v.impact_description_html, v.mitigation_steps_html, v.response_steps_html];
 
 			});
 

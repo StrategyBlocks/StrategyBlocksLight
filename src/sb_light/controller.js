@@ -74,6 +74,10 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		//"recurse" is expected by server... 
 		controller.invoke(sb.urls.BLOCKS_MAKE_PUBLIC, {id:id, recurse:children}, cb,cb);
 	};
+	controller.blockImport = function(o, cb) {
+		controller.invoke(sb.urls.BLOCKS_IMPORT, o, cb,cb);
+	};
+
 
 
 	controller.comment = function(type, id, message, cb) {
@@ -196,6 +200,11 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 	controller.usersSendReport = function( o, cb) {
 		controller.invoke(sb.urls.USERS_SEND_REPORT,o, cb,cb);
+	};
+
+
+	controller.exportDelete = function(id, cb) {
+		controller.invoke(sb.urls.EXPORTS_DELETE,{id:id}, cb,cb);
 	};
 
 	controller.dashboardsUpdate = function(o, cb) {

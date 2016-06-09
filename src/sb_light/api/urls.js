@@ -44,7 +44,7 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_MANAGE_CHILDREN: 		{url: "/blocks/manage_children/%id%.js", 		post:true,		deleteId: true},
 		BLOCKS_DELETE :					{url: "/blocks/%type%/%id%.js", 				post:true,		normalParams:true},
 		BLOCKS_DOCUMENTS: 				{url: "/blocks/documents/%id%.js",				post:false},
-		BLOCKS_IMPORT 	:				{url: "/blocks/import/%id%.js",					post:true},
+		BLOCKS_IMPORT 	:				{url: "/blocks/import/%id%.js",					post:true, 		deleteId:true, normalParams:true},
 		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/make_public/%id%.js", normalParams:true},
 		//BLOCKS_MOVE_POSITION 			{url: "/blocks/move_position_%dir%/%id%.js"},
 		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true, deleteId: true},
@@ -109,7 +109,7 @@ define(['sb_light/globals'], function(sb) {
 		
 		EXPORTS_CREATE :			{url: "/exports/%id%/create.js"},
 		EXPORTS_REPORT :			{url: "/exports/%id%/create.js"},
-		EXPORTS_DELETE :			{url: "/exports/%id%/destroy.js"},
+		EXPORTS_DELETE :			{url: "/exports/%id%/destroy.js", deleteId:true, normalParams:true},
 		
 		FOCUS_CREATE :				{url: "/focus/create.js"},
 		FOCUS_UPDATE: 				{url: "/focus/update/%id%.js", deleteId: true},

@@ -39,6 +39,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				v.is_manager = E.isBool(v.is_manager) ? v.is_manager : (v.is_manager === "true");
 				v.status = v.status.toLowerCase();
 				v.trend = v.trend.toLowerCase();
+				v.variance = E.variance(v.last_actual_value, v.last_target_value);
 				v.statusNum = v.status == "good" ? 1 : (v.status == "warning" ? 2 : (v.status == "bad" ? 3 : 0)) ;
 				v.trendNum = v.trend == "up" ? 1 : (v.trend == "flat" ? 2 : (v.trend == "down" ? 3 : 0)) ;
 				v.is_mine = (v.owner_id == uid || v.manager_id == uid); 
@@ -76,7 +77,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			});
 
 			if(fetchList.length) {
-				console.log("Fetching HIERARCHY", mid, nidList,this._queue);
+				// console.log("Fetching HIERARCHY", mid, nidList,this._queue);
 				sb.controller.metricHierarchy(mid, /*String(fetchList)*/null, func);
 				return null;	
 			}

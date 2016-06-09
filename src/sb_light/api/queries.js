@@ -22,6 +22,7 @@ define(['sb_light/globals',
 	
 	'use strict';
 	var q = {};
+	var Q = q;
 	
 
 
@@ -995,8 +996,31 @@ define(['sb_light/globals',
 		}
 	};
 
+
+	q.childBlocks = function(b) {
+		b = arguments.length ? Q.block(b) : Q.block();
+		if(!b) { return []; }
+		return E.map(b.children, function(cb) {
+			return Q.block(cb);
+		});
+	};
+	//alias
+	q.childrenBlocks = q.childBlocks;
+
+
+	q.siblingBlocks = function(b) {
+		b = arguments.length ? Q.parentBlock(b) : Q.parentBlock();
+		if(!b) { return []; }
+		return E.map(b.children, function(cb) {
+			return Q.block(cb);
+		});
+	};
+
 	q.blocksOpen = function() {
 		return E._.filter(sb.models.rawArray("blocks"), {is_open:true});
+	};
+	q.blocksAddChildren = function() {
+		return E._.filter(sb.models.rawArray("blocks"), {is_link:false, is_company:false, is_owner:true, is_closed:false});
 	};
 
 	q.blockTarget = function(b) {
@@ -1016,6 +1040,24 @@ define(['sb_light/globals',
 		var p  = q.blockProgress(b);
 		var e  = q.blockTarget(b);
 		return (e > 0) ? Math.floor( ((p - e)/e) *100) : 100;
+	};
+
+
+	q.blockStatusMarkup = function(b) {
+		b= q.block(b);
+		if(!b) { return "";}
+
+		var pc = sb.colors.status(b);
+		return "<i class='fa fa-lg " + sb.icons.progressIcon(b) + "' style='color:" + pc + "'></i>";
+
+	};
+	q.blockHealthMarkup = function(b) {
+		b= q.block(b);
+		if(!b) { return "";}
+
+		var hc = sb.colors.status(b.status_health);
+		return "<i class='fa fa-lg " + sb.icons.healthIcon(b) + "' style='color:" + hc + "'></i>";
+
 	};
 
 	q.blockProgressRatioLabel = function(b) {
