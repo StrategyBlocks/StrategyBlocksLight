@@ -77,6 +77,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.blockImport = function(o, cb) {
 		controller.invoke(sb.urls.BLOCKS_IMPORT, o, cb,cb);
 	};
+	controller.blockExport = function(o, cb) {
+		controller.invoke(sb.urls.EXPORTS_CREATE, o, cb,cb);
+	};
 
 
 

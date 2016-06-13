@@ -106,6 +106,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				var name = "hierarchy_"+mid+"_"+nid;
 				var data = self._hierarchyCache[name] = resp[nid] || self._hierarchyCache[name] || null;
 				var cbs = self._queue[name] || [];
+
+				data.statusNum = data.status == "good" ? 1 : (data.status == "warning" ? 2 : (data.status == "bad" ? 3 : 0)) ;
+				data.trendNum = data.trend == "up" ? 1 : (data.trend == "flat" ? 2 : (data.trend == "down" ? 3 : 0)) ;
+				data.status = data.status.toLowerCase();
+				data.trend = data.trend.toLowerCase();
+
 				while(cbs.length) {
 					var f = cbs.pop();
 					sb.queue.buffer(f, "metricModel"+name, 200, data);

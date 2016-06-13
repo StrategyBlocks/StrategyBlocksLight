@@ -107,8 +107,9 @@ define(['sb_light/globals'], function(sb) {
 		DASHBOARD_DESTROY :				{url: "/dashboards/%id%/destroy.js", deleteId:true, post:true},
 		DASHBOARD_SHARE :				{url: "/dashboards/%id%/share.js",  deleteId:true, post:true, normalParams:true},
 		
-		EXPORTS_CREATE :			{url: "/exports/%id%/create.js"},
-		EXPORTS_REPORT :			{url: "/exports/%id%/create.js"},
+		EXPORTS_CREATE :			{url: "/exports/%id%/create.js", deleteId:true, post:true},
+		EXPORTS_REPORT :			{url: "/exports/%id%/create.js", deleteId:true, post:true},
+		EXPORTS_DOWNLOAD :			{url: "/exports/download.js"},
 		EXPORTS_DELETE :			{url: "/exports/%id%/destroy.js", deleteId:true, normalParams:true},
 		
 		FOCUS_CREATE :				{url: "/focus/create.js"},
