@@ -43,6 +43,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				v.statusNum = v.status == "good" ? 1 : (v.status == "warning" ? 2 : (v.status == "bad" ? 3 : 0)) ;
 				v.trendNum = v.trend == "up" ? 1 : (v.trend == "flat" ? 2 : (v.trend == "down" ? 3 : 0)) ;
 				v.is_mine = (v.owner_id == uid || v.manager_id == uid); 
+				v.is_watching= (E._.find(v.watching_user_ids, uid) != null);
+
+				//used by other metrics
+				v.used_by_metrics = E._.union(v.used_by_metric_ids_in_calculation_actuals, v.used_by_metric_ids_in_calculation_target);
+				v.metrics_used = E._.union(v.calculation_actuals_metric_ids_used, v.calculation_target_metric_ids_used);
+
 				v.tolerance = {
 					range_start: v.range_start,
 					range_end: v.range_end,

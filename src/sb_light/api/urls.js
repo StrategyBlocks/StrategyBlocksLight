@@ -89,6 +89,10 @@ define(['sb_light/globals'], function(sb) {
 		COMPANIES_HEALTH_DELETE: 		{url: "/health_calculations/%id%/destroy.js"},
 		COMPANIES_HEALTH_DEFAULT: 		{url: "/health_calculations/%id%/set_default.js"},
 
+		// COMPANIES BROADCASR
+		COMPANIES_BROADCAST: 			{ url: "/companies/broadcast_message.js", post:true },
+		COMPANIES_CONTACT: 				{ url: "/companies/send_message_to_admins.js", post:true },
+
 		//DEP///////////////////
 		COMPANIES_LOGO_PREVIEW_URL: 	{url: "/upload/company_logo_preview.js"},
 		COMPANIES_REMOVE_PREVIEW_LOGO: 	{url: "/upload/remove_company_logo_preview.js"},
@@ -109,6 +113,7 @@ define(['sb_light/globals'], function(sb) {
 		
 		EXPORTS_CREATE :			{url: "/exports/%id%/create.js", deleteId:true, post:true},
 		EXPORTS_REPORT :			{url: "/exports/%id%/create.js", deleteId:true, post:true},
+		EXPORTS_UPDATE :			{url: "/exports/update/%id%.js", deleteId:true, post:true},
 		EXPORTS_DOWNLOAD :			{url: "/exports/download.js"},
 		EXPORTS_DELETE :			{url: "/exports/%id%/destroy.js", deleteId:true, normalParams:true},
 		

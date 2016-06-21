@@ -146,40 +146,54 @@ define(['sb_light/globals',
 	*********************************/
 	var DELETED_NAME = "<deleted>";
 
-	q.fullname = function(uid) {
-		var u = q.user(uid);
+	q.fullname = q.fullName = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
 		return u ? (u.name || (u.firstname + " " + u.lastname)) : DELETED_NAME;
 	};
-	q.firstname = function(uid) {
-		var u = q.user(uid);
+
+	q.firstname = q.firstName = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
 		return u ? u.first_name : DELETED_NAME;
 	};
 
-	q.shortName = function(uid) {
-		var u = q.user(uid);
+	q.shortname = q.shortName = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
 		return u? (u.first_name.slice(0,1) + ". " + u.last_name) : DELETED_NAME;
 	};
 
-	q.lastname = function(uid) {
-		var u = q.user(uid);
+	q.lastname = q.lastName = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
 		return u ? u.last_name : DELETED_NAME;
 	};
+
+
 	q.user = function(uid /*optional*/) {
-		var um = sb.models.rawArray("users");
-		if(!uid && !um) { 
-			return ST.context("user") || null;
+		if( E.isNum(uid) ) { uid = String(uid); }
+		if( !E.isStr(uid) ) { uid = uid ? uid.id : null; }
+	
+		var um = sb.models.raw("users") || {};
+		
+		//return the default user
+		if(!uid && arguments.length === 0) { 
+			uid = ST.state("user_id");
+			return (uid && um[uid]) || ST.context("user"); 
 		}
-		uid = uid || ST.state("user_id");
-		return sb.models.find("users", uid);
+
+		//passed an argument and it wasn't found
+		if(!uid && arguments.length > 0) {
+			return null;
+		}
+		return um[uid] || null; 
 	};
+
 
 	q.userProfile = function() {
 		var uid = ST.state("profile_user");
 		return uid ? q.user(uid): null;
 	};
 
-	q.companyMembership = function(uid) {
-		var u = q.user(uid);
+	q.companyMembership = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
 		if(u.company_membership) {
 			return u.company_membership;
 		} else {
@@ -200,31 +214,31 @@ define(['sb_light/globals',
 		return m.format(_serverDateFormat);
 	};
 	
-	q.authors  = function() {
+	q.authors  = function(includeInactive/*=false*/) {
 		var cid = ST.state("company_id");
 		return sb.models.rawArray("users").filter(function(el) {
 			
 												//TODO: Remove legacy API support
 			var cm = el.company_membership || (el.companies && el.companies[cid] || null);
-			return cm && cm.active && (cm.role == "Author" || cm.role =="Administrator");
+			return cm && (cm.active || includeInactive) && (cm.role == "Author" || cm.role =="Administrator");
 		}).sort(sb.ext.sortUsers);
 	};
 
 	q.userLogoSrc = function(uid, size) {
-		var u = q.user(uid);
+		var u = q.user.apply(q, E.slice(arguments));
 
 		return u.logo_path || q.gravatar(uid, size);
 	};
 
 
 	q.gravatar = function(uid, size) {
-		var u = q.user(uid);
-		return "http://www.gravatar.com/avatar/" +  (u ? u.gravatar : "") + "?d=identicon&s="+ (size||50);
+		var u = q.user.apply(q, E.slice(arguments));
+		return "http://www.gravatar.com/avatar/" +  (u ? u.gravatar : "") + "?d=" + (u ? "identicon" : "mm") + "&s="+ (size||50);
 	};
 
 
 	q.userMessageDisplay = function(uid, message, width) {
-		var u = q.user(uid);
+		var u = q.user.apply(q, E.slice(arguments));
 		if(!u) {
 			return DELETED_NAME;
 		}
@@ -233,22 +247,22 @@ define(['sb_light/globals',
 				"</a> " + (message||"") + "</div>";
 	};
 
-	q.isAdmin = function(uid) {
-		var cm = q.companyMembership(uid);
+	q.isAdmin = function(/*uid*/) {
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return cm && cm.role == "Administrator";
 	};
-	q.isAuthor = function(uid) {
-		var cm = q.companyMembership(uid);
+	q.isAuthor = function(/*uid*/) {
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return cm && (cm.role == "Author" || cm.role == "Administrator");
 	};
-	q.isUser = function(uid) {
-		var cm = q.companyMembership(uid);
+	q.isUser = function(/*uid*/) {
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return cm && (cm.role == "User" || cm.role == "Author" || cm.role == "Administrator");
 	};
 
 	//checks *ONLY* if they're a user
-	q.isLimitedUser = function(uid) {
-		var cm = q.companyMembership(uid);
+	q.isLimitedUser = function(/*uid*/) {
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return cm && (cm.role == "User");
 	};
 
@@ -259,17 +273,17 @@ define(['sb_light/globals',
 		return q.isAdmin();
 	};
 
-	q.userActive = function(uid) {
-		var cm = q.companyMembership(uid);
+	q.userActive = function(/*uid*/) {
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return cm && cm.active;	
 	};
-	q.userPrimary = function(uid) {
-		var cm = q.companyMembership(uid);
+	q.userPrimary = function(/*uid*/) {
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return cm && cm.primary_contact;	
 	};
 
-	q.userGroups = function(uid) {
-		var u = q.user(uid);
+	q.userGroups = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
 		var g = sb.models.rawArray("groups") || [];
 
 		return g.filter(function(v) {
@@ -280,45 +294,84 @@ define(['sb_light/globals',
 		});
 	};
 
-	q.userBlocks = function(uid) {
-		return sb.models.rawArray("blocks").filter(function(b) {
-			return b.owner_id == uid || b.manager_id == uid;
+	q.userBlocks = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
+		if(!u) { return []; }
+		
+		return q.blocksOpen().filter(function(b) {
+			return b.owner_id == u.id || b.manager_id == u.id;
 		});
 	};
-	q.userMetrics = function(uid) {
+	q.userMetrics = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
+		if(!u) { return []; }
+
 		return sb.models.rawArray("metrics").filter(function(b) {
-			return b.owner_id == uid || b.manager_id == uid;
+			return b.owner_id == u.id || b.manager_id == u.id;
 		});
 	};
-	q.userRisks = function(uid) {
+	q.userRisks = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
+		if(!u) { return []; }
+		
 		return sb.models.rawArray("risks").filter(function(b) {
-			return b.owner_id == uid || b.manager_id == uid;
+			return b.owner_id == u.id || b.manager_id == u.id;
 		});
 	};
+	q.userStatus = function(/*uid*/) {
+		var res = {
+			blocksOwner: 	[],
+			blocksManager: 	[],
+			metricsOwner: 	[],
+			metricsManager: [],
+			risksOwner: 	[],
+			risksManager: 	[],
+			owned:			0,
+			managed:		0,
+			total:			0
+		};
 
+		var u = q.user.apply(q, E.slice(arguments));
+		if(u) {
+			res.blockOwner = 	E._.filter(sb.models.rawArray("blocks"), {owner_id: u.id});
+			res.blockManager = 	E._.filter(sb.models.rawArray("blocks"), {manager_id: u.id});
+			
+			res.metricOwner = 	E._.filter(sb.models.rawArray("metrics"), {owner_id: u.id});
+			res.metricManager = E._.filter(sb.models.rawArray("metrics"), {manager_id: u.id});
+			
+			res.riskOwner = 	E._.filter(sb.models.rawArray("risks"), {owner_id: u.id});
+			res.riskManager = 	E._.filter(sb.models.rawArray("risks"), {manager_id: u.id});
 
-	q.userOwnedBlocks = function(uid) { 
-		var cm = q.companyMembership(uid); 
+			res.owned = res.blockOwner.length + res.metricOwner.length + res.riskOwner.length;
+			res.managed = res.blockManager.length + res.metricManager.length + res.riskManager.length;
+			res.total = res.owned + res.managed;
+		}
+
+		return res; 
+	};
+
+	q.userOwnedBlocks = function(/*uid*/) { 
+		var cm = q.companyMembership.apply(q, E.slice(arguments)); 
 		return (cm && cm.count_owned_blocks) || 0; 
 	};
-	q.userManagedBlocks = function(uid) { 
-		var cm = q.companyMembership(uid); 
+	q.userManagedBlocks = function(/*uid*/) { 
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return (cm && cm.count_managed_blocks) || 0; 
 	};
-	q.userOwnedKpis = function(uid) { 
-		var cm = q.companyMembership(uid); 
+	q.userOwnedKpis = function(/*uid*/) { 
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return (cm && cm.count_owned_kpis) || 0; 
 	};
-	q.userManagedKpis = function(uid) { 
-		var cm = q.companyMembership(uid); 
+	q.userManagedKpis = function(/*uid*/) { 
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return (cm && cm.count_managed_kpis) || 0; 
 	};
-	q.userOwnedRisks = function(uid) { 
-		var cm = q.companyMembership(uid); 
+	q.userOwnedRisks = function(/*uid*/) { 
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return (cm && cm.count_owned_risks) || 0; 
 	};
-	q.userManagedRisks = function(uid) { 
-		var cm = q.companyMembership(uid); 
+	q.userManagedRisks = function(/*uid*/) { 
+		var cm = q.companyMembership.apply(q, E.slice(arguments));
 		return (cm && cm.count_managed_risks) || 0; 
 	};
 
@@ -337,8 +390,8 @@ define(['sb_light/globals',
 	*********************************/
 	q.capability = function(key) {
 		var cm = sb.models.raw("capabilities");
-		var c = cm[key];
-		return c && c.value === true;
+		var c = (key &&cm &&  cm[key]) || null;
+		return !c || c.value === true;
 
 	};
 

@@ -16,6 +16,12 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.updateCompany = function(obj, cb) {
 		controller.invoke(sb.urls.COMPANIES_UPDATE, obj, cb, cb);
 	};
+	controller.companyBroadcast = function(o, cb) {
+		controller.invoke(sb.urls.COMPANIES_BROADCAST, o, cb, cb);
+	};
+	controller.companyContact = function(o, cb) {
+		controller.invoke(sb.urls.COMPANIES_CONTACT, o, cb, cb);
+	};
 
 	controller.createBuilder = function(args, cb, errCb) {
 		controller.invoke(sb.urls.BUILDER_CREATE, args, cb, errCb);
@@ -209,6 +215,11 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.exportDelete = function(id, cb) {
 		controller.invoke(sb.urls.EXPORTS_DELETE,{id:id}, cb,cb);
 	};
+	controller.exportUpdate = function(o, cb) {
+		controller.invoke(sb.urls.EXPORTS_UPDATE,o, cb,cb);
+	};
+
+
 
 	controller.dashboardsUpdate = function(o, cb) {
 		if(o.id === "new") {

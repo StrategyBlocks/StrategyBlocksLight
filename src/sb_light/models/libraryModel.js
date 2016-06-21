@@ -1,8 +1,6 @@
 
 
 
-
-
 /*globals define */
 
 define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
@@ -31,6 +29,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			E.each(this._model, function(v) {
 				v.date = E.moment(v.created_at, E.unixFormat)
 				v.public = v.status == "public";
+				v.rating = v.rating || 0;
 				v.local = v.company_id == Q.company().id;
 				v.fromNow  = E.moment().add(v.duration, "days").to(E.moment(), true);
 			});
