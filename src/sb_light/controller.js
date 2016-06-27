@@ -87,6 +87,12 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.EXPORTS_CREATE, o, cb,cb);
 	};
 
+	controller.blockUpdateTags = function(id, tags, cb) {
+		var o = {id:id, type:"tags"};
+		o["tag[list]"] = tags.join(" ");
+		controller.invoke(sb.urls.BLOCKS_PROPERTIES, o, cb,cb, null, {post:true});
+	};
+
 
 
 	controller.comment = function(type, id, message, cb) {
@@ -417,7 +423,8 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 				}
 			}
 		}
-		var post = (urlObj.post !== undefined && urlObj.post) || false;
+		var post = (urlObj.post !== undefined && urlObj.post) || overrides.post || false;
+		delete overrides.post;
 
 		
 		if(urlObj.dataType) {

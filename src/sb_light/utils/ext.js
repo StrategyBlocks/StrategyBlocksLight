@@ -554,6 +554,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	E.rand = function ext_rand(min, max, dec/*==0*/) {
 		return E.floorTo( (Math.random() * (max - min + 1)), dec) + min;
 	};
+	E.random = E.rand;
+	
 	E.to_color = function ext_to_color(num) {
 		return '#' +  ('00000' + (num | 0).toString(16)).substr(-6);
 	};

@@ -48,7 +48,7 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/make_public/%id%.js", normalParams:true},
 		//BLOCKS_MOVE_POSITION 			{url: "/blocks/move_position_%dir%/%id%.js"},
 		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true, deleteId: true},
-		BLOCKS_PROPERTIES: 				{url: "/blocks/%type%/%id%.js"},
+		BLOCKS_PROPERTIES: 				{url: "/blocks/%type%/%id%.js", normalParams:true, deleteId:true},
 		BLOCKS_RELOCATE: 				{url: "/blocks/reassign_parent/%id%.js", normalParams:true, deleteId:true},
 		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", 				post:true,		deleteId: true},
 
