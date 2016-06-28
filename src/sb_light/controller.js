@@ -216,7 +216,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.usersSendReport = function( o, cb) {
 		controller.invoke(sb.urls.USERS_SEND_REPORT,o, cb,cb);
 	};
-
+	controller.userGenerateCalendar = function(cb) {
+		controller.invoke(sb.urls.USERS_CALENDAR_TOKEN, null, cb,cb);
+	}
 
 	controller.exportDelete = function(id, cb) {
 		controller.invoke(sb.urls.EXPORTS_DELETE,{id:id}, cb,cb);

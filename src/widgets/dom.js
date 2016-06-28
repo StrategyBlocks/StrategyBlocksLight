@@ -189,6 +189,8 @@ define([
 		},
 
 		destroy: function() {
+			this.cleanup();
+
 			if(DOM_REGISTER[this.__id]) {
 				delete DOM_REGISTER[this.__id];
 			}

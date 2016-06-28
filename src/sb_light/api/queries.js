@@ -480,7 +480,7 @@ define(['sb_light/globals',
 	};
 
 	q.formatMetric = function(m, value) {
-		var val = accounting.formatNumber(value);
+		var val = accounting.formatNumber(value, m.number_decimals);
 		return m ? 
 			(m.unit_before ? E.join("", m.unit, val) : E.join(" ", val, m.unit) ) : 
 			"--"
@@ -753,6 +753,9 @@ define(['sb_light/globals',
 			var u = upperScale(d);
 			var l = lowerScale(d);
 
+			var isActual =  actualsMap[ds] ? true : false;
+			var isTarget = !isActual;
+
 			var el = {
 				date:d,
 				moment:dm,
@@ -769,7 +772,9 @@ define(['sb_light/globals',
 				upper:u,
 				lower:l,
 				variance:v,
-				comment:(actualsMap[ds] ? actualsMap[ds].comment : "")
+				comment:(actualsMap[ds] ? actualsMap[ds].comment : ""),
+				isRealActual: isActual,
+				isRealTarget: isTarget
 			};
 
 			return el;
@@ -1104,12 +1109,12 @@ define(['sb_light/globals',
 		return "<i class='fa fa-lg " + sb.icons.progressIcon(b) + "' style='color:" + pc + "'></i>";
 
 	};
-	q.blockHealthMarkup = function(b) {
+	q.blockHealthMarkup = function(b, size/*=fa-lg*/) {
 		b= q.block(b);
 		if(!b) { return "";}
 
 		var hc = sb.colors.status(b.status_health);
-		return "<i class='fa fa-lg " + sb.icons.healthIcon(b) + "' style='color:" + hc + "'></i>";
+		return "<i class='fa " + (size || "fa-lg") + " " + sb.icons.healthIcon(b) + "' style='color:" + hc + "'></i>";
 
 	};
 
