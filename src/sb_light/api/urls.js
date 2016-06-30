@@ -101,7 +101,7 @@ define(['sb_light/globals'], function(sb) {
 
 		COMPANIES_MILESTONE_CREATE: 	{url: "/milestone_definitions/create.js"},
 		COMPANIES_MILESTONE_UPDATE :	{url: "/milestone_definitions/%id%/update.js", deleteId:true},
-		COMPANIES_MILESTONE_DELETE: 	{url: "/milestone_definitions/%id%/destroy.js"},
+		COMPANIES_MILESTONE_DELETE: 	{url: "/milestone_definitions/%id%/destroy.js", deleteId:true},
 		
 		
 		CAPABILITIES_UPDATE: 			{url: "/company_settings/update.js"},

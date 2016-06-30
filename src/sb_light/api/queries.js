@@ -72,6 +72,7 @@ define(['sb_light/globals',
 		cid = cid || ST.state("company_id") || (ST.context("company") && ST.context("company").id) || null;
 		return sb.models.find("companies", cid);
 	};
+	
 	q.companyRollup = function() {
 		var c = q.company();
 		return c ? c.default_progress_weight_method : 1;
@@ -81,7 +82,7 @@ define(['sb_light/globals',
 		return c ? c.default_linked_rollup_method : 2;
 	};
 	q.companyHealth = function() {
-		var c = q.company();
+		var c = ST.context("company");
 		return c ? c.default_health_calculation_id : null;
 	};
 	q.companyLicense = function() {

@@ -328,7 +328,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		}
 	};	
 
-
+	controller.deleteMilestoneDefinition = function(id, cb) {
+		controller.invoke(sb.urls.COMPANIES_MILESTONE_DELETE, {id:id},cb,cb);
+	};	
 
 	controller.uploadFile = function(file, object, object_type, cb) {
 		var url;
