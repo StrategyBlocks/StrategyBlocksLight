@@ -195,6 +195,8 @@ define(['sb_light/globals',
 
 	q.companyMembership = function(/*uid*/) {
 		var u = q.user.apply(q, E.slice(arguments));
+		if(!u) { return null; }
+
 		if(u.company_membership) {
 			return u.company_membership;
 		} else {
@@ -247,6 +249,26 @@ define(['sb_light/globals',
 					" <img style='float:left;margin:0 5px 5px 0;' src='" + q.gravatar(u.id) + "'></img> " + q.shortName(u.id) + ": " +
 				"</a> " + (message||"") + "</div>";
 	};
+
+
+	q.hasRole = function(rolStr) {
+		if(!rolStr) { return true; }
+		
+		var cm = q.companyMembership();
+		if(!cm ) { return  false; }
+		rolStr = rolStr.toLowerCase();
+		if(rolStr == "user") {
+			return Q.isUser();
+		}
+		if(rolStr == "author") {
+			return Q.isAuthor();
+		}
+		if(rolStr == "admin" || rolStr == 'administrator') {
+			return Q.isAdmin();
+		}
+		return false;
+	};
+
 
 	q.isAdmin = function(/*uid*/) {
 		var cm = q.companyMembership.apply(q, E.slice(arguments));
@@ -620,12 +642,25 @@ define(['sb_light/globals',
 		});
 
 		var actualsMap = E.toObject(actuals, "date");
+		var targetsMap = E.toObject(targets, "date");
 
 
 		//ceate a unique, sorted list of dates. 
-		var datestr = E._.union([today], targetDatestr, actualDatestr).sort(function(a,b) {
+
+
+		var datestr = E._.union(targetDatestr, actualDatestr).sort(function(a,b) {
 			return E.sortDate(E.serverMoment(a), E.serverMoment(b));
 		});
+
+		//if today is in the middle, add the date and re-sort
+		var first = E.serverMoment(datestr[0]);
+		var last = E.serverMoment(datestr.last());
+		if(E.daysDiff(today, first) > 0 && E.daysDiff(last,today) > 0) {
+			datestr.push(today);
+			datestr = datestr.sort(function(a,b) {
+				return E.sortDate(E.serverMoment(a), E.serverMoment(b));
+			});
+		}
 
 		//convert date strings to date objects for the time scales
 		var dm = function(v) { 
@@ -755,7 +790,7 @@ define(['sb_light/globals',
 			var l = lowerScale(d);
 
 			var isActual =  actualsMap[ds] ? true : false;
-			var isTarget = !isActual;
+			var isTarget = targetsMap[ds] ? true : false;;
 
 			var el = {
 				date:d,

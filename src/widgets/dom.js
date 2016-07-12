@@ -557,8 +557,9 @@ define([
 			//reset the delay
 			this.__canDrawDelay = this.__canDrawDelay >= 0 ? E.max(50, delay) : -1;
 
-			// this._consoleLogPages("DOM WIDGET dirtying: ", this.id);
+			this._consoleLogPages("DOM WIDGET dirtying: ", this.id, delay);
 			//queue drawing so we don't end up calling it repeatedly from different events
+
 			this.queue(this.bind("_beforeDraw"), delay);
 		},
 
@@ -616,7 +617,7 @@ define([
 		_beforeDraw:function() {
 			try {
 				if(this.canDraw()) {
-					// this._consoleLogPages("DOM CAN DRAW:", this.id);
+					this._consoleLogPages("DOM CAN DRAW:", this.id);
 					if(this.__beforeDrawList.length) {
 						this.__beforeDrawWaiting = true;
 						var df = this.__beforeDrawList.shift();
@@ -720,7 +721,7 @@ define([
 
 		_consoleLogPages: function(str, id) {
 			var args = E.slice(arguments);
-			if(id && id.match(/DONT_DRAW/)) {
+			if(id && id.match(/shepherd/)) {
 				E.debug.apply(E, args);
 			}
 		}

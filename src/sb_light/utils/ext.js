@@ -359,7 +359,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	E.dateNumber = function ext_dateNumber(d, format) { return E.moment(d, format).valueOf();	};
 	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
 
-	//number is positive when db is earlier than da
+	//number is positive when db (e.g., start date) is earlier than da (eg., end date)
 	E.isFuture = function ext_isFuture(d) { return E.momentFn(d).diff(E.today(), "days") > 0; };
 	E.minutesDiff = function ext_minutesDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"minutes");};
 	E.hoursDiff = function ext_hoursDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"hours");};
