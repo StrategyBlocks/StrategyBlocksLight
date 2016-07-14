@@ -319,12 +319,12 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.COMPANIES_HEALTH_DELETE, {id:id},cb,errorCb);
 	};	
 
-	controller.updateMilestoneDefinition = function(data, cb, errorCb) {
+	controller.updateMilestoneDefinition = function(data, cb) {
 		if(data.id == "new") {
 			delete data.id;
-			controller.invoke(sb.urls.COMPANIES_MILESTONE_CREATE, data,cb,errorCb);
+			controller.invoke(sb.urls.COMPANIES_MILESTONE_CREATE, data,cb,cb);
 		} else {
-			controller.invoke(sb.urls.COMPANIES_MILESTONE_UPDATE, data,cb,errorCb);
+			controller.invoke(sb.urls.COMPANIES_MILESTONE_UPDATE, data,cb,cb);
 		}
 	};	
 
