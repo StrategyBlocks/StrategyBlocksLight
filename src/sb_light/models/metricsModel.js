@@ -35,6 +35,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			var uid = Q.user().id; 
 
 			E.each(this._model, function(v) {
+				v.title_lower = E.lower(v.title);
 				v.is_owner = E.isBool(v.is_owner) ? v.is_owner : (v.is_owner === "true");
 				v.is_manager = E.isBool(v.is_manager) ? v.is_manager : (v.is_manager === "true");
 				v.status = v.status.toLowerCase();
@@ -52,7 +53,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				v.tolerance = {
 					range_start: v.range_start,
 					range_end: v.range_end,
-					below_tolerance_good: v.below_tolerance_good,
+					below_target_good: v.below_target_good,
 					percentage: v.percentage
 				};
 			});
@@ -64,6 +65,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			var m = this._model[mid];
 			//ONLY fetch is this is a hierarchical metric
 			if(!m.hierarchy) { return null; }
+
+			if(!nidList) {
+				nidList = E._.pluck(sb.models.raw("blocks"), "id");
+			}
+
 
 			nidList = E.isArr(nidList) ? nidList : [nidList];
 			var fetchList = [];
@@ -113,10 +119,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				var data = self._hierarchyCache[name] = resp[nid] || self._hierarchyCache[name] || null;
 				var cbs = self._queue[name] || [];
 
-				data.statusNum = data.status == "good" ? 1 : (data.status == "warning" ? 2 : (data.status == "bad" ? 3 : 0)) ;
-				data.trendNum = data.trend == "up" ? 1 : (data.trend == "flat" ? 2 : (data.trend == "down" ? 3 : 0)) ;
-				data.status = data.status.toLowerCase();
-				data.trend = data.trend.toLowerCase();
+				if(data) {
+					data.statusNum = data.status == "good" ? 1 : (data.status == "warning" ? 2 : (data.status == "bad" ? 3 : 0)) ;
+					data.trendNum = data.trend == "up" ? 1 : (data.trend == "flat" ? 2 : (data.trend == "down" ? 3 : 0)) ;
+					data.status = data.status.toLowerCase();
+					data.trend = data.trend.toLowerCase();
+				}
 
 				while(cbs.length) {
 					var f = cbs.pop();
