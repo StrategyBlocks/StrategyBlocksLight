@@ -21,6 +21,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			var uid = Q.user().id; 
 
 			E.each(this._model, function(v) {
+				v.title_lower = E.lower(v.title);
+				
 				v.is_mine = v.owner_id == uid || v.manager_id == uid;
 				v.is_watching= (E._.find(v.watching_user_ids, uid) != null),
 				

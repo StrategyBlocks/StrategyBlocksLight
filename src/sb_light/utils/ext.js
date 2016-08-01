@@ -304,6 +304,10 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	};
 	E.capitalize = E.caps;
 	
+	E.lower = function ext_lower(str) {
+		return E.isStr(str) ? str.toLowerCase() : "";
+	};
+
 	E.replace = function ext_replace(src, obj) {
 		var s = src;
 		E.each(obj, function  ext_replace_each(v,k) {
@@ -774,6 +778,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 			min -= padA;
 			max += padB;
 		}
+
+		if(type === "bar") {
+			if(min > 0) { min = 0;	}
+			if(max < 0) { max = 0;	}
+		}
+
 		return [min,max];
 	};
 

@@ -439,7 +439,6 @@ define([
 			// this._consoleLogPages("DOM:LoadingTemplate", this.id, this.__opts.templatePath);
 
 			var templateOpts = this.__opts.templatePath.split("#");
-
 			var opts = [sb.options.templates, templateOpts[0], ".html"];
 			if(templateOpts[1]) {
 				opts.put(" #", templateOpts[1]);

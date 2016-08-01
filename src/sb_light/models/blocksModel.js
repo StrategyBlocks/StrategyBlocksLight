@@ -322,8 +322,10 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var uid = Q.user().id;
 
 			var hs = ["bad", "warning", "good"];
+			var isNew = b.ownership_state == "new";
 
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
+				title_lower: E.lower(b.title),
 				path:bpath,
 				parentPath:(p ? p.path : null),
 				parent:p,
@@ -331,12 +333,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				level_sort: (p ? (p.level_sort + "." + (1+pos)) : "L1"),
 
 				size:1,
-				status: ((b.ownership_state == "new") ? "new" : (
+				status: (isNew ? "new" : (
 							b.closed? "closed" : (
 								b.progress_color == "red" ? "bad" : (b.progress_color == "yellow" ? "warning" : "good")
 							)
 						)),
-				status_health: hs[E.first(b.status_health,0) + 1],
+				status_health: (!isNew ? (hs[E.first(b.status_health,0) + 1]) : "none"),
 				percent_health: (b.percent_health || 0),
 				count_metrics: (b.count_metrics || 0),
 				count_risks: (b.count_risks || 0),
