@@ -231,7 +231,7 @@ define(['sb_light/globals'], function(sb) {
 		PAYMENTS_QUOTE :			{url: "/purchases/quote.js"},
 		PAYMENTS_CREATE: 			{url: "/purchases/create.js"},
 		
-		ADMIN_RAISE: 				{url:"/admin/log_client_error.js"},
+		ADMIN_RAISE: 				{url:"/admin/log_client_error.js", post:true},
 		ADMIN_SUPPORT:				{ url:"/admin/log_support.js", post:true},
 
 		SSO_REFRESH: 				{ url:"/sso/refresh.js" },

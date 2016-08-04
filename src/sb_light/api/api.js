@@ -55,11 +55,14 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 	}
 
 	function _success(reqArgs, data) {
+		reqArgs = reqArgs || {};
+
 		sb.ext.debug("SUCCESS: SB_Api", reqArgs.url);
 		_errorTimeout = _errorTimeoutDefault;
 		
 		var wasValid = ST.authorized();
 		
+
 		var opts = reqArgs.opts;
 
 		//skip post-processing if we're dealing with non-json responses
@@ -73,11 +76,11 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 			//success function in the original call
 			var errors = sb.helpers.getResultMessages(data).errors;
 			
-			if(!errors && reqArgs.success) {
+			if(!errors && E.isFunc(reqArgs.success)) {
 				reqArgs.success(data);
 				_popQueue();
 			}
-			if(errors && reqArgs.failure) {
+			if(errors && E.isFunc(reqArgs.failure)) {
 				reqArgs.failure(data);
 				_popQueue();
 			}
@@ -86,7 +89,7 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 				//clear the queue
 				_requestQueue.length = 0;
 			}
-			if(reqArgs.failure) {
+			if(E.isFunc(reqArgs.failure)) {
 				reqArgs.failure(data);	
 			}	
 		}
@@ -96,10 +99,16 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 	}
 	
 	function _failure (reqArgs, data) {
+		reqArgs = reqArgs || {};
+
 		sb.ext.debug("FAILURE SB_Api", JSON.stringify(reqArgs), JSON.stringify(data));
 
 		if(data && data.status == 200) {
-			reqArgs.failure(data);
+			
+			if(E.isFunc(reqArgs.failure)) {
+				reqArgs.failure(data);
+			}
+
 			if(sb.helpers && sb.helpers.showMessage) {
 				sb.helpers.showMessage("Something bad happened with your last update and the response could not be processed.\
 										 Please contact <a href='mailto:help@strategyblocks.com'>StrategyBlocks Support</a> \
