@@ -387,6 +387,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				return recurse(cpath, b, depth+1, i, schema);
 			}) : [];
 
+			b.progressLeaf = b.leaf && b.is_owner && b.status != "new" && !b.closed;
+
 
 			E.each(b.children, function(cpath) {
 				b.size += pm[cpath].size;
