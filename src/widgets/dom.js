@@ -179,14 +179,7 @@ define([
 				});
 			}
 			//FIX IMAGES
-			this.$.find("img").each(function() {
-				var src = $(this).attr("src");
-				if(E.isStr(src)) {
-					src = src.replace(/^images\//, sb.options.images);
-					$(this).attr("src", src);
-				}
-			});
-
+			sb.helpers.fixImages(this.$);
 
 			if(cb) {
 				cb();
