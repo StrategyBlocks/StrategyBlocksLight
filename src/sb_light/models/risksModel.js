@@ -1,7 +1,7 @@
 
 /*globals define */
 
-define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
+define(['sb_light/models/_abstractModel','sb_light/globals', 'fuse'], function( _Model, sb, Fuse ) {
 	'use strict';
 
 	var E,Q;
@@ -13,6 +13,32 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			E = sb.ext;
 			Q = sb.queries;
 
+		},
+
+		filter_search: function(m, searchString) {
+			if(!searchString) {
+				return true;
+			}
+
+			var fuse = new Fuse([m], {
+				keys: ["title", "description"], 
+				id:"id", 
+				include:["score"],
+				threshold:0.3}
+			);
+			var res = fuse.search(searchString); 
+			return res && res.length ? true : false;
+		},
+
+		filter_likelihood: function(r, list) {
+			if(!list || !list.length ) { return true; }
+
+
+			return list.indexOf(String(r.likelihood)) > -1;
+		},
+		filter_impact: function(r, list) {
+			if(!list || !list.length ) { return true; }
+			return list.indexOf(String(r.impact)) > -1;
 		},
 
 		_massageUpdatedModel: function() {

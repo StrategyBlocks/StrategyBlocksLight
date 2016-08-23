@@ -1,7 +1,7 @@
 
 /*globals define */
 
-define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, sb ) {
+define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( _Model, sb, Fuse ) {
 	'use strict';
 
 	var E, Q;
@@ -17,6 +17,43 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			Q = sb.queries;
 
 		},
+
+
+		//*******************FILTER FUNCTION OVERRIDES************************************
+	
+
+		filter_search: function(m, searchString) {
+			if(!searchString) {
+				return true;
+			}
+
+			var fuse = new Fuse([m], {
+				keys: ["title", "description"], 
+				id:"id", 
+				include:["score"],
+				threshold:0.3}
+			);
+			var res = fuse.search(searchString); 
+			return res && res.length ? true : false;
+		},
+	
+		filter_types: function(m, typeList) {
+			if(!typeList || !typeList.length) { return true; }
+
+			var type = m.hierarchy ? "cascading" : ((m.calculation_actuals || m.calculation_target) ? "calculated" : "normal");
+
+			switch(type) {
+				case "cascading": return typeList.indexOf("cascading") > -1;
+				case "calculated": return typeList.indexOf("calculated") > -1;
+				case "normal": /* falls through */
+				default:
+					return typeList.indexOf("normal") > -1;
+			}
+
+		},
+		//********************************************************************************
+
+
 
 		_massageUpdatedModel: function() {
 			this._super();

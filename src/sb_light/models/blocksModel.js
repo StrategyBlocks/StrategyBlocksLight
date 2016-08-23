@@ -113,7 +113,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			// console.log("DISTANCE", b.title, dist);
 			return dist <= maxDistance;			
 		},
-		//*******************FILTER FUNCTION OVERRIDES************************************
 		filter_level: function(b, level) {
 			var min = level[0]-1;
 			var max = level[1]-1;
