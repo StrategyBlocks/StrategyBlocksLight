@@ -720,10 +720,10 @@ define([
 		},
 
 		_consoleLogPages: function(str, id) {
-			var args = E.slice(arguments);
-			if(id && id.match(/shepherd/)) {
-				E.debug.apply(E, args);
-			}
+			// var args = E.slice(arguments);
+			// if(id && id.match(/shepherd/)) {
+			// 	E.debug.apply(E, args);
+			// }
 		}
 
 	});
