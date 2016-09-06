@@ -56,6 +56,13 @@ define(['sb_light/globals',
 			cdb = {id:"new", title:"", manager_id:q.user().id, widgets:[]};
 			// ST.context("dashboard", cdb);
 		}
+
+		if(!cdb.print) {
+			cdb.print = {
+				pages:1, size:"A4", "orientation": "portrait", zoom:1
+			};
+		}
+
 		return cdb;
 	};
 
@@ -236,7 +243,7 @@ define(['sb_light/globals',
 
 	q.gravatar = function(uid, size) {
 		var u = q.user.apply(q, E.slice(arguments));
-		return "http://www.gravatar.com/avatar/" +  (u ? u.gravatar : "") + "?d=" + (u ? "identicon" : "mm") + "&s="+ (size||50);
+		return "https://www.gravatar.com/avatar/" +  (u ? u.gravatar : "") + "?d=" + (u ? "identicon" : "mm") + "&s="+ (size||50);
 	};
 
 

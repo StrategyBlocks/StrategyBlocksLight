@@ -657,6 +657,8 @@ define([
 					if(this.__busy) {
 						// this._consoleLogPages("DOM IS BUSY:", this.id);
 						this.drawBusy();
+					} else if (this.__creatingChildren) {
+						//not sure what to do. I reckon wait...
 					} else {
 						//THIS IS INVALID -- REMOVE ALL ITEMS
 						this._consoleLogPages( ("CAN'T Draw? " + this.__dirty + " "), this.id, " created: ", this.__created, " busy: ",  this.__busy, 

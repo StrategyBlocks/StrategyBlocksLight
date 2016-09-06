@@ -379,6 +379,13 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.SSO_GOOGLE_FILES, {query:str}, cb,cb);	
 	};
 
+
+	controller.adminPublishDemo = function(cid,cb) {
+		controller.invoke(sb.urls.ADMIN_PUBLISH_DEMO, {id:cid}, cb,cb);	
+	};
+
+
+
 	controller.fetch = function(urlObj, args, successCb, errorCb, stateCheck, overrides) {
 		args = args || {};
 		if(urlObj.company) {
