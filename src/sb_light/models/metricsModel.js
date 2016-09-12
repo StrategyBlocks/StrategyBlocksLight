@@ -104,7 +104,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 			if(!m.hierarchy) { return null; }
 
 			if(!nidList) {
-				nidList = E._.pluck(sb.models.raw("blocks"), "id");
+				nidList = E._.map(sb.models.raw("blocks"), "id");
 			}
 
 

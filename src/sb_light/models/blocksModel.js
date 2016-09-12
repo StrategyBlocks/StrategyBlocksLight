@@ -331,13 +331,16 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var hs = ["bad", "warning", "good"];
 			var isNew = b.ownership_state == "new";
 
+			var cLenLen = ((p ? p.children.length : 1)+"").length;
+			var levelPos = E._.padStart( (""+(1+pos)), cLenLen, "0"); 
+
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),
 				path:bpath,
 				parentPath:(p ? p.path : null),
 				parent:p,
 				level: depth,
-				level_sort: (p ? (p.level_sort + "." + (1+pos)) : "L1"),
+				level_sort: (p ? (p.level_sort + "." + levelPos) : "L1"),
 
 				size:1,
 				status: (isNew ? "new" : (

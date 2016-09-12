@@ -498,8 +498,10 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 
 
 	E.sortByOrder = function(list, props, orders) {
-		return E._.sortByOrder.call(null, list,props,orders);
-		// return E._.orderBy(list, props, E._.map(orders, function(el) { return el ? "desc" : "asc"; }));
+		var orders = E.map( (orders||[]), function(v) {
+			return E.isBool(v) ? (v?'asc':'desc') : v;
+		});
+		return E._.orderBy.call(this, list,props,orders);
 	};
 
 
