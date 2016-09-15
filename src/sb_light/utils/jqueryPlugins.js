@@ -21,6 +21,10 @@ define(["sb_light/globals", "sb_light/utils/ext", "jquery"], function(sb, E) {
 			x.screenX = offset ? offset.left : 0;
 			x.screenY = offset ? offset.top : 0;
 
+
+			x.scrollHeight = this.prop("scrollHeight");
+			x.scrollWidth = this.prop("scrollWidth");
+
 			return x;
 		};
 

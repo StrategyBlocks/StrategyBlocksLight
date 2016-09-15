@@ -436,14 +436,29 @@ define([
 			if(templateOpts[1]) {
 				opts.put(" #", templateOpts[1]);
 			}
+			var tname = "TEMPLATE_"+opts.join(""); 
 			try {
-				this.$.load(opts.join(""), function(response, status, xhr) {
-					if(status != "error") {
+				var t = ST.context(tname);
+				if(t) {
+					if(t === "waiting...") {
+						this.addBeforeDraw("loadTemplate");
+						self.beforeDrawDone.bindDelay(self, 50);
+					}  else {
+						this.$.html(t);
 						self.beforeDrawDone.bindDelay(self, 200);
-					} else {
-						E.warn("Error loading template", xhr.status + "\n" + xhr.statusText);
 					}
-				});
+				} else {
+					ST.context(tname, "waiting...");
+
+					this.$.load(opts.join(""), function(response, status, xhr) {
+						if(status != "error") {
+							ST.context(tname, response);
+							self.beforeDrawDone.bindDelay(self, 200);
+						} else {
+							E.warn("Error loading template", xhr.status + "\n" + xhr.statusText);
+						}
+					});
+				}
 			} catch(e) {
 				E.warn("Error loading template", opts.join(""));
 			}

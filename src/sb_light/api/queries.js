@@ -509,8 +509,9 @@ define(['sb_light/globals',
 		return m && m.is_manager;
 	};
 
-	q.formatMetric = function(m, value) {
+	q.formatMetric = function(m, value, nounit/*=false*/) {
 		var val = accounting.formatNumber(value, m.number_decimals);
+		if(nounit) { return val; }
 		return m ? 
 			(m.unit_before ? E.join("", m.unit, val) : E.join(" ", val, m.unit) ) : 
 			"--"
@@ -797,7 +798,7 @@ define(['sb_light/globals',
 			var l = lowerScale(d);
 
 			var isActual =  actualsMap[ds] ? true : false;
-			var isTarget = targetsMap[ds] ? true : false;;
+			var isTarget = targetsMap[ds] ? true : false;
 
 			var el = {
 				date:d,
@@ -835,9 +836,9 @@ define(['sb_light/globals',
 		var start = E.min(pd.range_end, pd.range_end)/100;
 		var end = E.max(pd.range_start, pd.range_end)/100;
 		var today = E.today();
+		var tomorrow = E.moment().add(1, "day");
 		var targets  = (pd.target && pd.target.length) ? E._.cloneDeep(pd.target) : [{date:today, value:0}];
 		var actuals  = (pd.actuals && pd.actuals.length) ? E._.cloneDeep(pd.actuals) : [{date:today, value:0}];
-
 		
 		targets.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
 		actuals.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
@@ -863,6 +864,16 @@ define(['sb_light/globals',
 		var dm = function(v) { return E.date(v); };
 		var td = targetDates.map(dm);
 		var ad = actualDates.map(dm);
+
+		if(td.length < 2) {
+			td.push(E.moment(td[0]).add(1, "day").toDate());
+			targetValues.push(targetValues[0]);
+		}
+		if(ad.length < 2) {
+			ad.push(E.moment(ad[0]).add(1, "day").toDate());
+			actualValues.push(actualValues[0]);
+		}
+
 
 		var ascale = d3.time.scale().domain(ad).range(actualValues).clamp(true);
 		var tscale = d3.time.scale().domain(td).range(targetValues).clamp(true);
@@ -1253,301 +1264,6 @@ define(['sb_light/globals',
 
 
 
-	// q.block = function(b) {
-	// 	//b can be a path, id, or the actual object
-	// 	var blocks = sb.models.raw("blocks");
-	// 	if(!blocks) { return null; }
-	// 	if(E.isStr(b)) {
-	// 		b = b.split("_").last(); 
-	// 		b = blocks[b];
-	// 	} else {
-	// 		b = blocks[b.path];
-	// 	}
-	// 	return b;
-	// };
-
-	// q.currentBlock = function() {
-	// 	return q.block(ST.state("block"));
-	// };
-	// q.rootBlock = function() {
-	// 	var rbid = q.rootBlockId();
-	// 	return rbid ? q.block(rbid) : null; 
-	// };
-	// q.rootBlockId = function() {
-	// 	var c = q.company();
-	// 	return c && c.root_block ? c.root_block.id : null; 
-	// };
-	// q.currentBlockId = function() {
-	// 	var b = q.currentBlock();
-	// 	return b ? b.id : null; 
-	// };
-	// q.currentBlockPath = function() {
-	// 	return q.currentBlock().path;
-	// };
-	// q.currentBlockLevel = function() {
-	// 	return q.currentBlock().level;
-	// };
-	// q.managedBlocks = function() {
-	// 	return sb.models.rawArray("blocks").reduce(function(pre, el) {
-	// 		if(el.is_manager) {
-	// 			return pre.put(el);
-	// 		} 
-	// 		return pre;
-	// 	}, []);
-	// };
-	// q.parentPath = function(bpath, str/*==false*/) {
-	// 	bpath = q.blockPath(bpath);
-	// 	return bpath ? q.blockPath(bpath.slice(0,-1), str) : null;
-	// };
-	// q.blockParentInfo = function(bpath) {
-	// 	bpath = q.blockPath(bpath);
-	// 	var b = bpath ? q.block(bpath) : null;
-	// 	if(b && b.parents && b.parents.length) {
-	// 		return b.parents.findKey("parent_id", bpath.last(1)).value;
-	// 	}
-	// 	return null;	
-	// };
-	
-	// q.blockPath = function(bpath, str/*==false*/) {
-	// 	if(!bpath)  {return null; }
- // 		bpath = _pathToArray(bpath);
-	// 	var b = q.block(bpath);
-	// 	if(b && bpath.length < 2 && b.parents.length > 0) {
-	// 		bpath = b.default_path;
-	// 	}
-	// 	return str ? bpath.join("_") : bpath;
-	// };
-
-	// var _pathToArray = function(bpath) {
-	// 	if(E.isArr(bpath)) { return bpath; }
-	// 	if(E.isNum(bpath)) { return [String(bpath)]; }
-	// 	if(E.isStr(bpath)) { return bpath.split("_"); }
-	// 	return bpath;
-	// };
-	
-	// q.blockId = function(bpath) {
-	// 	bpath = bpath ? _pathToArray(bpath) : null;
-	// 	return (bpath && bpath.length) ? bpath.last() : null;
-	// };
-	
-	
-	// q.blockLevel = function(bpath) {
-	// 	var b = q.block(bpath);
-	// 	return b ? b.level : -1;
-	// };
-	
-	// q.childPath = function(ppath, id, str/*===false*/) {
-	// 	var path = _pathToArray(ppath) || [];
-	// 	return q.blockPath(path.push(id), str);
-	// };
-	// q.childrenPaths = function(bpath, str/*==false*/) {
-	// 	//array, so we can concat
-	// 	bpath = q.blockPath(bpath);
-	// 	var b= q.block(bpath);
-	// 	//concat each child id to the bpath array and return using internal blockPath function, passing the "str" option. 
-	// 	return b ? 
-	// 			b.children.map(function(el) { return q.blockPath(bpath.concat([el]), str); }) :
-	// 			null; 
-		
-	// };
-	// q.parentPaths = function(bpath, str/*==false*/) {
-	// 	var b= q.block(bpath);
-	// 	return b.paths.reduce(function(prev,el) {
-	// 				var pp =  sb.queries.parentPath(el, str);
-	// 				return pp && pp.length  ? prev.put(pp) : prev;
-	// 	}, []);
-	// };
-	
-	// //includes siblings from *ALL* parents
-	// q.siblingPaths = function(bpath, str/*==false*/) {
-	// 	var b= q.block(bpath);
-	// 	return b.paths.reduce(function(prev,el) {
-	// 		var cp = sb.queries.childrenPaths(sb.queries.parentPath(el), str);
-	// 		if(cp) {
-	// 			cp = cp.filter(function(el) { 
-	// 				return sb.queries.blockPath(el,true) != sb.queries.blockPath(bpath,true); 
-	// 			});  
-	// 			return prev.concat(cp);
-	// 		} 
-	// 		return prev;
-	// 	}, []);
-	// };
-	
-	
-	// q.arePathsEqual = function(apath, bpath) {
-	// 	return q.blockPath(apath, true) == q.blockPath(bpath, true);
-	// };
-	// q.isCenterPath = function(apath) {
-	// 	return q.currentBlockPath(true).indexOf(q.blockPath(apath,true)) > -1;
-	// };
-	// q.isCurrentPath = function(apath) {
-	// 	return q.arePathsEqual(apath, q.currentBlockPath());
-	// };
-	
-
-	// q._managerFields = ["title", "body", "start_date", "end_date", "owner_id", "focus_id", 
-	// 					"priority", "days_of_effort", "floating_end_date", "milestone_definition_id", "health_calculation_id"];
-	// q._ownerFields = ["progress_value", "progress_comment"];
-
-	// q.canEditBlock = function(b) {
-	// 	return b.is_owner || b.is_manager;
-	// };
-	// q.canManageBlock = function(b, optionalField) {
-	// 	return b.is_manager && !b.closed;
-	// };
-	// q.canOwnBlock = function(b, optionalField) {
-	// 	return b.is_owner && !b.closed && b.ownership_state != "new";
-	// };
-
-	// q.maxDate = function(bpath) {
-	// 	var b = q.block(bpath || q.rootBlock());
-	// 	return sb.ext.date(q.rootBlock().end_date);
-	// };
-	// q.minDate = function(bpath) {
-	// 	var b = q.block(bpath || q.rootBlock());
-	// 	return sb.ext.date(q.rootBlock().start_date);
-	// };
-
-	// q.blockTarget = function(b) {
-	// 	b = (sb.ext.isStr(b) || sb.ext.isArr(b)) ? q.block(b) : b;
-	// 	if(!b || b.ownership_state == "new") { return 0; }
-	// 	return b.expected_progress;
-	// },
-	// q.blockProgress = function(b) {
-	// 	b = (sb.ext.isStr(b) || sb.ext.isArr(b)) ? q.block(b) : b;
-	// 	if(!b || b.ownership_state == "new") { return 0; }
-	// 	return b.percent_progress;
-	// },
-	// q.blockVariance = function(b) {
-	// 	var p  = q.blockProgress(b);
-	// 	var e  = q.blockTarget(b);
-	// 	return (e > 0) ? (Math.floor( ((p - e)/e) *100)) : 100;
-	// };
-
-
-	// q.blockProgressRatioLabel = function(b) {
-	// 	var p = q.blockProgress(b);
-	// 	var t = q.blockTarget(b);
-	// 	return [p,"/",t].join("");
-	// };
-
-
-	// //returns the available range of dates for the date picker on this block
-	// // 1. Block cannot START earlier than its parent blocks
-	// // 2. Block cannot START later than its earliest child start date, or the parent's end date
-	// // 3. Block cannot  END before its parent's start date or it's latest child's end date.
-	// // 4. Block cannot END after its parent unless that parent it floating
-	// q.dateRange = function(b) {
-	// 	var dates = {
-	// 		minStart: moment(new Date(1980,1,1)),	
-	// 		maxStart: moment(new Date(2038,12,31)),	
-	// 		minEnd: moment(new Date(1980,1,1)),	
-	// 		maxEnd: moment(new Date(2038,12,31))	
-	// 	};
-		
-	// 	var p = q.block(b.default_parent);
-	// 	var maxsd = b.children.map(function(cid) { return q.block(cid).start_date; }).put(p ? p.end_date : dates.maxStart);
-	// 	var mined = b.children.map(function(cid) { return q.block(cid).end_date; }).put(p ? p.start_date : dates.minEnd);
-		
-		
-	// 	dates.maxStart = sb.ext.minDate.apply(null, maxsd);
-	// 	dates.minStart =  p ? p.start_date : dates.minStart;
-	// 	dates.maxEnd = p && !p.floating_end_date ? p.end_date : dates.maxEnd;
-	// 	dates.minEnd = sb.ext.maxDate.apply(null, mined);
-	// 	return dates;
-	// };
-	
-	
-	// q.is_link = function(parent, child) {
-	// 	var pid = q.blockId(parent);
-	// 	var id = q.blockId(child);
-	// 	return _parent_child_link(pid, id).linked_parent_id != null;
-	// };
-	
-	// q.custom_progress_weight = function(ppath, cpath) {
-	// 	return sb.ext.to_i(_parent_child_link(ppath, cpath).custom_progress_weight) || 0;
-	// };
-	
-	// var _parent_child_link = function(ppath, cpath) {
-	// 	var blocks = sb.models.raw("blocks");
-	// 	var parent = q.block(ppath);
-	// 	var child = q.block(cpath);
-
-	// 	if (parent.children.indexOf(child.id) == -1) {
-	// 		throw new Error("Block(" + child.id + ") is not a parent of block(" + parent.id + ")");
-	// 	}
-	// 	return child.parents.findKey("parent_id", parent.id).value;
-	// };
-	
-	// q.progressVariance = function(bpath) {
-	// 	var b = q.block(bpath);
-	// 	if(b) {
-	// 		var a = b.percent_progress || 100;
-	// 		var t = b.expected_progress || 0;
-	// 		return t > 0 ? Math.round((a-t)/t*100) : 100;
-	// 	}
-	// 	return 0;
-	// };
-	
-	// //recursive function -- no arguments are required on initial call
-	// //1. If you supply arguments, you can build a subtree
-	// //2. This function is designed to build trees for the map layout using D3.js
-	// //3. Linked nodes are duplicated in the structure. 
-	// //4. If cpath is not passed, cpath is set to the actual root. 
-	// //5. If ppath is not passed, "cpath" is considered the current root: this is useful
-	// //			for re-orienting the tree around the currently selected block
-	// //6. If cpath and ppath is passsed on the initial call, the tree returned will be a branch
-	// //		
-	// //6. Blocks is only passed to simplify the recursion -- should never be necessary to pass it
-	// //			unless you want a tree using a subset of data (
-			
-	// q.blockFullTree = function(cpath,ppath, blocks) {
-	// 	blocks = blocks || sb.models.raw("blocks");
-	// 	if(!blocks) { return; }
-		
-	// 	if(sb.ext.isStr(cpath) && sb.ext.isArr(ppath)) {
-	// 		cpath = ppath.concat([cpath]);
-	// 	}
-
-
-	// 	cpath = q.blockPath(cpath || q.rootBlock().default_path);
-	// 	ppath = ppath ||[];
-	// 	//var ppath = ppath ||cpath.slice(0,-1);                                        
-	// 	var b = blocks[cpath.last()];
-		
-	// 	var d = {
-	// 		name: b.title,
-	// 		data: b,
-	// 		path: cpath,
-	// 		children: []
-	// 	};
-
-	// 	var children = b.children.cloneExcept(ppath.last());
-	// 	children.map(function(el) { return cpath.concat([el]); });
-	// 	var rp = cpath.last(1);
-	// 	if( rp && ppath.last() != rp) {
-	// 		children.unshift(cpath.slice(0,-1));
-	// 	}
-				
-	// 	var size = 1;
-	// 	var leaves = 0;
-	// 	var height= 1;
-	// 	var child;
-	// 	d.height = height;
-		
-	// 	children.forEach(function(el) {
-	// 		var child = q.blockFullTree(el, cpath, blocks);
-	// 		size += child.size;
-	// 		d.children.put(child);
-	// 		leaves += child.leaves || 1;
-	// 		height = Math.max(d.height+1, child.height+1);
-	// 	});
-	// 	d.height = height;
-	// 	d.size  = size;
-	// 	d.leaves = leaves;
-	// 	d.depth = cpath.length -1;
-	// 	return d;
-	// };
 
 
 
