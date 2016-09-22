@@ -87,6 +87,8 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		},
 
 		_handleFilters: function() {
+			//timestamps usually have .001 precision. Increase the timestamp by the minimum.
+			this._timestamp += 0.001;
 			this._publish();
 		},
 		filters: function() {

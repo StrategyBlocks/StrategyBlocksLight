@@ -307,11 +307,12 @@ define([
 			}
 			var df = this.bind(funcName);
 			args.forEach(function(v) {
-				if(ss[v]) { 
+				var name = v+"_"+funcName; 
+				if(ss[name]) { 
 					sb.ext.warn("DOM::Watch:You are already watching this " +  v + " " +  type + " " + self.id);
 					return;
 				}
-				ss[v] = ST.watch(type, v, function() {
+				ss[name] = ST.watch(type, v, function() {
 					self._consoleLogPages("HANDLE ", funcName, type, v, self.id);
 					df();
 				});

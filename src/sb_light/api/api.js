@@ -126,7 +126,9 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 		} else if(_checkContext >= _checkTimeout) {
 			//we've been trying for too long, so disconnect them and let them try to fix the problem.
 			ST.context("session", ST.session_disconnected);
-			_failedArgs.failure(data);
+			if(E.isFunc(_failedArgs.failure)) {
+				_failedArgs.failure(data);
+			}
 			_failedArgs = null;
 		} else  {
 			//increase the polling wait time (_checkContext) and try again

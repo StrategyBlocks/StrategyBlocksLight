@@ -291,7 +291,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var f = E.massageHealth;
 			var model = this._model;
 			E.each(d, function(dv, id) {
-				model[id].health_data = f(dv);
+				if(model[id]) {
+					model[id].health_data = f(dv);
+				}
 			});
 
 		},

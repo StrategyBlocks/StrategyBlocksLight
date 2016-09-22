@@ -663,7 +663,7 @@ define(['sb_light/globals',
 		//if today is in the middle, add the date and re-sort
 		var first = E.serverMoment(datestr[0]);
 		var last = E.serverMoment(datestr.last());
-		if(E.daysDiff(today, first) > 0 && E.daysDiff(last,today) > 0) {
+		if(datestr.indexOf(today) < 0 && E.daysDiff(today, first) > 0 && E.daysDiff(last,today) > 0) {
 			datestr.push(today);
 			datestr = datestr.sort(function(a,b) {
 				return E.sortDate(E.serverMoment(a), E.serverMoment(b));
