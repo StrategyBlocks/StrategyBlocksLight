@@ -372,6 +372,19 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.ssoSalesforceLogin = function() {
 		window.open(sb.urls.SSO_SALESFORCE_REDIRECT.url, "_blank");
 	};
+	controller.ssoGoogleRegoLogin = function() {
+		window.open(sb.urls.SSO_GOOGLE_REGO_REDIRECT.url, "_blank");
+	};
+	controller.ssoSalesforceRegoLogin = function() {
+		window.open(sb.urls.SSO_SALESFORCE_REGO_REDIRECT.url, "_blank");
+	};
+	controller.ssoGoogleBuilderLogin = function() {
+		window.open(sb.urls.SSO_GOOGLE_BUILDER_REDIRECT.url, "_blank");
+	};
+	controller.ssoSalesforceBuilderLogin = function() {
+		window.open(sb.urls.SSO_SALESFORCE_BUILDER_REDIRECT.url, "_blank");
+	};
+
 	controller.ssoRefresh = function(cb) {
 		controller.invoke(sb.urls.SSO_REFRESH, null, cb,cb);	
 	};

@@ -237,6 +237,13 @@ define(['sb_light/globals'], function(sb) {
 		SSO_REFRESH: 				{ url:"/sso/refresh.js" },
 		SSO_GOOGLE_REDIRECT: 		{ url:"/sso/google_sso_login_redirect.js?html=true" },
 		SSO_SALESFORCE_REDIRECT: 	{ url:"/sso/salesforce_sso_login_redirect.html?html=true" },
+
+		SSO_GOOGLE_REGO_REDIRECT: 			{ url:"/sso/google_sso_login_redirect.js?html=true&registration=true" },
+		SSO_SALESFORCE_REGO_REDIRECT: 		{ url:"/sso/salesforce_sso_login_redirect.html?html=true&registration=true" },
+
+		SSO_GOOGLE_BUILDER_REDIRECT: 		{ url:"/sso/google_sso_login_redirect.js?html=true&builder=true" },
+		SSO_SALESFORCE_BUILDER_REDIRECT: 	{ url:"/sso/salesforce_sso_login_redirect.html?html=true&builder=true" },
+		
 		SSO_GOOGLE_FILES: 			{ url:"/sso/google_drive_files.js", normalParams:true },
 
 
