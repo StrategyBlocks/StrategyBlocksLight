@@ -707,7 +707,8 @@ define(['sb_light/globals',
 			arScale, trScale, alScale, tlScale
 		;
 
-
+		actualDomain.unshift(E.moment(actualDomain[0]).subtract(1,"minute").toDate());
+		actualRange.unshift(0);
 		var aScale = d3.time.scale().domain(actualDomain).range(actualRange).clamp(true);
 		// var raScale = d3.time.scale().domain(raDomain).range(raRange).clamp(true);
 
@@ -736,6 +737,11 @@ define(['sb_light/globals',
 				}
 			});
 
+			arList.sort(E.sortServerDate("date", false));
+			alList.sort(E.sortServerDate("date", false));
+			trList.sort(E.sortServerDate("date", false));
+			tlList.sort(E.sortServerDate("date", false));
+
 			// Rollup and local raw values
 			arRange = E.values(arList, "value");
 			trRange = E.values(trList, "value");
@@ -748,6 +754,10 @@ define(['sb_light/globals',
 			tlDomain = E.values(tlList, "date", E.serverToDate);
 
 
+			arDomain.unshift(E.moment(arDomain[0]).subtract(1,"minute").toDate());
+			arRange.unshift(0);
+			alDomain.unshift(E.moment(alDomain[0]).subtract(1,"minute").toDate());
+			alRange.unshift(0);
 
 	
 			arScale = d3.time.scale().domain(arDomain).range(arRange).clamp(true);

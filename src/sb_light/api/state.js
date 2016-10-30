@@ -372,11 +372,11 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 
 	
 	//returns true / false depending on whether the response session is valid
-	state.update = function(data) {
+	state.update = function(data, reqArgs) {
 
 		var session = state.context("session");
 
-		_updateSession(data, session);
+		_updateSession(data, session, reqArgs);
 		_updateModels(data);
 
 		if(session != state.context("session")) {
@@ -444,7 +444,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			}
 		}
 		var fakeLogin = (!prevSession || prevSession == state.session_unknown || prevSession == state.session_startup); 
-		if(!fakeLogin && data.flash && (data.flash.error || data.flash.warning)) {
+		if(!fakeLogin && data.flash && (data.flash.error || data.flash.warning) && !reqArgs.skipFlash) {
 			//prevent updating the flash message on dummy logins
 			state.context("flash", data.flash);
 		}

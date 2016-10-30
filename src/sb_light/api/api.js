@@ -72,7 +72,7 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 			return;
 		}
 
-		if (ST.update(data) ) {
+		if (ST.update(data, reqArgs) ) {
 			//success function in the original call
 			var errors = sb.helpers.getResultMessages(data).errors;
 			
