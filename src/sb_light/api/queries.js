@@ -807,6 +807,8 @@ define(['sb_light/globals',
 			var u = upperScale(d);
 			var l = lowerScale(d);
 
+			var c = (E._.find(alList, {date:ds}) || actualsMap[ds] || {}).comment || "";
+
 			var isActual =  actualsMap[ds] ? true : false;
 			var isTarget = targetsMap[ds] ? true : false;
 
@@ -826,7 +828,7 @@ define(['sb_light/globals',
 				upper:u,
 				lower:l,
 				variance:v,
-				comment:(actualsMap[ds] ? actualsMap[ds].comment : ""),
+				comment:c,
 				isRealActual: isActual,
 				isRealTarget: isTarget
 			};

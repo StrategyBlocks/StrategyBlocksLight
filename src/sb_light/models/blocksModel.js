@@ -377,6 +377,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				start_date_num: E.dateNumber(E.serverMoment(b.start_date)),
 				end_date_num: E.dateNumber(E.serverMoment(b.end_date)),
 				variance_progress: E.variance(b.percent_progress, b.expected_progress),
+				groups_inherited: sb.groups.parseExpression(b.group_expression_inherited, true),
 				groups: b.group_ids.concat(sb.groups.parseExpression(b.group_expression_inherited, true)),
 				ownership: 	(b.owner_id == uid ? "owned" : 
 							(b.manager_id == uid ? "managed" : 

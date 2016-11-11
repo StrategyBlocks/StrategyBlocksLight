@@ -399,7 +399,8 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		}
 	};
 
-	function _updateSession (data, prevSession) {
+	function _updateSession (data, prevSession, reqArgs) {
+		reqArgs = reqArgs || {};
 		if(data) {
 			var uid = data.user ? data.user.id : null;
 			var cid = data.company ? data.company.id : null;
