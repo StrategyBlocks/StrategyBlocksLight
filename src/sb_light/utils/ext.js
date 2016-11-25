@@ -408,7 +408,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	E.serverMoment = function ext_serverMoment(d) { return E.moment(d,E.serverFormat); };
 	E.serverToDate = function ext_serverToDate(d) { return E.moment(d,E.serverFormat); };
 	E.month = function ext_date(d, format) { return E.moment(d,format).format("MMM (YYYY)");	};
-	E.userDate = function ext_userDate(d, format) { return E.moment(d,format).format( E.userFormat()); };
+	E.userDate = function ext_userDate(d, format) { return E.moment(d,format||(E.isStr(d) ? E.serverFormat: undefined)).format( E.userFormat()); };
 	E.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
 		d = E.momentFn(d, format);
 		if(reverse) {
