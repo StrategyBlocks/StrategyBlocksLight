@@ -293,7 +293,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		}
 		storage.state.block = null;
 		storage.state.news = null;
-		storage.state.kpi = null;
+		storage.state.metric = null;
 		storage.state.risk = null;
 		storage.state.tag = null;
 

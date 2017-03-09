@@ -565,10 +565,10 @@ define(['sb_light/globals',
 		"Bad": "statusBad",
 	};
 	q._metricStatusIcon = {
-		"bad": "fa fa-lg fa-fw fa-arrow-circle-down",
-		"Bad": "fa fa-lg fa-fw fa-arrow-circle-down",
-		"good": "fa fa-lg fa-fw fa-arrow-circle-up",
-		"Good": "fa fa-lg fa-fw fa-arrow-circle-up",
+		"bad": "fa fa-lg fa-fw  fa-times-circle",
+		"Bad": "fa fa-lg fa-fw  fa-times-circle",
+		"good": "fa fa-lg fa-fw fa-check-circle",
+		"Good": "fa fa-lg fa-fw fa-check-circle",
 		"warning": "fa fa-lg fa-fw fa-minus-circle",
 		"Warning": "fa fa-lg fa-fw fa-minus-circle"
 	};

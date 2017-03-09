@@ -91,6 +91,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			//add information about placeholder nodes
 			var rb = E._.find(this._model, {is_root:true});
+			var b = Q.block();
+			if(!b) { return; }
 			var recurse = function(parent) {
 				var childPassed = (!parent.children && !parent.children.length) || E.reduce(parent.children, function(prev, c) {
 					var cb = self.find(c);
@@ -98,7 +100,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 					return prev || cb.FILTER_SHOW || cb.FILTER_PLACEHOLDER;
 				}, false)
 
-				parent.FILTER_PLACEHOLDER = !parent.FILTER_SHOW && (childPassed || Q.block().path == parent.path);
+				parent.FILTER_PLACEHOLDER = !parent.FILTER_SHOW && (childPassed || b.path == parent.path);
 				parent.FILTER_HIDDEN = !parent.FILTER_PLACEHOLDER && !parent.FILTER_SHOW;
 			}
 			recurse(rb);
@@ -290,6 +292,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_massageHealth: function(d) {
 			var f = E.massageHealth;
 			var model = this._model;
+			if(!model) { return; }
+
 			E.each(d, function(dv, id) {
 				if(model[id]) {
 					model[id].health_data = f(dv);
@@ -382,6 +386,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				ownership: 	(b.owner_id == uid ? "owned" : 
 							(b.manager_id == uid ? "managed" : 
 							(b.ownership_state == "watched" ? "watched" : "none") ) )
+			});
+
+			E._.each(b.metrics, function(v) {
+				v.status = v.status.toLowerCase();
+				v.trend = v.trend.toLowerCase();
 			});
 
 			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);

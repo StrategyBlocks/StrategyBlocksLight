@@ -59,6 +59,7 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_UPDATE_CASHFLOWS: 		{url: "/blocks/update_net_cashflows/%id%.js"},
 		BLOCKS_HEALTH :					{url: "/blocks/health.js", normalParams:true},
 		BLOCKS_PROGRESS :				{url: "/blocks/progress.js", normalParams:true},
+		BLOCKS_CLONE :					{url: "/blocks/clone_blocks.js", normalParams:true},
 	
 		//singular block for controller convenience
 		BLOCK_FILE_ADD: 				{url: "/blocks/%id%/documents/create.js", deleteId:true, post:true},
@@ -271,7 +272,7 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_CACHE_SERVER:			{url: "/admin/clear_cache.js", 							post:true, normalParams:true},
 		ADMIN_CACHE_COMPANY:		{url: "/admin/clear_cache_for_company.js", 				post:true, normalParams:true},
 		ADMIN_CACHE_BLOCKS:			{url: "/admin/clear_block_cache.js", 					post:true, normalParams:true},
-		ADMIN_CACHE_METRICS:		{url: "/admin/clear_kpi_cache.js", 						post:true, normalParams:true},
+		ADMIN_CACHE_METRICS:		{url: "/admin/clear_metric_cache.js", 					post:true, normalParams:true},
 		ADMIN_CACHE_REGOS:			{url: "/admin/clear_rego_tokens_cache.js", 				post:true, normalParams:true},
 		ADMIN_CACHE_SESSIONS:		{url: "/admin/clear_session_cache.js", 					post:true, normalParams:true},
 		
@@ -306,7 +307,7 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_SETTINGS:				{url: "/admin/settings.js", 							post:false},
 		ADMIN_SETTINGS_CHANGE:		{url: "/admin/change_settings.js", 						post:true, normalParams:true},
 		ADMIN_SHIFT_BLOCKS:			{url: "/admin/shift_company_strategy_dates/%id%.js", 	post:true, normalParams:true, deleteId:true},
-		ADMIN_SHIFT_KPIS:			{url: "/admin/shift_company_kpi_dates/%id%.js", 		post:true, normalParams:true, deleteId:true},
+		ADMIN_SHIFT_METRICS:		{url: "/admin/shift_company_metric_dates/%id%.js", 		post:true, normalParams:true, deleteId:true},
 		//generic - TBD
 		ADMIN_POST:					{														post:true, normalParams:true},
 		ADMIN_USERS:				{url: "/admin/users/%admin_company_id%.js", 			post:false, normalParams:true, company:"admin_company_id"},

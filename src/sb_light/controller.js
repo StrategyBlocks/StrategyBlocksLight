@@ -60,6 +60,11 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.blockManageChildren = function( changes, cb) {
 		controller.invoke(sb.urls.BLOCKS_MANAGE_CHILDREN,changes, cb,cb);
 	};
+
+	controller.blockClone = function( list, cb) {
+		controller.invoke(sb.urls.BLOCKS_CLONE,list, cb,cb);
+	};
+
 	controller.blockClose = function(o, cb) {
 		//{"rating":[0-5], "comment":String}
 		controller.invoke(sb.urls.BLOCKS_CLOSE, o, cb,cb);
