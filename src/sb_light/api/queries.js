@@ -72,52 +72,54 @@ define(['sb_light/globals',
 		COMPANIES
 	*********************************/
 	q.company = function(cid /*optional*/) {
+		var cc = ST.context("company") || null
 		var cm = sb.models.rawArray("companies");
-		if(!cid && !cm) { 
-			return ST.context("company") || null;
+		if(!cid) { 
+			return cc;
 		}
-		cid = cid || ST.state("company_id") || (ST.context("company") && ST.context("company").id) || null;
-		return sb.models.find("companies", cid);
+		cid = cid || ST.state("company_id") || (cc && cc.id) || null;
+
+		return (cc && cid == cc.id) ? cc : sb.models.find("companies", cid);
 	};
 	
 	q.companyRollup = function() {
-		var c = q.company();
+		var c = Q.company();
 		return c ? c.default_progress_weight_method : 1;
 	};
 	q.companyLinkedRollup = function() {
-		var c = q.company();
+		var c = Q.company();
 		return c ? c.default_linked_rollup_method : 2;
 	};
 	q.companyHealth = function() {
-		var c = ST.context("company");
+		var c = Q.company();
 		return c ? c.default_health_calculation_id : null;
 	};
 	q.companyLicense = function() {
-		var c = ST.context("company");
+		var c = Q.company();
 		return c ? c.license : null;
 	};
 	q.companyLogo = function() {
-		var c = ST.context("company");
+		var c = Q.company();
 		return c ? c.logo_path : null;
 	};
 	q.companyRisk = function() {
-		var c = ST.context("company");
+		var c = Q.company();
 		return c ? c.risk : null;
 	};
 
 	q.companyMaxSessionDays = function() {
-		var c = ST.context("company");
+		var c = Q.company();
 		return c ? c.stay_logged_in_duration : 0;
 	};
 
 	q.shortCompanyName = function(cid) {
-		var c = q.company(cid);
+		var c = Q.company(cid);
 		var t = c ? c.name : null;
 		return E.shorten(t, 25);
 	};
 
 	q.yearEnd = function() {
-		var c = ST.context("company");
+		var c = Q.company();
 		var fy = c ? c.npv.financial_year_starts_on : "1/4";
 		var ds = fy.match(/^(\d\d?)\//)[1];
 		var ms = fy.match(/\/(\d\d?)$/)[1];
@@ -130,7 +132,7 @@ define(['sb_light/globals',
 	};
 
 	q.yearStart = function() {
-		var c = ST.context("company");
+		var c = Q.company();
 		var fy = c ? c.npv.financial_year_starts_on : "1/4";
 		var ds = fy.match(/^(\d\d?)\//)[1];
 		var ms = fy.match(/\/(\d\d?)$/)[1];
@@ -143,7 +145,7 @@ define(['sb_light/globals',
 	};
 
 	q.risk_profile = function() {
-		var c = ST.context("company");
+		var c = Q.company();
 		return (c &&  c.risk && c.risk.profile_properties) || null;
 
 	};
@@ -1025,8 +1027,8 @@ define(['sb_light/globals',
 			rb = E._.find(ba, {is_root:true});
 			return rb ||  null;
 		}
-		var c = q.company();
-		rb = c ? (c.company_block || c.root_block || null): null;
+		var c = Q.company();
+		rb = c ? (c.root_block || null): null;
 		return rb ? (q.block(rb.id) || rb) : null;
 	};
 
