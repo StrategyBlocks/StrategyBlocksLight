@@ -280,15 +280,15 @@ define([
 		//which models this widget subscribes to
 		models: function(/*string list...*/) {
 			var args = E.slice(arguments, 0);
-			var m = sb.models;
 			var ms = this.__models;
-			var df = this.bind(this.__modelDirty);
 			args.forEach(function(v) {
 				if(!ms[v]) {
-					ms[v] = m.subscribe(v, df);
+					ms[v] = ["TODO", v];
 				}
 			});
 		},
+
+	
 
 		skipModels: function(/*string list*/) {
 			var args = E.slice(arguments, 0);
@@ -366,6 +366,14 @@ define([
 		modelsValid: function() {
 			var sm = this.__skipModels || [];
 			var ms = sb.models;
+			var df = E.isStr(this.__modelDirty) ? this.bind(this.__modelDirty) : this.__modelDirty;
+			var models = this.__models;
+
+			E._.each(models, function(v,k) {
+				if( E.isArr(v) && v[0] == "TODO") {
+					models[k] = ms.subscribe(v[1], df);
+				}
+			});
 
 			//reverse intersection to filter out the skipped models
 			//remaining keys are checked against sb.models for validity;
