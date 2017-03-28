@@ -399,7 +399,21 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		}
 	};
 
+	//if no requests are made and we're in a good state, poll the server to make sure the session is alive
+	var _pollingTime = 60000;
+	var _pollingName = "____SESSION_____POLLING";
+	function _updateSessionPolling() {
+		sb.queue.cancel(_pollingName);
+
+		var url = sb.urls.url(sb.urls.VALID_SESSION);
+		var func = sb.api.get.bind(sb.api, url, null, _updateSessionPolling, _updateSessionPolling, state.authorized);
+		sb.queue.add(func, _pollingName, _pollingTime);
+	};
+
+
 	function _updateSession (data, prevSession, reqArgs) {
+		_updateSessionPolling();
+
 		reqArgs = reqArgs || {};
 		if(data) {
 			var uid = data.user ? data.user.id : null;

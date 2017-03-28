@@ -10,7 +10,6 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 	var _errorTimeoutDefault = 50;
 	var _requestQueue =  [];
 
-
 		
 	api.get = function(url, params, success, failure, stateCheck, overrides) {
 		api.request(url,params, false, success,failure,stateCheck, overrides);

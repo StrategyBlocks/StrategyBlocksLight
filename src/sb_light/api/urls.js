@@ -189,7 +189,7 @@ define(['sb_light/globals'], function(sb) {
 		METRIC_UNWATCH: 			{url: "/metrics/unwatch/%id%.js",		post:true},
 
 		
-		LEVELS_UPDATE: 				{url: "/levels/update.js"},
+		LEVELS_UPDATE: 				{url: "/levels/update.js", post:true},
 		
 		MEASURES_BLOCKS: 			{url: "/blocks/measure_values/%id%.js"},
 		
@@ -220,6 +220,8 @@ define(['sb_light/globals'], function(sb) {
 		
 		LOGIN :						{url: "/login/auth.js"},
 		LOGOUT: 					{url: "/login/logout.js"},
+		//To check if there is a valid session without resetting the session expiry time:
+		VALID_SESSION:				{url: "/login/valid_session.js"},
 		
 		//Args:
 		//	username: users email address
