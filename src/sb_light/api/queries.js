@@ -995,8 +995,13 @@ define(['sb_light/globals',
 		"triggered": "statusBad"
 	};
 
-	q.riskStatusClass = function(r) {
-		return q._riskStatusMap[r.status];
+	q.riskStatusClass = function(r, bid) {
+		if (!bid) {
+			return q._riskStatusMap[r.status];
+		} else {
+			var ri = E._.find(r.risk_impacts, {block_id:bid})
+			return ri ? q._riskStatusMap[r.health_status] : q._riskStatusMap["inactive"]; 
+		}
 	};
 
 		//DISPLAY purposes
