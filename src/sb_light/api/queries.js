@@ -502,14 +502,21 @@ define(['sb_light/globals',
 		return null;
 	};
 
-	q.isMetricOwner = function(mid) {
-		var m = q.metric(mid);
-		return m && m.is_owner; 
+	q.metricLocked = function(m) {
+		return !Q.isAdmin() && m.locked;
 	};
-	q.isMetricManager = function(mid) {
-		var m = q.metric(mid);
-		return m && m.is_manager;
+
+
+	q.isMetricOwner = function(m) {
+		return m && m.is_owner && !q.metricLocked(m); 
 	};
+	q.isMetricManager = function(m) {
+		return m && m.is_manager && !q.metricLocked(m);
+	};
+
+	q.canEditMetric = function(m) {
+		return q.isMetricOwner(m) || q.isMetricManager(m);
+	}
 
 	q.formatMetric = function(m, value, nounit/*=false*/) {
 		var val = accounting.formatNumber(value, m.number_decimals);
@@ -1021,6 +1028,16 @@ define(['sb_light/globals',
 		);   
 	};
 
+	q.isRiskOwner = function(r) {
+		r = q.risk(r);
+		return r && r.is_owner;
+	};
+	q.isRiskManager = function(r) {
+		r = q.risk(r);
+		return r && r.is_manager;
+	};
+
+
 	/********************************
 		BLOCKS
 	*********************************/
@@ -1186,7 +1203,7 @@ define(['sb_light/globals',
 		b= q.block(b);
 		if(!b) { return "";}
 
-		var hc = sb.colors.status(b.status_health);
+		var hc = sb.colors.status(b.health_type);
 		return "<i class='fa " + (size || "fa-lg") + " " + sb.icons.healthIcon(b) + "' style='color:" + hc + "'></i>";
 
 	};
@@ -1224,17 +1241,41 @@ define(['sb_light/globals',
 		return bs.blockType || defaultType;
 	};
 
+	q.blockLocked = function(b) {
+		return !Q.isAdmin() && (b.locked || b.locked_inherited);
+	};
+
+	q.canDeleteBlock = function(b) {
+		return !Q.blockLocked(b) && b.is_manager && b.parent;
+	}
+
+	q.isBlockManager = function(b) {
+		return !Q.blockLocked(b) && b.is_manager;
+	}
+	q.isBlockOwner = function(b) {
+		return !Q.blockLocked(b) && b.is_owner;
+	}
+
+	q.canCloseBlock = function(b) {
+		return Q.isBlockManager(b) && b.can_close;
+	}
+
+	q.canPublishBlock = function(b) {
+		return Q.isBlockOwner(b) && b.ownership_state == "new";
+	}
+
 	q.canEditBlock = function(b) {
-		return q.canManageBlock(b) || q.canUpdateProgress(b);
+		return q.canManageBlock(b) || q.canUpdateProgress(b) ;
 	};
 	q.canManageBlock = function(b) {
-		return b.is_manager && !b.closed && !b.is_sub_company_block;
+		return Q.isBlockManager(b) && !b.closed && !b.is_sub_company_block;
 	};
 	q.canUpdateProgress = function(b) {
-		return b.is_owner && !b.closed && b.ownership_state != "new" && b.leaf &&  !b.sub_company_block;
+		return Q.isBlockOwner(b) && !b.closed && b.ownership_state != "new" && b.leaf &&  !b.sub_company_block;
 	};
-	q.isBlockOwner = q.canUpdateProgress;
-	q.isBlockManager = q.canManageBlock;
+	q.canAddChildren = function(b) {
+		return Q.isBlockOwner(b) && !b.closed && !b.milestone_definition_id && !b.sub_company_block;
+	}
 
 
 	q.progressRollupMethod = function(parent, companyFallback/*true*/) {

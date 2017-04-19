@@ -596,6 +596,10 @@ define([
 				if(d && !d.busy && d.data === null) {
 					d.busy = true;
 					d.args = d.collect();
+
+					//should be an empty object if paramters are not required.
+					if (d.args === null) { return; }
+
 					var f = self.handleData.bind(self, d.id);
 					ctrl.fetch(d.url, d.args, f, f, d.state);				
 				}

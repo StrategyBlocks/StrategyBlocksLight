@@ -8,32 +8,33 @@ define(['sb_light/globals'], function(sb) {
 
 	var urls = {
 		//******************************API URLS **********************************************/
-		MODEL_BLOCKS:		{url: "/blocks.js", 					post:false},
-		MODEL_COMPANIES:	{url: "/companies.js", 					post:false},
-		MODEL_CAPABILITIES: {url: "/company_settings.js", 			post:false},
-		MODEL_LIBRARY: 		{url: "/exports.js", 					post:false},
-		MODEL_FOCUS: 		{url: "/focus.js", 						post:false},
-		MODEL_GROUPS: 		{url: "/groups.js", 					post:false},
-		MODEL_METRICS: 		{url: "/metrics.js", 					post:false},
-		MODEL_RISKS: 		{url: "/risks.js", 						post:false},
-		MODEL_LEVELS: 		{url: "/levels.js", 					post:false},
-		MODEL_NEWS: 		{url: "/news.js", 						post:false},
-		MODEL_LICENSES:		{url: "/licenses.js", 					post:false},
-		MODEL_PROGRESS:		{url: "/blocks/progress.js", 			post:false},
-		MODEL_HEALTHS: 		{url: "/health_calculations.js", 		post:false},
-		MODEL_MILESTONES: 	{url: "/milestone_definitions.js", 		post:false},
-		MODEL_NPV: 			{url: "/blocks/npv.js", 				post:false},		
-		MODEL_RISK: 		{url: "/blocks/risk.js", 				post:false},		
-		MODEL_USERS: 		{url: "/users.js", 						post:false},
-		MODEL_TAGS:			{url: "/tags.js", 						post:false},
-		MODEL_TIMEZONES: 	{url: "/companies/timezones.js", 		post:false},
-		MODEL_DASHBOARD: 	{url: "/reports/dashboard_layout.js", 	post:false},
-		MODEL_HISTORY: 		{url: "/login/history.js", 				post:false},
-		MODEL_BUILDERS: 	{url: "/builders.js", 					post:false},
-		MODEL_METRICS_EXPRESSIONS: 		{url: "/metrics/calculation_functions.js", 	post:false},
-		MODEL_DOCUMENTS: 	{url: "/documents.js", 					post:false},
-		MODEL_DASHBOARDS: 	{url: "/dashboards.js", 				post:false},
-		MODEL_BOOKMARKS: 	{url: "/saved_client_states/index.js", 	post:false},
+		MODEL_BLOCKS:				{url: "/blocks.js", 					post:false},
+		MODEL_COMPANIES:			{url: "/companies.js", 					post:false},
+		MODEL_CAPABILITIES: 		{url: "/company_settings.js", 			post:false},
+		MODEL_LIBRARY: 				{url: "/exports.js", 					post:false},
+		MODEL_FOCUS: 				{url: "/focus.js", 						post:false},
+		MODEL_GROUPS: 				{url: "/groups.js", 					post:false},
+		MODEL_METRICS: 				{url: "/metrics.js", 					post:false},
+		MODEL_RISKS: 				{url: "/risks.js", 						post:false},
+		MODEL_LEVELS: 				{url: "/levels.js", 					post:false},
+		MODEL_NEWS: 				{url: "/news.js", 						post:false},
+		MODEL_LICENSES:				{url: "/licenses.js", 					post:false},
+		MODEL_PROGRESS:				{url: "/blocks/progress.js", 			post:false},
+		MODEL_HEALTHS: 				{url: "/health_calculations.js", 		post:false},
+		MODEL_MILESTONES: 			{url: "/milestone_definitions.js", 		post:false},
+		MODEL_NPV: 					{url: "/blocks/npv.js", 				post:false},		
+		MODEL_RISK: 				{url: "/blocks/risk.js", 				post:false},		
+		MODEL_USERS: 				{url: "/users.js", 						post:false},
+		MODEL_TAGS:					{url: "/tags.js", 						post:false},
+		MODEL_TIMEZONES: 			{url: "/companies/timezones.js", 		post:false},
+		MODEL_DASHBOARD: 			{url: "/reports/dashboard_layout.js", 	post:false},
+		MODEL_HISTORY: 				{url: "/login/history.js", 				post:false},
+		MODEL_BUILDERS: 			{url: "/builders.js", 					post:false},
+		MODEL_METRICS_EXPRESSIONS: 	{url: "/metrics/calculation_functions.js", 	post:false},
+		MODEL_DOCUMENTS: 			{url: "/documents.js", 					post:false},
+		MODEL_DASHBOARDS: 			{url: "/dashboards.js", 				post:false},
+		MODEL_BOOKMARKS: 			{url: "/saved_client_states/index.js", 	post:false},
+		MODEL_CUSTOM_FIELDS:		{url: "/custom_field_types/index.js", 	post:false},	
 
 
 			
@@ -60,6 +61,9 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_HEALTH :					{url: "/blocks/health.js", normalParams:true},
 		BLOCKS_PROGRESS :				{url: "/blocks/progress.js", normalParams:true},
 		BLOCKS_CLONE :					{url: "/blocks/clone_blocks.js", normalParams:true},
+		BLOCKS_LOCK:					{url: "/blocks/admin_lock.js", post:true, normalParams:true },
+		BLOCKS_UNLOCK:					{url: "/blocks/admin_unlock.js", post:true, normalParams:true },
+
 	
 		//singular block for controller convenience
 		BLOCK_FILE_ADD: 				{url: "/blocks/%id%/documents/create.js", deleteId:true, post:true},
@@ -72,7 +76,7 @@ define(['sb_light/globals'], function(sb) {
 		BOOKMARKS:						{url: "/saved_client_states/index.js"},
 		BOOKMARK_CREATE_DYNAMIC:		{url: "/saved_client_states/create_dynamic.js"},
 		BOOKMARK_SAVE_DYNAMIC:			{url: "/saved_client_states/%id%/save_dynamic.js", normalParams:true},
-		BOOKMARK_CREATE:				{url: "/saved_client_states/create.js", normalParams:true},
+		BOOKMARK_CREATE:				{url: "/saved_client_states/create.js", normalParams:true, post:true},
 		BOOKMARK_UPDATE:				{url: "/saved_client_states/%id%/update.js", normalParams:true, deleteId:true},
 		BOOKMARK_DELETE:				{url: "/saved_client_states/%id%/delete.js", deleteId:true},
 				 
@@ -104,6 +108,10 @@ define(['sb_light/globals'], function(sb) {
 		COMPANIES_MILESTONE_UPDATE :	{url: "/milestone_definitions/%id%/update.js", deleteId:true},
 		COMPANIES_MILESTONE_DELETE: 	{url: "/milestone_definitions/%id%/destroy.js", deleteId:true},
 		
+
+		CUSTOM_FIELD_CREATE:			{url: "/custom_field_types/create.js", post:true},
+		CUSTOM_FIELD_UPDATE:			{url: "/custom_field_types/%id%/update.js", deleteId:true, post:true},
+		CUSTOM_FIELD_DESTROY:			{url: "/custom_field_types/%id%/delete.js", deleteId:true, post:true},
 		
 		CAPABILITIES_UPDATE: 			{url: "/company_settings/update.js"},
 		
@@ -174,6 +182,8 @@ define(['sb_light/globals'], function(sb) {
 		METRICS_DOWNLOAD:  			{url: "/metrics.csv" },
 		METRICS_HIERARCHY:			{url: "/metrics/hierarchy_values/%id%.js", deleteId:true, normalParams:true},
 		METRICS_NEWS: 				{url: "/metrics/%id%/news.js", deleteId:true},
+		METRICS_LOCK:				{url: "/metrics/admin_lock.js", post:true, normalParams:true },
+		METRICS_UNLOCK:				{url: "/metrics/admin_unlock.js", post:true, normalParams:true },
 
 
 		METRICS_COMMENTS:			{url: "/metrics/%id%/comments.js", deleteId:true},
@@ -229,7 +239,7 @@ define(['sb_light/globals'], function(sb) {
 		
 		LOGIN_REMEMBER_ME :			{url: "/login/remember_me.js"},
 	
-		URL_SAVE_BOOKMARK :			{url: "/users/save_bookmark.js"},
+		URL_SAVE_BOOKMARK :			{url: "/users/save_bookmark.js", post:true},
 		PAYMENTS :					{url: "/purchases/index.js"},
 		PAYMENTS_QUOTE :			{url: "/purchases/quote.js"},
 		PAYMENTS_CREATE: 			{url: "/purchases/create.js"},

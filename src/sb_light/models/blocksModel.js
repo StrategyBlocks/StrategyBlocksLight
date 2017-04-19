@@ -354,7 +354,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 								b.progress_color == "red" ? "bad" : (b.progress_color == "yellow" ? "warning" : "good")
 							)
 						)),
-				status_health: (!isNew ? (hs[E.first(b.status_health,0) + 1]) : "none"),
+				health_type: (!isNew ? (hs[E.first(b.status_health,0) + 1]) : "none"),
 				percent_health: (b.percent_health || 0),
 				count_metrics: (b.count_metrics || 0),
 				count_risks: (b.count_risks || 0),

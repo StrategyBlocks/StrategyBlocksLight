@@ -24,10 +24,11 @@ define([
 	'sb_light/models/documentsModel',
 	'sb_light/models/dashboardsModel',
 	'sb_light/models/bookmarksModel',
+	'sb_light/models/customFieldsModel'
 
 ], function(sb, tags,news,users,blocks,levels,focus,risks,metrics, metricsExpressions, 
 					companies, groups,timezones,healths, milestones, capabilities, history, 
-					builders, library, documents, dashboards, bookmarks) {
+					builders, library, documents, dashboards, bookmarks,customFields) {
 
 	'use strict';
 	
@@ -53,6 +54,7 @@ define([
 		documents:					{klass:documents},
 		dashboards:					{klass:dashboards},
 		bookmarks:					{klass:bookmarks},
+		custom_fields:				{klass:customFields}
 	};
 	
 	var models = {};

@@ -308,6 +308,18 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.deleteFocusArea = function(id, cb) {
 		controller.invoke(sb.urls.FOCUS_DELETE, {id:id}, cb,cb);
 	};
+
+	controller.updateCustomField = function(data, cb, errorCb) {
+		if(data.id == "new") {
+			delete data.id;
+			controller.invoke(sb.urls.CUSTOM_FIELD_CREATE, data,cb,errorCb);
+		} else {
+			controller.invoke(sb.urls.CUSTOM_FIELD_UPDATE, data,cb,errorCb);
+		}
+	};	
+	controller.deleteCustomField = function(id, cb, errorCb) {
+		controller.invoke(sb.urls.CUSTOM_FIELD_DELETE, {id:id},cb,errorCb);
+	};	
 	
 
 	controller.updateHealthCalculation = function(data, cb, errorCb) {
