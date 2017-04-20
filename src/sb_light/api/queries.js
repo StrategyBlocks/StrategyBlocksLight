@@ -628,8 +628,8 @@ define(['sb_light/globals',
 		var today = E.serverDate(E.today());
 
 		//display values
-		var targets = hierarchyData ? hierarchyData.target_total : m.target;
-		var actuals = hierarchyData ? hierarchyData.actuals_total : m.actuals;
+		var targets = hierarchyData ? hierarchyData.target : m.target;
+		var actuals = hierarchyData ? hierarchyData.actuals : m.actuals;
 
 		targets  = (targets && targets.length) ? E._.cloneDeep(targets) : [{date:E.serverDate(), value:0}];
 		actuals  = (actuals && actuals.length) ? E._.cloneDeep(actuals) : [{date:E.serverDate(), value:0}];
@@ -704,12 +704,6 @@ define(['sb_light/globals',
 			upperRange.push(upperValues[0]);
 			lowerRange.push(lowerValues[0]);
 		}
-
-
-		// var raRange = E.values( (hierarchyData ? hierarchyData.actuals_total : m.raw_actuals).sort(E.sortServerDate("date",false)), "value");
-		// var rtRange = E.values( (hierarchyData ? hierarchyData.target_total : m.raw_target).sort(E.sortServerDate("date",false)), "value");
-		// var raDomain = E.values( (hierarchyData ? hierarchyData.actuals_total : m.raw_actuals).sort(E.sortServerDate("date",false)), "date", E.serverToDate);
-		// var rtDomain = E.values( (hierarchyData ? hierarchyData.target_total : m.raw_target).sort(E.sortServerDate("date",false)), "date", E.serverToDate);
 
 		var arRange, trRange, alRange, tlRange,
 			arDomain, trDomain, alDomain, tlDomain,
@@ -827,11 +821,10 @@ define(['sb_light/globals',
 				dateStr: ds,
 				dateNum: dn,
 				target:t,
-				// raw_target: rtScale(d),
 				target_rollup: (trScale ? trScale(d) : null),
 				target_local: (tlScale ? tlScale(d) : null),
+
 				actual:a,
-				// raw_actual: raScale(d),
 				actual_rollup: (arScale ? arScale(d) : null),
 				actual_local: (alScale ? alScale(d) : null),
 				upper:u,

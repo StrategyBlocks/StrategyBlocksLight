@@ -26,12 +26,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	//return a unique number /id
 	E.unique = function ext_unique(prefix, suffix) {
 		if(arguments.length) {
-			var str = [Date.now()+"_"+(E._unique++)];
+			var str = [E.time()+"_"+(E._unique++)];
 			if(prefix) { str.unshift(prefix); }
 			if(suffix) { str.push(suffix); }
 			return str.join("_");
 		} else {
-			return (Date.now()+"-"+(E._unique++));
+			return (E.time()+"-"+(E._unique++));
 		}
 	};
 
@@ -349,6 +349,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 			return function ext_time() { return Date.now(); };
 	}());	
 	
+	E.startOfDay = function(date) {
+		date = date || new Date();
+		date = E.serverDate(date);
+		return E.serverToDate(date);
+	};
+
 	E.parseDate = function ext_moment() {
 		E.deprecated("E.parseDate", "E.moment");
 	};
@@ -406,7 +412,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	};
 	E.serverDate = function ext_serverDate(d,format) { return E.moment(d,format||(E.isStr(d) ? E.serverFormat: undefined)).format(E.serverFormat); };
 	E.serverMoment = function ext_serverMoment(d) { return E.moment(d,E.serverFormat); };
-	E.serverToDate = function ext_serverToDate(d) { return E.moment(d,E.serverFormat); };
+	E.serverToDate = function ext_serverToDate(d) { return E.serverMoment(d).toDate(); };
 	E.month = function ext_date(d, format) { return E.moment(d,format).format("MMM (YYYY)");	};
 	E.userDate = function ext_userDate(d, format) { return E.moment(d,format||(E.isStr(d) ? E.serverFormat: undefined)).format( E.userFormat()); };
 	E.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
