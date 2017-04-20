@@ -727,8 +727,8 @@ define(['sb_light/globals',
 		if(hierarchyData) {
 			var arList = E._.clone(hierarchyData.actuals_rollup.sort(E.sortServerDate("date",false)));
 			var trList = E._.clone(hierarchyData.target_rollup.sort(E.sortServerDate("date",false)));
-			var alList = E._.clone(hierarchyData.actuals.sort(E.sortServerDate("date",false)));
-			var tlList = E._.clone(hierarchyData.target.sort(E.sortServerDate("date",false)));
+			var alList = E._.clone(hierarchyData.actuals_local.sort(E.sortServerDate("date",false)));
+			var tlList = E._.clone(hierarchyData.target_local.sort(E.sortServerDate("date",false)));
 
 			//make sure each list has at least two items
 			E.each([arList, trList, alList, tlList], function(list) {
