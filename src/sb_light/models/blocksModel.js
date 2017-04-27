@@ -332,7 +332,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			var csize = 0;
 
-			var uid = Q.user().id;
+			var u = Q.user();
+			var uid = (u && u.id) || null
 
 			var hs = ["bad", "warning", "good"];
 			var isNew = b.ownership_state == "new";
