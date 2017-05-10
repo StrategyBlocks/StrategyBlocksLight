@@ -431,6 +431,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		/************  REGEXPS ***************************/
 	E.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");
 	E.regUrl = new RegExp("^https?:\/\/");
+	E.regHtml = new RegExp("</?\w+\s+[\^>]*>");
+
 	
 	
 	

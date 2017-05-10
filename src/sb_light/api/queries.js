@@ -618,8 +618,9 @@ define(['sb_light/globals',
 	};
 
 
-	q.metricChartData = function(id, hierarchyData) {
+	q.metricChartData = function(id, hierarchyData, options) {
 		// var timer = E.moment();
+		options = options || {}
 
 		var m = q.metric(id);
 		var percent = m.percentage ? true : false;
@@ -662,22 +663,49 @@ define(['sb_light/globals',
 		var targetsMap = E.toObject(targets, "date");
 
 
+		//add all the date strings to an array. Optionally add a lower-cap and an upper cap
+		var all_dates = E._.union(targetDatestr, actualDatestr).sort();
+		if (options.limit_past) {
+			all_dates.push(options.limit_past);
+		} 
+		if (options.limit_future) {
+			all_dates.push(options.limit_future);
+		} 
+
 		//ceate a unique, sorted list of dates. 
-
-
-		var datestr = E._.union(targetDatestr, actualDatestr).sort(function(a,b) {
+		var datestr = all_dates.sort(function(a,b) {
 			return E.sortDate(E.serverMoment(a), E.serverMoment(b));
 		});
 
 		//if today is in the middle, add the date and re-sort
 		var first = E.serverMoment(datestr[0]);
 		var last = E.serverMoment(datestr.last());
-		if(datestr.indexOf(today) < 0 && E.daysDiff(today, first) > 0 && E.daysDiff(last,today) > 0) {
+
+		if(options.limit_past) {
+			datestr = E._.filter(datestr, function(v) {
+				return E.daysDiff(v, options.limit_past) >= 0;
+			});
+		}
+		if(options.limit_future) {
+			datestr = E._.filter(datestr, function(v) {
+				return E.daysDiff(options.limit_future, v) >= 0;
+			});
+		}
+
+		//add TODAY if we don't have it and it falls into range between first/last dates, or we only have a single value  
+		if(datestr.indexOf(today) < 0 && E.daysDiff(today, first) > 0 && (E.daysDiff(last,today) > 0 || datestr.length < 2)) {
 			datestr.push(today);
 			datestr = datestr.sort(function(a,b) {
 				return E.sortDate(E.serverMoment(a), E.serverMoment(b));
 			});
 		}
+
+		//add a dummy date one month ago if we dont't yet have enough data to chart. 
+		if(datestr.length < 2) {
+			datestr.unshift(E.moment().subtract(1,"month").format(E.serverFormat));
+		}
+
+
 
 		//convert date strings to date objects for the time scales
 		var dm = function(v) { 
