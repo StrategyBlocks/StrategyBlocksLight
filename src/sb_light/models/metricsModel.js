@@ -103,58 +103,72 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 			//ONLY fetch is this is a hierarchical metric
 			if(!m.hierarchy) { return null; }
 
-			if(!nidList) {
-				nidList = E._.map(sb.models.raw("blocks"), "id");
+			var nodes  = nidList; 
+			if(!nodes) {
+				nodes = E.keys(sb.models.raw("blocks"));
+			} else {
+				nodes = E.isArr(nodes) ? nodes : [nodes];
 			}
 
+			self._hierarchyCache[mid] = self._hierarchyCache[mid] || {}; 
 
-			nidList = E.isArr(nidList) ? nidList : [nidList];
-			var fetchList = [];
-			var func = this._handleHierarchy.bind(this,mid, nidList );
-
-			E.each(nidList, function(nid) {
-				var name = "hierarchy_"+mid+"_"+nid;
-				var data = self._hierarchyCache[name];
+			E.each(nodes, function(nid) {
+				var name = ["hierarchy",mid,nid].join("_");
+				var data = self._hierarchyCache[mid][nid];
 				
 				if(!data) {
-					if(!self._queue[name] ) {
-						fetchList.push(nid);
-					}
 					self._queue[name] = self._queue[name] || [];
-					self._queue[name].push(cb || E.noop);
+					self._queue[name].punique(cb || E.noop);
 				} 
 			});
 
-			if(fetchList.length) {
-				// console.log("Fetching HIERARCHY", mid, nidList,this._queue);
-				sb.controller.metricHierarchy(mid, /*String(fetchList)*/null, func);
-				return null;	
-			}
+			this._queueFetchList(mid);
 
-			if(nidList.length > 1) {
+			//check the original is an array 
+			if(!nidList || E.isArr(nidList)) {
+				//return a list
 				var res = {};
-				E.each(nidList, function(nid) {
-					var name = "hierarchy_"+mid+"_"+nid;
-					res[nid] = self._hierarchyCache[name];
+				E.each(nodes, function(nid) {
+					res[nid] = self._hierarchyCache[mid][nid];
 				});
 				return res;
-			} else {
-				var name = "hierarchy_"+mid+"_"+nidList[0];
-				return  this._hierarchyCache[name];
+			} else if (nodes.length) {
+				//return a single item
+				var name = "hierarchy_"+mid+"_"+nodes[0];
+				return  this._hierarchyCache[mid][nodes[0]];
 			}
+			return null;
 
 		},
 
-		_handleHierarchy: function(mid, nidList, resp) {
+		_queueFetchList: function(mid) {
+			var currentNodes = [];
+			E.each(this._queue||[], function(v,k) {
+				var name = k.split("_");
+				if(name[1] == mid) {
+					currentNodes.punique(name[2]);
+				}
+			});
+
+			if(currentNodes.length) {
+				var cb = this._handleHierarchy.bind(this,mid, currentNodes );
+				var func = sb.controller.metricHierarchy.bind(sb.controller, mid, currentNodes.join(","), cb );
+				sb.queue.buffer(func, "MetricMode::queueFetchList::"+mid, 200, true);
+			}
+		},
+
+		_handleHierarchy: function(mid, nodes, resp) {
 			var self = this; 
 
 			resp = resp && resp.result;
 			if(!resp) { return; }
 
-			E.each(nidList, function(nid) {
-				var name = "hierarchy_"+mid+"_"+nid;
-				var data = self._hierarchyCache[name] = resp[nid] || self._hierarchyCache[name] || null;
+			self._hierarchyCache[mid] = self._hierarchyCache[mid] || {};
+
+			E.each(nodes, function(nid) {
+				var name = ["hierarchy",mid,nid].join("_");
 				var cbs = self._queue[name] || [];
+				var data = self._hierarchyCache[mid][nid] = resp[nid] || self._hierarchyCache[mid][nid] || null;
 
 				if(data) {
 					data.statusNum = data.status == "good" ? 1 : (data.status == "warning" ? 2 : (data.status == "bad" ? 3 : 0)) ;
@@ -165,8 +179,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 
 				while(cbs.length) {
 					var f = cbs.pop();
-					sb.queue.buffer(f, "metricModel"+name, 200, data);
+					sb.queue.buffer(f, "metricModel_"+name, 200, data);
 				}
+				delete self._queue[name];
 			});
 
 		}
