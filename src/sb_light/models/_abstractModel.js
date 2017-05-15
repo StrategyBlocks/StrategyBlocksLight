@@ -320,17 +320,26 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		
 		_addItems: function(added) {
 			added = added || {};
-			for (var k in added) {
-				this._model[k] = added[k];
-			}
+			var m = this._model;
+			E.each(added, function(v,k) {
+				if(v.id) {
+					m[v.id] = v; 
+				} else {
+					m[k] = v;
+				}
+			});
 		},
 		
 		_updateItems: function(updated) {
 			updated  = updated || {};
-			for (var k in updated) {
-				console.log("UPDATE", this.name, k, updated[k]);
-				this._model[k] = updated[k];
-			}
+			var m = this._model;
+			E.each(updated, function(v,k) {
+				if(v.id) {
+					m[v.id] = v; 
+				} else {
+					m[k] = v;
+				}
+			});
 		},	
 		
 		_deleteItems:function(deleted) {

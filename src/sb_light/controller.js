@@ -235,7 +235,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 
 	controller.dashboardsUpdate = function(o, cb) {
-		if(o.id === "new") {
+		if(o.id === "new" || !o.id) {
 			delete o.id; 
 			controller.invoke(sb.urls.DASHBOARD_CREATE, o, cb,cb);
 		} else {
