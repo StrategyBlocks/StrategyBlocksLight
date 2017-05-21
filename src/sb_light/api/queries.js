@@ -693,7 +693,7 @@ define(['sb_light/globals',
 		}
 
 		//add TODAY if we don't have it and it falls into range between first/last dates, or we only have a single value  
-		if(datestr.indexOf(today) < 0 && E.daysDiff(today, first) > 0 && (E.daysDiff(last,today) > 0 || datestr.length < 2)) {
+		if(datestr.indexOf(today) < 0 && (datestr.length < 2 || (E.daysDiff(today, first) > 0 && E.daysDiff(last,today) > 0 ))) {
 			datestr.push(today);
 			datestr = datestr.sort(function(a,b) {
 				return E.sortDate(E.serverMoment(a), E.serverMoment(b));
@@ -720,7 +720,10 @@ define(['sb_light/globals',
 		var actualRange = actualValues;
 		if(actualDomain.length === 1) { 
 			actualDomain.push(E.moment().add(1, "month").toDate());
+			actualDomain.unshift(E.today());
+
 			actualRange.push(actualValues[0]);
+			actualRange.unshift(0)
 		}
 		var targetDomain = targetDates;
 		var targetRange = targetValues;
@@ -728,9 +731,14 @@ define(['sb_light/globals',
 		var lowerRange = lowerValues;
 		if(targetDomain.length === 1) { 
 			targetDomain.push(E.moment().add(1, "month").toDate());
+			targetDomain.unshift(E.today());
 			targetRange.push(targetValues[0]);
 			upperRange.push(upperValues[0]);
 			lowerRange.push(lowerValues[0]);
+
+			targetRange.unshift(0);
+			upperRange.unshift(0);
+			lowerRange.unshift(0);
 		}
 
 		var arRange, trRange, alRange, tlRange,

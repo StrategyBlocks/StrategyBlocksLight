@@ -349,12 +349,6 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 			return function ext_time() { return Date.now(); };
 	}());	
 	
-	E.startOfDay = function(date) {
-		date = date || new Date();
-		date = E.serverDate(date);
-		return E.serverToDate(date);
-	};
-
 	E.parseDate = function ext_moment() {
 		E.deprecated("E.parseDate", "E.moment");
 	};
@@ -394,7 +388,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	}
 
 	E.daysFrom = function ext_daysFrom(da, db, noPrefix) {return E.momentFn(db).from(da, noPrefix||false); };
-	E.today = function ext_today() { return new Date(); };
+	E.today = function ext_today() { return E.todayMoment().toDate(); };
+	E.todayMoment = function ext_today_moment() { return E.moment().startOf("day"); };
 	E.minDate = function ext_minDate(dates) { 	return MOMENT.min.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.maxDate = function ext_maxDate(dates) { 	return MOMENT.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.rangeDate = function ext_maxDate(date, start,end) { 	return E.minDate(start, E.maxDate(end, date)); };
