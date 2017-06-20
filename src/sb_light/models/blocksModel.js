@@ -181,9 +181,10 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var root = E._.find(this._model, function(v) {
 				return !v.parents || v.parents.length === 0;
 			});
-			this._massage(root, null, 0, 0, (new Date()).getTime());
+			this._massage(root, null, 0, 0, E.time());
 
 			if(!Q.block()) {
+				if(!root) { return; }
 				sb.state.state("block", root.id);
 			}
 		},

@@ -318,7 +318,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		}
 	};	
 	controller.deleteCustomField = function(id, cb, errorCb) {
-		controller.invoke(sb.urls.CUSTOM_FIELD_DELETE, {id:id},cb,errorCb);
+		controller.invoke(sb.urls.CUSTOM_FIELD_DESTROY, {id:id},cb,errorCb);
 	};	
 	
 

@@ -46,23 +46,23 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_DELETE :					{url: "/blocks/%type%/%id%.js", 				post:true,		normalParams:true},
 		BLOCKS_DOCUMENTS: 				{url: "/blocks/documents/%id%.js",				post:false},
 		BLOCKS_IMPORT 	:				{url: "/blocks/import/%id%.js",					post:true, 		deleteId:true, normalParams:true},
-		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/make_public/%id%.js", normalParams:true},
+		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/make_public/%id%.js", normalParams:true, post:true},
 		//BLOCKS_MOVE_POSITION 			{url: "/blocks/move_position_%dir%/%id%.js"},
-		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true, deleteId: true},
+		BLOCKS_MOVE :					{url: "/blocks/move/%id%.js", normalParams:true, deleteId: true, post:true},
 		BLOCKS_PROPERTIES: 				{url: "/blocks/%type%/%id%.js", normalParams:true, deleteId:true},
-		BLOCKS_RELOCATE: 				{url: "/blocks/reassign_parent/%id%.js", normalParams:true, deleteId:true},
+		BLOCKS_RELOCATE: 				{url: "/blocks/reassign_parent/%id%.js", normalParams:true, deleteId:true, post:true},
 		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", 				post:true,		deleteId: true},
 
 		// BLOCKS_WATCHING_USERS: 			{url: "/blocks/watching_users/%id%.js"},
 		BLOCKS_TAGGED: 					{url: "/blocks_for_tag/%name%.js"},
-		BLOCKS_UPDATE_GROUPS :			{url: "/blocks/update_group_expression/%id%.js", normalParams:true},
-		BLOCKS_CHANGE_CHARTED_KPI: 		{url: "/blocks/set_default_kpi/%id%.js"},
-		BLOCKS_UPDATE_CASHFLOWS: 		{url: "/blocks/update_net_cashflows/%id%.js"},
+		BLOCKS_UPDATE_GROUPS :			{url: "/blocks/update_group_expression/%id%.js", normalParams:true, post:true},
+		BLOCKS_CHANGE_CHARTED_KPI: 		{url: "/blocks/set_default_kpi/%id%.js", post:true},
+		BLOCKS_UPDATE_CASHFLOWS: 		{url: "/blocks/update_net_cashflows/%id%.js", post:true},
 		BLOCKS_HEALTH :					{url: "/blocks/health.js", normalParams:true},
 		BLOCKS_PROGRESS :				{url: "/blocks/progress.js", normalParams:true},
-		BLOCKS_CLONE :					{url: "/blocks/clone_blocks.js", normalParams:true},
-		BLOCKS_LOCK:					{url: "/blocks/admin_lock.js", post:true, normalParams:true },
-		BLOCKS_UNLOCK:					{url: "/blocks/admin_unlock.js", post:true, normalParams:true },
+		BLOCKS_CLONE :					{url: "/blocks/clone_blocks.js", normalParams:true, post:true},
+		BLOCKS_LOCK:					{url: "/blocks/admin_lock.js", post:true, normalParams:true , post:true},
+		BLOCKS_UNLOCK:					{url: "/blocks/admin_unlock.js", post:true, normalParams:true , post:true},
 
 	
 		//singular block for controller convenience
@@ -74,25 +74,30 @@ define(['sb_light/globals'], function(sb) {
 		BLOCK_UNWATCH: 					{url: "/blocks/%id%/unwatch.js",				post:true},
 		
 		BOOKMARKS:						{url: "/saved_client_states/index.js"},
-		BOOKMARK_CREATE_DYNAMIC:		{url: "/saved_client_states/create_dynamic.js"},
-		BOOKMARK_SAVE_DYNAMIC:			{url: "/saved_client_states/%id%/save_dynamic.js", normalParams:true},
+		BOOKMARK_CREATE_DYNAMIC:		{url: "/saved_client_states/create_dynamic.js", post:true},
+		BOOKMARK_SAVE_DYNAMIC:			{url: "/saved_client_states/%id%/save_dynamic.js", normalParams:true, post:true},
 		BOOKMARK_CREATE:				{url: "/saved_client_states/create.js", normalParams:true, post:true},
-		BOOKMARK_UPDATE:				{url: "/saved_client_states/%id%/update.js", normalParams:true, deleteId:true},
-		BOOKMARK_DELETE:				{url: "/saved_client_states/%id%/delete.js", deleteId:true},
+		BOOKMARK_UPDATE:				{url: "/saved_client_states/%id%/update.js", normalParams:true, deleteId:true, post:true},
+		BOOKMARK_DELETE:				{url: "/saved_client_states/%id%/delete.js", deleteId:true, post:true},
 				 
-		COMMENT_PROPERTIES_ADD: 		{url: "/blocks/%id%/comment.js", normalParams:true, deleteId:true},
-		COMMENT_PROPERTIES_REMOVE:		{url: "/blocks/%id%/delete_comment.js", normalParams:true, deleteId:true},
+		COMMENT_PROPERTIES_ADD: 		{url: "/blocks/%id%/comment.js", normalParams:true, deleteId:true, post:true},
+		COMMENT_PROPERTIES_REMOVE:		{url: "/blocks/%id%/delete_comment.js", normalParams:true, deleteId:true, post:true},
 		
+		CUSTOM_FIELDS_INDEX:			{url: "/blocks/%id%/custom_fields.js", deleteId:true, post:false},
+		CUSTOM_FIELDS_CREATE:			{url: "/blocks/%id%/custom_fields/create.js", deleteId:true, post:true},
+		CUSTOM_FIELDS_UPDATE:			{url: "/blocks/%id%/custom_fields/%field_id%/update.js", deleteId:true, post:true},
+		CUSTOM_FIELDS_DESTROY:			{url: "/blocks/%id%/custom_fields/%field_id%/destroy.js", deleteId:true, post:true},
+
 		// COMPANIES_CREATE: 				{url: "/companies/create.js"},
-		COMPANIES_REGISTER: 			{url: "/companies/create.js"},
-		COMPANIES_UPDATE: 				{url: "/companies/update.js"},
-		COMPANIES_UPLOAD_LOGO: 			{url: "/companies/logo_upload.js"},
+		COMPANIES_REGISTER: 			{url: "/companies/create.js", post:true},
+		COMPANIES_UPDATE: 				{url: "/companies/update.js", post:true},
+		COMPANIES_UPLOAD_LOGO: 			{url: "/companies/logo_upload.js", post:true},
 
 		COMPANIES_HEALTH: 				{url: "/health_calculations.js"},
-		COMPANIES_HEALTH_CREATE: 		{url: "/health_calculations/create.js"},
-		COMPANIES_HEALTH_UPDATE :		{url: "/health_calculations/%id%/update.js", deleteId:true},
-		COMPANIES_HEALTH_DELETE: 		{url: "/health_calculations/%id%/destroy.js"},
-		COMPANIES_HEALTH_DEFAULT: 		{url: "/health_calculations/%id%/set_default.js"},
+		COMPANIES_HEALTH_CREATE: 		{url: "/health_calculations/create.js", post:true},
+		COMPANIES_HEALTH_UPDATE :		{url: "/health_calculations/%id%/update.js", deleteId:true, post:true},
+		COMPANIES_HEALTH_DELETE: 		{url: "/health_calculations/%id%/destroy.js", post:true},
+		COMPANIES_HEALTH_DEFAULT: 		{url: "/health_calculations/%id%/set_default.js", post:true},
 
 		// COMPANIES BROADCASR
 		COMPANIES_BROADCAST: 			{ url: "/companies/broadcast_message.js", post:true },
@@ -104,16 +109,18 @@ define(['sb_light/globals'], function(sb) {
 		///////////////////
 
 
-		COMPANIES_MILESTONE_CREATE: 	{url: "/milestone_definitions/create.js"},
-		COMPANIES_MILESTONE_UPDATE :	{url: "/milestone_definitions/%id%/update.js", deleteId:true},
-		COMPANIES_MILESTONE_DELETE: 	{url: "/milestone_definitions/%id%/destroy.js", deleteId:true},
+		COMPANIES_MILESTONE_CREATE: 	{url: "/milestone_definitions/create.js", post:true},
+		COMPANIES_MILESTONE_UPDATE :	{url: "/milestone_definitions/%id%/update.js", deleteId:true, post:true},
+		COMPANIES_MILESTONE_DELETE: 	{url: "/milestone_definitions/%id%/destroy.js", deleteId:true, post:true},
 		
 
 		CUSTOM_FIELD_CREATE:			{url: "/custom_field_types/create.js", post:true},
 		CUSTOM_FIELD_UPDATE:			{url: "/custom_field_types/%id%/update.js", deleteId:true, post:true},
-		CUSTOM_FIELD_DESTROY:			{url: "/custom_field_types/%id%/delete.js", deleteId:true, post:true},
+		CUSTOM_FIELD_DESTROY:			{url: "/custom_field_types/%id%/destroy.js", deleteId:true, post:true},
+
+
 		
-		CAPABILITIES_UPDATE: 			{url: "/company_settings/update.js"},
+		CAPABILITIES_UPDATE: 			{url: "/company_settings/update.js", post:true},
 		
 		DASHBOARD_CREATE :				{url: "/dashboards/create.js", post:true},
 		DASHBOARD_UPDATE :				{url: "/dashboards/%id%/update.js", deleteId:true, post:true},
@@ -124,31 +131,31 @@ define(['sb_light/globals'], function(sb) {
 		EXPORTS_REPORT :			{url: "/exports/%id%/create.js", deleteId:true, post:true},
 		EXPORTS_UPDATE :			{url: "/exports/update/%id%.js", deleteId:true, post:true},
 		EXPORTS_DOWNLOAD :			{url: "/exports/download.js"},
-		EXPORTS_DELETE :			{url: "/exports/%id%/destroy.js", deleteId:true, normalParams:true},
+		EXPORTS_DELETE :			{url: "/exports/%id%/destroy.js", deleteId:true, normalParams:true, post:true},
 		
-		FOCUS_CREATE :				{url: "/focus/create.js"},
-		FOCUS_UPDATE: 				{url: "/focus/update/%id%.js", deleteId: true},
-		FOCUS_UPDATE_ALL: 			{url: "/focus/update_from_array.js"},
-		FOCUS_DELETE :				{url: "/focus/destroy/%id%.js", deleteId: true},
-		FOCUS_REPARENT :			{url: "/focus/reparent/%id%.js"},
+		FOCUS_CREATE :				{url: "/focus/create.js", post:true},
+		FOCUS_UPDATE: 				{url: "/focus/update/%id%.js", deleteId: true, post:true},
+		FOCUS_UPDATE_ALL: 			{url: "/focus/update_from_array.js", post:true},
+		FOCUS_DELETE :				{url: "/focus/destroy/%id%.js", deleteId: true, post:true},
+		FOCUS_REPARENT :			{url: "/focus/reparent/%id%.js", post:true},
 		
 		GROUPS_CREATE: 				{url: "/groups/create.js", 				post:true},
-		GROUPS_DELETE :				{url: "/groups/%id%/destroy.js", deleteId: true},
-		GROUPS_UPDATE: 				{url: "/groups/%id%/update.js", deleteId: true},
-		GROUPS_ADD 	:				{url: "/groups/%id%/add.js"},
-		GROUPS_REMOVE :				{url: "/groups/%id%/remove.js"},
+		GROUPS_DELETE :				{url: "/groups/%id%/destroy.js", deleteId: true, post:true},
+		GROUPS_UPDATE: 				{url: "/groups/%id%/update.js", deleteId: true, post:true},
+		GROUPS_ADD 	:				{url: "/groups/%id%/add.js", post:true},
+		GROUPS_REMOVE :				{url: "/groups/%id%/remove.js", post:true},
 	
 	
 		//type: IMAGE  : pdf
 		//email: true|FALSE
 		HTML_REPORT:				{url: "/html/generate_report.js", post:true,normalParams:true},
 
-		RISKS_CREATE :				{url: "/risks/create.js"},
-		RISKS_DESTROY :				{url: "/risks/%id%/destroy.js"},
-		RISKS_UPDATE :				{url: "/risks/%id%/update.js"},
+		RISKS_CREATE :				{url: "/risks/create.js", post:true},
+		RISKS_DESTROY :				{url: "/risks/%id%/destroy.js", post:true},
+		RISKS_UPDATE :				{url: "/risks/%id%/update.js", post:true},
 		RISKS_UPDATE_STATUS: 		{url: "/risks/%id%/update_status.js", post:true, deleteId:true},
-		RISKS_ADD_IMPACT :			{url: "/risks/%id%/add_impact.js", deleteId:true, normalParams:true},
-		RISKS_REMOVE_IMPACT: 		{url: "/risks/%id%/remove_impact.js", deleteId:true, normalParams:true},
+		RISKS_ADD_IMPACT :			{url: "/risks/%id%/add_impact.js", deleteId:true, normalParams:true, post:true},
+		RISKS_REMOVE_IMPACT: 		{url: "/risks/%id%/remove_impact.js", deleteId:true, normalParams:true, post:true},
 
 
 
@@ -161,21 +168,21 @@ define(['sb_light/globals'], function(sb) {
 		RISK_UNWATCH: 				{url: "/risks/unwatch/%id%.js",		post:true},
 		
 		RISKS_DUMMY_REFRESH :		{url: "/risks/%id%/refresh_risk.js"},
-		RISKS_UPDATE_GROUPS:  		{url: "/risks/%id%/update_group_expression.js", deleteId:true, normalParams:true },
+		RISKS_UPDATE_GROUPS:  		{url: "/risks/%id%/update_group_expression.js", deleteId:true, normalParams:true, post:true },
 		RISKS_NEWS: 				{url: "/risks/%id%/news.js", deleteId:true},
 		
-		RISKS_SETTINGS: 			{url: "/risk_profiles/update_risk_settings.js"},
-		RISKS_MATRIX_SIZE :			{url: "/risk_profiles/set_matrix_size.js"},
-		RISKS_PROFILES_UPDATE: 		{url: "/risk_profiles/update_batch.js"},
+		RISKS_SETTINGS: 			{url: "/risk_profiles/update_risk_settings.js", post:true},
+		RISKS_MATRIX_SIZE :			{url: "/risk_profiles/set_matrix_size.js", post:true},
+		RISKS_PROFILES_UPDATE: 		{url: "/risk_profiles/update_batch.js", post:true},
 
 		RISKS_COMMENTS:				{url: "/risks/%id%/comments.js", deleteId:true},
-		RISKS_COMMENT_ADD:			{url: "/risks/%id%/comment.js", deleteId:true, normalParams:true},
-		RISKS_COMMENT_REMOVE:		{url: "/risks/%id%/delete_comment.js", deleteId:true, normalParams:true},
+		RISKS_COMMENT_ADD:			{url: "/risks/%id%/comment.js", deleteId:true, normalParams:true, post:true},
+		RISKS_COMMENT_REMOVE:		{url: "/risks/%id%/delete_comment.js", deleteId:true, normalParams:true, post:true},
 
 		
-		METRICS_CREATE:  			{url: "/metrics/create.js"},
-		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js", deleteId:true},
-		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js", deleteId:true},
+		METRICS_CREATE:  			{url: "/metrics/create.js", post:true},
+		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js", deleteId:true, post:true},
+		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js", deleteId:true, post:true},
 		METRICS_ATTACH_BLOCK:  		{url: "/blocks/attach_metric/%id%.js", normalParams:true, deleteId:true },
 		METRICS_DETACH_BLOCK:  		{url: "/blocks/detach_metric/%id%.js", normalParams:true, deleteId: true },
 		METRICS_UPDATE_GROUPS:  	{url: "/metrics/%id%/update_group_expression.js" , deleteId:true, normalParams:true},
@@ -203,26 +210,26 @@ define(['sb_light/globals'], function(sb) {
 		
 		MEASURES_BLOCKS: 			{url: "/blocks/measure_values/%id%.js"},
 		
-		USERS_CREATE :				{url: "/users/create.js"},
-		USERS_CREATE_BATCH: 		{url: "/users/create_batch.js"},
-		USERS_ADD_GROUP: 			{url: "/users/%id%/add_group.js", normalParams:true},
-		USERS_REMOVE_GROUP: 		{url: "/users/%id%/remove_group.js", normalParams:true},
-		USERS_ACTIVATE :			{url: "/users/%id%/activate.js"},
-		USERS_DEACTIVATE: 			{url: "/users/%id%/deactivate.js"},
-		USERS_UPDATE: 				{url: "/users/%id%/update.js", deleteId: true},
-		USERS_REASSIGN: 			{url: "/users/reassign_ownership.js?"},
-		USERS_DELETE: 				{url: "/users/%id%/delete_user.js", deleteId:true},		
-		USERS_REMOVE_MEMBERSHIP: 	{url: "/users/%id%/delete_membership.js"},
-		USERS_CHANGE_MEMBERSHIP: 	{url: "/users/%id%/update_membership.js", deleteId: true},
+		USERS_CREATE :				{url: "/users/create.js", post:true},
+		USERS_CREATE_BATCH: 		{url: "/users/create_batch.js", post:true},
+		USERS_ADD_GROUP: 			{url: "/users/%id%/add_group.js", normalParams:true, post:true},
+		USERS_REMOVE_GROUP: 		{url: "/users/%id%/remove_group.js", normalParams:true, post:true},
+		USERS_ACTIVATE :			{url: "/users/%id%/activate.js", post:true},
+		USERS_DEACTIVATE: 			{url: "/users/%id%/deactivate.js", post:true},
+		USERS_UPDATE: 				{url: "/users/%id%/update.js", deleteId: true, post:true},
+		USERS_REASSIGN: 			{url: "/users/reassign_ownership.js?", post:true},
+		USERS_DELETE: 				{url: "/users/%id%/delete_user.js", deleteId:true, post:true},		
+		USERS_REMOVE_MEMBERSHIP: 	{url: "/users/%id%/delete_membership.js", post:true},
+		USERS_CHANGE_MEMBERSHIP: 	{url: "/users/%id%/update_membership.js", deleteId: true, post:true},
 		USERS_CALENDAR_TOKEN:		{url: "/users/enable_todo_calendar.js"},
-		USERS_SEND_REPORT:			{url: "/users/send_report.js"},
+		USERS_SEND_REPORT:			{url: "/users/send_report.js", post:true},
 		USERS_DOWNLOAD_SQLITE:		{url: "/exports/sqlite.db"},
 
-		USERS_UPLOAD_LOGO: 			{url: "/users/logo_upload.js"},
-		USERS_REMOVE_LOGO: 			{url: "/users/remove_logo.js"},
+		USERS_UPLOAD_LOGO: 			{url: "/users/logo_upload.js", post:true},
+		USERS_REMOVE_LOGO: 			{url: "/users/remove_logo.js", post:true},
 
 		
-		USERS_CHANGE_DEFAULT_COMPANY:	{url: "/users/%id%/change_default_company.js", normalParams:true},
+		USERS_CHANGE_DEFAULT_COMPANY:	{url: "/users/%id%/change_default_company.js", normalParams:true, post:true},
 		
 		REGISTER_COMPANY: 			{url: "/registration/register.js"},
 		REGISTER_INDUSTRIES: 		{url: "/registration/industries.js"},
@@ -273,7 +280,6 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_BACKUP_COMPANY:		{url: "/admin/backup_company/%id%.js", 					post:true, deleteId: true},					
 		ADMIN_BACKUPS:				{url: "/admin/backups.js", 								post:false},					
 		ADMIN_BACKUPS_COMPANY:		{url: "/admin/backups/%id%.js", 						post:false, deleteId: true},					
-		ADMIN_BLOCK_DETAILS:		{url: "/admin/block/%id%.js", 							post:false, deleteId: true},
 		ADMIN_CLONE:				{url: "/admin/clone_company.js",						post:true},
 		ADMIN_COMPANIES:			{url: "/admin/companies.js", 							post:false},
 		ADMIN_COMPANY_DETAILS:		{url: "/admin/company/%id%.js", 						post:false, deleteId:true},
@@ -311,6 +317,7 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_RANDOMIZE:			{url: "/admin/randomize_progress_values/%id%.js", 		post:false, normalParams:true, deleteId:true},
 		ADMIN_RANDOMIZE_HISTORY:	{url: "/admin/randomize_progress_history/%id%.js",		post:false, normalParams:true, deleteId:true},
 		ADMIN_RECALC_HEALTH:		{url: "/admin/recalculate_health/%id%.js", 				post:false, normalParams:true, deleteId:true},
+		ADMIN_RECENT_ACTIVITY:		{url: "/admin/recent_activity.js", 						post:false, normalParams:true},
 		ADMIN_REGOS:				{url: "/admin/rego_tokens.js", 							post:false, normalParams:true},
 		ADMIN_REPORTS:				{url: "/admin/report.csv", 								post:false, normalParams:true, dataType:"text"},
 		ADMIN_REQUESTS:				{url: "/admin/current_requests.js", 					post:false, normalParams:true, company:"admin_company_id", user:"admin_user_id"},
