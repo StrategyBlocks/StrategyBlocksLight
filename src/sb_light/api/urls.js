@@ -284,6 +284,7 @@ define(['sb_light/globals'], function(sb) {
 		ADMIN_COMPANIES:			{url: "/admin/companies.js", 							post:false},
 		ADMIN_COMPANY_DETAILS:		{url: "/admin/company/%id%.js", 						post:false, deleteId:true},
 		ADMIN_DELETE_COMPANY:		{url: "/admin/delete_company/%id%.js", 					post:true, deleteId: true},					
+		ADMIN_DELETE_PROGRESS:		{url: "/admin/delete_historic_progress/%id%.js", 		post:true, deleteId: true, normalParams:true},					
 		ADMIN_EXTEND_TRIAL:			{url: "/admin/extend_trial/%id%.js", 					post:true, deleteId: true, normalParams:true},					
 		
 		

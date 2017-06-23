@@ -313,7 +313,7 @@ define([
 					return;
 				}
 				ss[name] = ST.watch(type, v, function() {
-					self._consoleLogPages("HANDLE ", funcName, type, v, self.id);
+					// self._consoleLogPages("HANDLE ", funcName, type, v, self.id);
 					df();
 				});
 			});
@@ -533,13 +533,13 @@ define([
 			if(src) {
 				var key  = src + "_" + E.unique(); 
 				try {
-					console.log("LOADING CHILD: ", key, opts);
+					// console.log("LOADING CHILD: ", key, opts);
 					self.__creatingChildren[key] = true;
 					require([src], function(El) {
 
 						//no guarantee of order this happens
 						if(E && self.__creatingChildren[key]) {
-							console.log("CREATING CHILD: ", key, opts);
+							// console.log("CREATING CHILD: ", key, opts);
 							c.push(new El(opts));
 							delete self.__creatingChildren[key];
 						} else {
@@ -582,13 +582,15 @@ define([
 			//reset the delay
 			this.__canDrawDelay = this.__canDrawDelay >= 0 ? E.max(50, delay) : -1;
 
-			this._consoleLogPages("DOM WIDGET dirtying: ", this.id, delay);
+			// this._consoleLogPages("DOM WIDGET dirtying: ", this.id);
 			//queue drawing so we don't end up calling it repeatedly from different events
 
 			this.queue(this.bind("_beforeDraw"), delay);
 		},
 
 		fetchData: function() {
+			// this._consoleLogPages("DOM WIDGET START fetch data: ", this.id);
+
 			// console.log("Fetch Data: ", this.id);
 			var ctrl = this.sb.controller;
 			var self = this;
@@ -601,6 +603,9 @@ define([
 					if (d.args === null) { return; }
 
 					var f = self.handleData.bind(self, d.id);
+
+					// self._consoleLogPages("DOM WIDGET fetch data: ", this.id, d.url, d.args, d.state());
+
 					ctrl.fetch(d.url, d.args, f, f, d.state);				
 				}
 			});
@@ -632,7 +637,7 @@ define([
 		},
 
 		canDraw:function() {
-			// this._consoleLogPages("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this._beforeDrawList.length,  this.stateValid());			
+			// this._consoleLogPages("DOM:CanDraw", this.id, this.__created, !this.__busy, this.modelsValid(), !this.needsData(), this.__beforeDrawList,  this.stateValid());			
 			var cd = this.__created && !this.__busy && !this.__beforeDrawWaiting && !E.length(this.__creatingChildren) &&
 					this.stateValid() && this.modelsValid() && !this.needsData();
 
@@ -645,8 +650,10 @@ define([
 		//sanity before drawing
 		_beforeDraw:function() {
 			try {
+				// this._consoleLogPages("DOM BEFORE DRAW:", this.id);
+
 				if(this.canDraw()) {
-					this._consoleLogPages("DOM CAN DRAW:", this.id);
+					// this._consoleLogPages("DOM CAN DRAW:", this.id);
 					if(this.__beforeDrawList.length) {
 						this.__beforeDrawWaiting = true;
 						var df = this.__beforeDrawList.shift();
@@ -690,13 +697,13 @@ define([
 						//not sure what to do. I reckon wait...
 					} else {
 						//THIS IS INVALID -- REMOVE ALL ITEMS
-						this._consoleLogPages( ("CAN'T Draw? " + this.__dirty + " "), this.id, " created: ", this.__created, " busy: ",  this.__busy, 
-							" beforeDrawWaiting: ", this.__beforeDrawWaiting, " creating(len): ", E.length(this.__creatingChildren),
-							" modelvalid: ", this.modelsValid(), " needsdata: ", this.needsData(), " stateValid: ", this.stateValid()
-						);
+						// this._consoleLogPages( ("CAN'T Draw? " + this.__dirty + " "), this.id, " created: ", this.__created, " busy: ",  this.__busy, 
+						// 	" beforeDrawWaiting: ", this.__beforeDrawWaiting, " creating(len): ", E.length(this.__creatingChildren),
+						// 	" modelvalid: ", this.modelsValid(), " needsdata: ", this.needsData(), " stateValid: ", this.stateValid()
+						// );
 
 						if(this.__dirty) {
-							this._consoleLogPages("DOM IS INVALID:", this.id);
+							// this._consoleLogPages("DOM IS INVALID:", this.id);
 							this.cleanup();
 						}
 						
@@ -751,10 +758,11 @@ define([
 		},
 
 		_consoleLogPages: function(str, id) {
-			// var args = E.slice(arguments);
-			// if(id && id.match(/shepherd/)) {
-			// 	E.debug.apply(E, args);
-			// }
+			var args = E.slice(arguments);
+			if(id && id.match(/deleteProgress/)) {
+				// console.log("ID", id)
+				E.debug.apply(E, args);
+			}
 		}
 
 	});
