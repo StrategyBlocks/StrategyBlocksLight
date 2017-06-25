@@ -8,6 +8,7 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 
 	D.serverFormat = "YYYY/MM/DD";
 	D.adminFormat = "DD MMM YYYY HH:mm Z";
+	D.unixFormat = "YYYY/MM/DD HH:mm:ss Z";
 	
 	D.userFormat = function() { 
 		var u = sb.queries.user();
@@ -49,6 +50,8 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 	D.parseUserDate = function(date) { return D.parse(date, D.userFormat()); }
 	//parse from a user format to MOMENT
 	D.parseAdminDate = function(date) { return D.parse(date, D.adminFormat); }
+	//parse from a user format to MOMENT
+	D.parseUnixDate = function(date) { return D.parse(date, D.unixFormat); }
 
 	//Parse and output as a string
 	D.parseToUser 	= function(date, format) { return D.parse(date,format).userStr(); 	}
