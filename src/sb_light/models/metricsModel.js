@@ -105,10 +105,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 
 			var nodes  = nidList; 
 			if(!nodes) {
-				nodes = E.keys(sb.models.raw("blocks"));
+				nodes = E._.map(sb.queries.blocksOpen(), "id");
 			} else {
 				nodes = E.isArr(nodes) ? nodes : [nodes];
 			}
+
+
 
 			self._hierarchyCache[mid] = self._hierarchyCache[mid] || {}; 
 
