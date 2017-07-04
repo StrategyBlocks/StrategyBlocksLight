@@ -61,8 +61,8 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_HEALTH :					{url: "/blocks/health.js", normalParams:true},
 		BLOCKS_PROGRESS :				{url: "/blocks/progress.js", normalParams:true},
 		BLOCKS_CLONE :					{url: "/blocks/clone_blocks.js", normalParams:true, post:true},
-		BLOCKS_LOCK:					{url: "/blocks/admin_lock.js", post:true, normalParams:true , post:true},
-		BLOCKS_UNLOCK:					{url: "/blocks/admin_unlock.js", post:true, normalParams:true , post:true},
+		BLOCKS_LOCK:					{url: "/blocks/admin_lock.js", post:true, normalParams:true},
+		BLOCKS_UNLOCK:					{url: "/blocks/admin_unlock.js", post:true, normalParams:true},
 
 	
 		//singular block for controller convenience
