@@ -424,11 +424,13 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 				state.publish.bindDelay(state, 300, "state", "user_id", true);
 				state.publish.bindDelay(state, 300, "state", "company_id", true);
 			}
-			
-			storage.context.user = data.user || null;
-			storage.context.company = data.company || null;
-			storage.context.settings = data.settings || null;
 
+			//Don't update these if the server had errors			
+			if (data.errors === null) {
+				storage.context.user = data.user || null;
+				storage.context.company = data.company || null;
+				storage.context.settings = data.settings || null;
+			} 
 
 			//if we have a block id in the response and there's no block defined in the state, OR 
 			//	 we have the  blocks model but the currentBlock is returning null

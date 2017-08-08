@@ -34,7 +34,7 @@ define(['sb_light/globals'], function(sb) {
 		MODEL_DOCUMENTS: 			{url: "/documents.js", 					post:false},
 		MODEL_DASHBOARDS: 			{url: "/dashboards.js", 				post:false},
 		MODEL_BOOKMARKS: 			{url: "/saved_client_states/index.js", 	post:false},
-		MODEL_CUSTOM_FIELDS:		{url: "/custom_field_types/index.js", 	post:false},	
+		MODEL_CUSTOM_FIELDS:		{url: "/custom_fields/index.js", 	post:false},	
 
 
 			
@@ -114,9 +114,9 @@ define(['sb_light/globals'], function(sb) {
 		COMPANIES_MILESTONE_DELETE: 	{url: "/milestone_definitions/%id%/destroy.js", deleteId:true, post:true},
 		
 
-		CUSTOM_FIELD_CREATE:			{url: "/custom_field_types/create.js", post:true},
-		CUSTOM_FIELD_UPDATE:			{url: "/custom_field_types/%id%/update.js", deleteId:true, post:true},
-		CUSTOM_FIELD_DESTROY:			{url: "/custom_field_types/%id%/destroy.js", deleteId:true, post:true},
+		CUSTOM_FIELD_CREATE:			{url: "/custom_fields/create.js", post:true},
+		CUSTOM_FIELD_UPDATE:			{url: "/custom_fields/%id%/update.js", deleteId:true, post:true},
+		CUSTOM_FIELD_DESTROY:			{url: "/custom_fields/%id%/destroy.js", deleteId:true, post:true},
 
 
 		

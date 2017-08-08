@@ -1352,6 +1352,19 @@ define(['sb_light/globals',
 
 
 
+	q.blockNumericAxes = function() {
+		var list = {
+			"percent_progress": 	{label:"Actual Progress %", min:0, max:100},
+			"expected_progress": 	{label:"Target Progress %", min:0, max:100},
+			"priority": 			{label:"Priority", min:0, max:10},
+			"days_of_effort": 		{label:"Days Effort", min:0},
+			"percent_health": 		{label:"Current Health", min:-100, max:100, default:0},
+		};
+
+		return list;
+
+	};
+
 
 
 
