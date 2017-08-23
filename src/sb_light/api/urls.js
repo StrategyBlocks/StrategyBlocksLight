@@ -74,8 +74,6 @@ define(['sb_light/globals'], function(sb) {
 		BLOCK_UNWATCH: 					{url: "/blocks/%id%/unwatch.js",				post:true},
 		
 		BOOKMARKS:						{url: "/saved_client_states/index.js"},
-		BOOKMARK_CREATE_DYNAMIC:		{url: "/saved_client_states/create_dynamic.js", post:true},
-		BOOKMARK_SAVE_DYNAMIC:			{url: "/saved_client_states/%id%/save_dynamic.js", normalParams:true, post:true},
 		BOOKMARK_CREATE:				{url: "/saved_client_states/create.js", normalParams:true, post:true},
 		BOOKMARK_UPDATE:				{url: "/saved_client_states/%id%/update.js", normalParams:true, deleteId:true, post:true},
 		BOOKMARK_DELETE:				{url: "/saved_client_states/%id%/delete.js", deleteId:true, post:true},

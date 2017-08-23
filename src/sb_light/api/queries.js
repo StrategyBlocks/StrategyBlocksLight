@@ -17,7 +17,8 @@ define(['sb_light/globals',
 		"sb_light/utils/ext", 
 		'sb_light/api/state',
 		//ignore
-		'd3'
+		'd3',
+		"md5"
 ], function(sb, moment, accounting,  E, ST) {
 	
 	'use strict';
@@ -248,6 +249,10 @@ define(['sb_light/globals',
 		return "https://www.gravatar.com/avatar/" +  (u ? u.gravatar : "") + "?d=" + (u ? "identicon" : "mm") + "&s="+ (size||50);
 	};
 
+	q.DEFAULT_GRAVATAR_EMAIL = CryptoJS.MD5('default@strategyblocks.com').toString()
+	q.defaultGravatar = function(size) {
+		return "https://www.gravatar.com/avatar/" +  (q.DEFAULT_GRAVATAR_EMAIL) + "?d=identicon&s="+ (size||50);
+	}
 
 	q.userMessageDisplay = function(uid, message, width) {
 		var u = q.user.apply(q, E.slice(arguments));
