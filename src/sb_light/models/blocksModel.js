@@ -341,6 +341,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			var cLenLen = ((p ? p.children.length : 1)+"").length;
 			var levelPos = E._.padStart( (""+(1+pos)), cLenLen, "0"); 
+			var overdueDays =  (!b.closed && E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0));
 
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),
@@ -360,12 +361,13 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				percent_health: (b.percent_health || 0),
 				count_metrics: (b.count_metrics || 0),
 				count_risks: (b.count_risks || 0),
-				overdue: (!b.closed && E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0)),
+				overdue: overdueDays,
 				is_root:(depth===0),
 				is_closed: !!b.closed,
 				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
 				is_company: (b.sub_company_block ? true: false),
 				is_open: ((b.ownership_state == "new" || b.closed) ? false : true),
+				is_overdue: (overdueDays > 0),
 				is_mine: (b.owner_id == uid || b.manager_id == uid),
 				is_real_owner: (b.owner_id==uid),
 				is_real_manager: (b.manager_id == uid),

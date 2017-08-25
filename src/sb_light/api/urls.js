@@ -114,7 +114,7 @@ define(['sb_light/globals'], function(sb) {
 
 		CUSTOM_FIELD_CREATE:			{url: "/custom_fields/create.js", post:true},
 		CUSTOM_FIELD_UPDATE:			{url: "/custom_fields/%id%/update.js", deleteId:true, post:true},
-		CUSTOM_FIELD_DESTROY:			{url: "/custom_fields/%id%/destroy.js", deleteId:true, post:true},
+		CUSTOM_FIELD_DESTROY:			{url: "/custom_fields/%id%/delete.js", deleteId:true, post:true, normalParams:true},
 
 
 		

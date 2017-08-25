@@ -73,7 +73,7 @@ define(['sb_light/globals',
 		COMPANIES
 	*********************************/
 	q.company = function(cid /*optional*/) {
-		var cc = ST.context("company") || null
+		var cc = ST.context("company") || null;
 		var cm = sb.models.rawArray("companies");
 		if(!cid) { 
 			return cc;
@@ -249,10 +249,10 @@ define(['sb_light/globals',
 		return "https://www.gravatar.com/avatar/" +  (u ? u.gravatar : "") + "?d=" + (u ? "identicon" : "mm") + "&s="+ (size||50);
 	};
 
-	q.DEFAULT_GRAVATAR_EMAIL = CryptoJS.MD5('default@strategyblocks.com').toString()
+	q.DEFAULT_GRAVATAR_EMAIL = CryptoJS.MD5('default@strategyblocks.com').toString();
 	q.defaultGravatar = function(size) {
 		return "https://www.gravatar.com/avatar/" +  (q.DEFAULT_GRAVATAR_EMAIL) + "?d=identicon&s="+ (size||50);
-	}
+	};
 
 	q.userMessageDisplay = function(uid, message, width) {
 		var u = q.user.apply(q, E.slice(arguments));
@@ -521,7 +521,7 @@ define(['sb_light/globals',
 
 	q.canEditMetric = function(m) {
 		return q.isMetricOwner(m) || q.isMetricManager(m);
-	}
+	};
 
 	q.formatMetric = function(m, value, nounit/*=false*/) {
 		var val = accounting.formatNumber(value, m.number_decimals);
@@ -625,7 +625,7 @@ define(['sb_light/globals',
 
 	q.metricChartData = function(id, hierarchyData, options) {
 		// var timer = E.moment();
-		options = options || {}
+		options = options || {};
 
 		var m = q.metric(id);
 		var percent = m.percentage ? true : false;
@@ -728,7 +728,7 @@ define(['sb_light/globals',
 			actualDomain.unshift(E.today());
 
 			actualRange.push(actualValues[0]);
-			actualRange.unshift(0)
+			actualRange.unshift(0);
 		}
 		var targetDomain = targetDates;
 		var targetRange = targetValues;
@@ -1040,8 +1040,8 @@ define(['sb_light/globals',
 		if (!bid) {
 			return q._riskStatusMap[r.status];
 		} else {
-			var ri = E._.find(r.risk_impacts, {block_id:bid})
-			return ri ? q._riskStatusMap[r.health_status] : q._riskStatusMap["inactive"]; 
+			var ri = E._.find(r.risk_impacts, {block_id:bid});
+			return ri ? q._riskStatusMap[r.health_status] : q._riskStatusMap.inactive; 
 		}
 	};
 
@@ -1281,22 +1281,22 @@ define(['sb_light/globals',
 
 	q.canDeleteBlock = function(b) {
 		return !Q.blockLocked(b) && b.is_manager && b.parent;
-	}
+	};
 
 	q.isBlockManager = function(b) {
 		return !Q.blockLocked(b) && b.is_manager;
-	}
+	};
 	q.isBlockOwner = function(b) {
 		return !Q.blockLocked(b) && b.is_owner;
-	}
+	};
 
 	q.canCloseBlock = function(b) {
 		return Q.isBlockManager(b) && b.can_close;
-	}
+	};
 
 	q.canPublishBlock = function(b) {
 		return Q.isBlockOwner(b) && b.ownership_state == "new";
-	}
+	};
 
 	q.canEditBlock = function(b) {
 		return q.canManageBlock(b) || q.canUpdateProgress(b) ;
@@ -1309,7 +1309,7 @@ define(['sb_light/globals',
 	};
 	q.canAddChildren = function(b) {
 		return Q.isBlockOwner(b) && !b.closed && !b.milestone_definition_id && !b.sub_company_block;
-	}
+	};
 
 
 	q.progressRollupMethod = function(parent, companyFallback/*true*/) {
@@ -1365,6 +1365,20 @@ define(['sb_light/globals',
 			"days_of_effort": 		{label:"Days Effort", min:0},
 			"percent_health": 		{label:"Current Health", min:-100, max:100, default:0},
 		};
+
+		var fields = E.filter(sb.models.rawArray("custom_fields"), function(v) {
+			return v.is_block && v.input_type == "number";
+		});
+
+		E.each(fields, function(v) {
+			var name = "custom_field_" + v.id;
+			list[name] = {label: v.title};
+			if (v.options) {
+				if (E.isNum(v.options.min)) 		{ list[name].min = v.options.min; }
+				if (E.isNum(v.options.max)) 		{ list[name].max = v.options.max; }
+				if (E.isNum(v.options.default)) 	{ list[name].default = v.options.default; }
+			}
+		});
 
 		return list;
 
