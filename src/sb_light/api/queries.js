@@ -28,6 +28,21 @@ define(['sb_light/globals',
 
 
 
+	//takes a list of model objects and injects "custom_field_{id}: {value}" into it for all the 
+	//custom fields in the 
+	q.attachCustomFields = function(data) {
+		var fields = sb.models.raw("custom_fields");
+		E.each(data, function(d) {
+			E.each(fields, function(f) {
+				var mf = E._.find(d.custom_fields, {id: f.id});
+				d["custom_field_"+f.id] = mf ? mf.value : ((f.options && f.options.default) || null);
+			});
+		});
+		return data;
+	};
+
+
+
 
 	/********************************
 		DASHBOARDS
