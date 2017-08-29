@@ -11,6 +11,7 @@ define([
 	'sb_light/utils/svg',	
 	'sb_light/utils/queue',	
 	'sb_light/utils/events',	
+	'sb_light/utils/strings',	
 	'sb_light/layout',	
 	'sb_light/utils/Class',
 	'sb_light/models',		
@@ -34,6 +35,7 @@ define([
 	svg,
 	queue,
 	events,
+	strings,
 	layout,
 	Class,	 
 	models,	
@@ -60,6 +62,7 @@ define([
 	globals.svg = svg;
 	globals.queue = queue;
 	globals.events = events;
+	globals.strings = strings;
 	globals.layout = layout;
 	globals.models = models;
 	globals.controller = controller;

@@ -11,7 +11,7 @@ define([
 ], function( Class, sb ) {
 	
 
-	var E, ST, M;
+	var E, ST, M, STR;
 	var DOM_REGISTER = {};
 	var OPTS = {
 		appendTo: 		null,
@@ -52,6 +52,7 @@ define([
 			this.sb = sb;
 			E = sb.ext;
 			ST = sb.state;
+			STR = sb.strings;
 			M = sb.models;
 			var o = this.__opts = this.initOpts(opts);
 
@@ -459,14 +460,17 @@ define([
 				} else {
 					ST.context(tname, "waiting...");
 
-					this.$.load(opts.join(""), function(response, status, xhr) {
-						if(status != "error") {
-							ST.context(tname, response);
-							self.beforeDrawDone.bindDelay(self, 200);
-						} else {
+					$.get(opts.join(""))
+						.done(function(data) {
+							data = STR.parse(data);
+							self.$.html(data);
+							ST.context(tname, data);
+							self.beforeDrawDone.bindDelay(self, 200)
+						})
+						.fail(function() {
 							E.warn("Error loading template", xhr.status + "\n" + xhr.statusText);
-						}
-					});
+						})
+					;
 				}
 			} catch(e) {
 				E.warn("Error loading template", opts.join(""));
