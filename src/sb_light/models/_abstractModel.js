@@ -155,6 +155,13 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 					return successNum;
 
 				}
+				//BOOL
+				//only filter if true
+				//e.g., m.strategic == true
+				if(E.isBool(fv)) {
+					var success = (fv !== true || el[fk] === true);
+					return success;
+				}
 				// console.log("FAIL WTF?", fk,fv,el.id, el[fk]); 
 				return false;
 			});
