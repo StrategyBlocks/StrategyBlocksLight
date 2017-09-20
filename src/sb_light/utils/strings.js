@@ -6,13 +6,13 @@ define(['sb_light/globals', 'sb_light/utils/ext', 'sb_light/etc/pluralize'], fun
 
 	//Matches "sadasdadad   %(key:modifider:modifier) dljsdklfjskldfjslfk "
 
-	var parseExpr = /\%\((.+?)\)/;
+	var parseExpr = /\%\((.+?)\)/g;
 	str.getParserExpr = function() {
 		return parseExpr;
 	};
 
 	str.parse = function(string) {
-		var re =  new RegExp(parseExpr, "g");
+		var re =  parseExpr;
 		string = string || "";
 		var match = re.exec(string);
 		while (match) {
