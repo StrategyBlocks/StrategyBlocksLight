@@ -93,6 +93,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 					below_target_good: v.below_target_good,
 					percentage: v.percentage
 				};
+
+
+				//add new keys for each textarea item and add "<br/>" for each line break.
+				E.each(["description"], function(key) {
+					v[key+"_html"] =  v[key] ? v[key].replace(/(?:\r\n|\r|\n)/g, '<br />') : "";  
+				})
 			});
 
 		},

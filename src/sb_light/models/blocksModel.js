@@ -397,6 +397,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				v.trend = v.trend.toLowerCase();
 			});
 
+			//add new keys for each textarea item and add "<br/>" for each line break.
+			E.each(["body"], function(key) {
+				b[key+"_html"] =  b[key] ? b[key].replace(/(?:\r\n|\r|\n)/g, '<br />') : "";  
+			})
+
+
 			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);
 			b.last_updated = E.maxDate(b.start_date, E.minDate(b.end_date, b.last_updated));
 

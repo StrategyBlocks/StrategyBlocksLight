@@ -87,7 +87,6 @@ define(['sb_light/globals'], function(sb) {
 		CUSTOM_FIELDS_DESTROY:			{url: "/blocks/%id%/custom_fields/%field_id%/destroy.js", deleteId:true, post:true},
 
 		// COMPANIES_CREATE: 				{url: "/companies/create.js"},
-		COMPANIES_REGISTER: 			{url: "/companies/create.js", post:true},
 		COMPANIES_UPDATE: 				{url: "/companies/update.js", post:true},
 		COMPANIES_UPLOAD_LOGO: 			{url: "/companies/logo_upload.js", post:true},
 
@@ -206,7 +205,7 @@ define(['sb_light/globals'], function(sb) {
 		
 		LEVELS_UPDATE: 				{url: "/levels/update.js", post:true},
 		
-		MEASURES_BLOCKS: 			{url: "/blocks/measure_values/%id%.js"},
+		MEASURES_BLOCKS: 			{url: "/blocks/measure_values/%id%.js", post:false},
 		
 		USERS_CREATE :				{url: "/users/create.js", post:true},
 		USERS_CREATE_BATCH: 		{url: "/users/create_batch.js", post:true},
@@ -221,7 +220,7 @@ define(['sb_light/globals'], function(sb) {
 		USERS_CHANGE_MEMBERSHIP: 	{url: "/users/%id%/update_membership.js", deleteId: true, post:true},
 		USERS_CALENDAR_TOKEN:		{url: "/users/enable_todo_calendar.js"},
 		USERS_SEND_REPORT:			{url: "/users/send_report.js", post:true},
-		USERS_DOWNLOAD_SQLITE:		{url: "/exports/sqlite.db"},
+		USERS_DOWNLOAD_SQLITE:		{url: "/exports/sqlite.db", post:false},
 
 		USERS_UPLOAD_LOGO: 			{url: "/users/logo_upload.js", post:true},
 		USERS_REMOVE_LOGO: 			{url: "/users/remove_logo.js", post:true},
@@ -229,8 +228,8 @@ define(['sb_light/globals'], function(sb) {
 		
 		USERS_CHANGE_DEFAULT_COMPANY:	{url: "/users/%id%/change_default_company.js", normalParams:true, post:true},
 		
-		REGISTER_COMPANY: 			{url: "/registration/register.js"},
-		REGISTER_INDUSTRIES: 		{url: "/registration/industries.js"},
+		REGISTER_COMPANY: 			{url: "/registration/register.js", post:true},
+		REGISTER_INDUSTRIES: 		{url: "/registration/industries.js", post:false},
 
 		
 		LOGIN :						{url: "/login/auth.js"},
