@@ -108,9 +108,12 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 				reqArgs.failure(data);
 			}
 
+
 			if(sb.helpers && sb.helpers.showMessage) {
+				var settings = sb.state.context("settings");
+				var email = (settings && settings["smtp.email.support"]) || "help@strategyblocks.com";
 				sb.helpers.showMessage("Something bad happened with your last update and the response could not be processed.\
-										 Please contact <a href='mailto:help@strategyblocks.com'>StrategyBlocks Support</a> \
+										 Please contact <a href='"+ email + "'>StrategyBlocks Support</a> \
 										 and let us know what happened.", "danger")
 				;
 			}

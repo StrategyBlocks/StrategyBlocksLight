@@ -537,13 +537,12 @@ define([
 			if(src) {
 				var key  = src + "_" + E.unique(); 
 				try {
-					// console.log("LOADING CHILD: ", key, opts);
+
 					self.__creatingChildren[key] = true;
 					require([src], function(El) {
 
 						//no guarantee of order this happens
-						if(E && self.__creatingChildren[key]) {
-							// console.log("CREATING CHILD: ", key, opts);
+						if(El && self.__creatingChildren[key]) {
 							c.push(new El(opts));
 							delete self.__creatingChildren[key];
 						} else {

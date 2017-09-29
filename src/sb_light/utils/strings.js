@@ -46,7 +46,6 @@ define(['sb_light/globals', 'sb_light/utils/ext', 'sb_light/etc/pluralize'], fun
 			}
 		});
 
-		console.log("GET LABEL", string, res);
 		return res; 
 	};
 
