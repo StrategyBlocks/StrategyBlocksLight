@@ -87,6 +87,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 				v.used_by_metrics = E._.union(v.used_by_metric_ids_in_calculation_actuals, v.used_by_metric_ids_in_calculation_target);
 				v.metrics_used = E._.union(v.calculation_actuals_metric_ids_used, v.calculation_target_metric_ids_used);
 
+				v.is_score = (E.firstKey(v.calculation_actuals)||"").match(/score/);
+
 				v.tolerance = {
 					range_start: v.range_start,
 					range_end: v.range_end,
