@@ -32,7 +32,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			if(!el) { return; }
 			
 			el.depth = p ? (p.depth +1) : 0;
-			el.level_sort = p ? (p.level_sort	 + "_" + i) : "L1";
+			el.level_sort = (p ? (p.level_sort + "." + (i+1)) : "#");
+			el.level_display = el.level_sort;
+
 			if(el.children) {
 				E.each(el.children, this._massageDepth.bind(this, el));
 			}
