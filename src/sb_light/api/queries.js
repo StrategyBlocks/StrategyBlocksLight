@@ -441,6 +441,14 @@ define(['sb_light/globals',
 		CAPABILITY
 	*********************************/
 	q.capability = function(key) {
+
+		//Settings are basically capabilities set on a server levels
+		var settings = ST.context("settings");
+		if(settings && settings.hasOwnProperty(key)) {
+			return settings[key] === true;
+		}
+
+
 		var cm = sb.models.raw("capabilities");
 		var c = (key &&cm &&  cm[key]) || null;
 		return !c || c.value === true;
