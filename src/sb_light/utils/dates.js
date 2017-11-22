@@ -1,6 +1,5 @@
 /* globals define, SB_OPTIONS */
-define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'], function(sb, E, Q, 
-	MOMENT) {
+define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'], function(sb, E, Q,  MOMENT) {
 	'use strict';
 
 	var DATES = {};
