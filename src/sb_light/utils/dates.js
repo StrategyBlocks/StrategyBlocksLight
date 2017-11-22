@@ -1,4 +1,6 @@
-define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOMENT) {
+/* globals define, SB_OPTIONS */
+define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'], function(sb, E, Q, 
+	MOMENT) {
 	'use strict';
 
 	var DATES = {};
@@ -13,7 +15,7 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 	D.userFormat = function() { 
 		var u = sb.queries.user();
 		return  u ? u.date_format : D.serverFormat;
-	}
+	};
 
 	////////////////////////////PLUGINS TO MOMENT.JS////////////////////////////////////////
 	MOMENT.fn.serverStr = function() {
@@ -34,10 +36,10 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 			m.add(v, k);
 		});
 		return m; 
-	}
+	};
 
-	D.serverStr = function(moment, adjustments) { return (moment || D.date(adjustments)).serverStr(); }
-	D.userStr = function(moment, adjustments) { return (moment || D.date(adjustments)).userStr(); }
+	D.serverStr = function(moment, adjustments) { return (moment || D.date(adjustments)).serverStr(); };
+	D.userStr = function(moment, adjustments) { return (moment || D.date(adjustments)).userStr(); };
 
 	D.parse = function(date, format) {
 		format = format || D.serverFormat;
@@ -47,15 +49,15 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 		return MOMENT(date);
 	};
 	//parse from a user format to MOMENT
-	D.parseUserDate = function(date) { return D.parse(date, D.userFormat()); }
+	D.parseUserDate = function(date) { return D.parse(date, D.userFormat()); };
 	//parse from a user format to MOMENT
-	D.parseAdminDate = function(date) { return D.parse(date, D.adminFormat); }
+	D.parseAdminDate = function(date) { return D.parse(date, D.adminFormat); };
 	//parse from a user format to MOMENT
-	D.parseUnixDate = function(date) { return D.parse(date, D.unixFormat); }
+	D.parseUnixDate = function(date) { return D.parse(date, D.unixFormat); };
 
 	//Parse and output as a string
-	D.parseToUser 	= function(date, format) { return D.parse(date,format).userStr(); 	}
-	D.parseToServer = function(date, format) { return D.parse(date,format).serverStr(); 	}
+	D.parseToUser 	= function(date, format) { return D.parse(date,format).userStr(); 	};
+	D.parseToServer = function(date, format) { return D.parse(date,format).serverStr(); 	};
 
 
 
@@ -65,7 +67,9 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 		"one_quarter": 		{unit:"quarters", 	subtract: 1, min_unit: "months", 	min:2, 		label: "One Quarter"},
 		"two_quarters": 	{unit:"quarters", 	subtract: 2, min_unit: "months", 	min:4, 		label: "Two Quarters"},
 		"three_quarters": 	{unit:"quarters", 	subtract: 3, min_unit: "months", 	min:6, 		label: "Three Quarters"},
+		"current_fy": 		{unit:"fyears",		subtract: 1, min_unit: "months",	min:1,		label: "Current FY"},
 		"one_year": 		{unit:"years", 		subtract: 1, min_unit: "months", 	min:9, 		label: "One Year"},
+		"previous_fy": 		{unit:"fyears",		subtract: 2, min_unit: "months",	min:13,		label: "Previous FY"},
 		"two_years": 		{unit:"years", 		subtract: 2, min_unit: "months", 	min:18, 	label: "Two Years"},
 		"three_years": 		{unit:"years", 		subtract: 3, min_unit: "months", 	min:24, 	label: "Three Years"},
 	};
@@ -78,28 +82,33 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 
 		var d = null;
 		if(def) {
-			d = MOMENT(cd).subtract(def.subtract, def.unit).startOf("month");
-			// if (MOMENT(cd).diff(d, def.min_unit) < def.min) {
-			// 	d.subtract(1, "days").startOf("month");
-			// }
+			if (def.unit == "fyears") {
+				var ys = Q.yearStart();
+				d = ys.subtract(def.subtract-1, "years");
+			} else {
+				d = MOMENT(cd).subtract(def.subtract, def.unit).startOf("month");
+			}
+
 		}
 		return d;
 	};
 
 
 	D.futureDateList = {
-		"today": 	{unit:"day", label: "Today"},
-		"month": 	{unit:"months", label: "End of Month"},
-		"quarter": 	{unit:"quarters", label: "End of Quarter"},
-		"year": 	{unit:"years", label: "End of Year"},
-	}
+		"today": 		{unit:"day", label: "Today"},
+		"month": 		{unit:"months", label: "End of Month"},
+		"quarter": 		{unit:"quarters", label: "End of Quarter"},
+		"current_fy": 	{unit: "fyears", label: "End of FY"},
+		"year": 		{unit:"years", label: "End of Year"},
+	};
+
 	D.futureDate = function(str,date) {
 		var cd = D.parse(date);
 		var def = D.futureDateList[str];
 
 		var d = null;
 		if(def) {
-			d = cd.endOf(def.unit);
+			d = (def.unit == "fyears") ? Q.yearEnd() : cd.endOf(def.unit);
 		}
 		return d;
 	};
@@ -113,6 +122,7 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 
 	//TEST THE FUNCTIONS ABOVE AS BEST WE CAN
 	if(SB_OPTIONS.debug) {
+		/* jshint laxcomma: true */
 		var __TESTS = [
 			 ["serverStr", 	[], 							MOMENT(), 							"Date serverStr function failed"]
 			,["serverStr", 	[null, {months:3}], 			MOMENT().add(3, "months"), 			"Date serverStr function failed to add 3 months "]
@@ -191,7 +201,7 @@ define(['sb_light/globals','sb_light/utils/ext', 'moment'], function(sb, E, MOME
 
 			if (response != expected) {
 				var msg = message + "  response=" + response + "   expected=" + expected;
-				console.log(msg);
+				E.warn(msg);
 				throw msg; 
 			}
 		});

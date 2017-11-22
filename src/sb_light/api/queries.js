@@ -140,7 +140,9 @@ define(['sb_light/globals',
 		var ds = fy.match(/^(\d\d?)\//)[1];
 		var ms = fy.match(/\/(\d\d?)$/)[1];
 
-		var cfy = E.moment().startOf("year").add(E.to_i(ms)-1,"m").add(E.to_i(ds)-1, "d").subtract(1, "d");
+		var cfy = sb.dates.date().month(E.to_i(ms)).date(E.to_i(ds)).subtract(1, "day");
+
+		console.log("Date " + ds + "  Month " + ms + "FY END " + sb.dates.serverStr(cfy));
 		if(cfy.isBefore(E.moment())) {
 			return cfy.add(1, "year");
 		} 
@@ -153,7 +155,8 @@ define(['sb_light/globals',
 		var ds = fy.match(/^(\d\d?)\//)[1];
 		var ms = fy.match(/\/(\d\d?)$/)[1];
 
-		var cfy = E.moment().startOf("year").add(E.to_i(ms)-1,"m").add(E.to_i(ds)-1, "d");
+		var cfy = sb.dates.date().month(E.to_i(ms)-1).date(E.to_i(ds));
+
 		if(cfy.isAfter(E.moment())) {
 			return cfy.subtract(1, "year");
 		} 
