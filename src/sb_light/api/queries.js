@@ -224,11 +224,9 @@ define(['sb_light/globals',
 
 		if(u.company_membership) {
 			return u.company_membership;
-		} else {
-			//TODO: Remove this code - legacy api.
-			var c = q.company();
-			return u && c && u.companies[c.id] || null;
-		}
+		} 
+
+		return null;
 	}; 
 	q.userDate = function(date, opts) {
 		var u = q.user();
