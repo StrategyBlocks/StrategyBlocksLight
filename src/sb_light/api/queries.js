@@ -177,7 +177,11 @@ define(['sb_light/globals',
 
 	q.fullname = q.fullName = function(/*uid*/) {
 		var u = q.user.apply(q, E.slice(arguments));
-		return u ? (u.name || (u.firstname + " " + u.lastname)) : DELETED_NAME;
+		return u ? (u.name || (u.first_name + " " + u.last_name)) : DELETED_NAME;
+	};
+	q.fullnameReverse = q.fullName = function(/*uid*/) {
+		var u = q.user.apply(q, E.slice(arguments));
+		return u ? (u.last_name + ", " + u.first_name) : DELETED_NAME;
 	};
 
 	q.firstname = q.firstName = function(/*uid*/) {
@@ -243,15 +247,42 @@ define(['sb_light/globals',
 		return m.format(_serverDateFormat);
 	};
 	
-	q.authors  = function(includeInactive/*=false*/) {
+	q.authors  = function(opts) {
+		opts = E.merge({
+			includeInactive: false,
+			sort: sb.ext.sortUsers
+		},opts||{})
 		var cid = ST.state("company_id");
 		return sb.models.rawArray("users").filter(function(el) {
 			
 												//TODO: Remove legacy API support
 			var cm = el.company_membership || (el.companies && el.companies[cid] || null);
-			return cm && (cm.active || includeInactive) && (cm.role == "Author" || cm.role =="Administrator");
-		}).sort(sb.ext.sortUsers);
+			return cm && (cm.active || opts.includeInactive) && (cm.role == "Author" || cm.role =="Administrator");
+		}).sort(opts.sort);
 	};
+
+	q.authorsSelect = function(opts) {
+		opts = E.merge({
+			shorten: 0,
+			reverse:true,
+			includeEmpty: false
+		},opts||{})
+
+		var list = E.map(Q.authors(opts), function(v) {
+			var name = opts.reverse ? Q.fullnameReverse(v.id) : Q.fullname(v.id);
+			if (opts.shorten > 0) {
+				name = E.shorten(name, opts.shorten);
+			}
+			return {value:v.id, text:name};
+		});
+		if(opts.includeEmpty) {
+			list.unshift({value:"", text:""});
+		}
+		return list;
+
+	}
+
+
 
 	q.userLogoSrc = function(uid, size) {
 		var u = q.user.apply(q, E.slice(arguments));
