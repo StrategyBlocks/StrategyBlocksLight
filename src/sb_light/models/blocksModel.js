@@ -366,7 +366,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				is_closed: !!b.closed,
 				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
 				is_company: (b.sub_company_block ? true: false),
-				is_open: ((b.ownership_state == "new" || b.closed) ? false : true),
+				is_open: ((isNew || b.closed) ? false : true),
 				is_overdue: (overdueDays > 0),
 				is_mine: (b.owner_id == uid || b.manager_id == uid),
 				is_real_owner: (b.owner_id==uid),
@@ -415,7 +415,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			b.progressLeaf = b.leaf && b.is_owner && b.status != "new" && !b.closed;
 
-
+			b.height = 0;
 			E.each(b.children, function(cpath) {
 				b.size += pm[cpath].size;
 				b.height = E.max(1, b.height, pm[cpath].height+1);

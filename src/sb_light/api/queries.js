@@ -520,6 +520,17 @@ define(['sb_light/globals',
 			return v.title;
 		}).join(" / ");
 	};
+
+	q.focusSelect = function(opts) {
+		opts = E.merge({}, opts||{});
+		var list = E.map(sb.models.rawArray("focus"), function(v,k) {
+			return {value:v.id, text:(v.level_display + ". " + v.title)};
+		})
+
+		list = E._.orderBy(list, "text");
+
+		return list;
+	}
 	
 	/********************************
 		Levels
