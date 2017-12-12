@@ -465,7 +465,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	 
 	E.sortDateValue = function ext_sortDateValue(a,b) { return E.sortDate(a.date,b.date); };
 	E.sortUsers = function ext_sortUsers(a,b) {  return (E.sortFactory("last_name", E.sortString))(a,b); };
-	E.sortFocus = function ext_sortFocus(a,b) {  return (E.sortFactory("title", E.sortString))(a,b); };
+	E.sortFocus = function ext_sortFocus(a,b) {  return (E.sortFactory("level_sort", E.sortString))(a,b); };
 	E.sortName = function ext_sortName(a,b) {  return (E.sortFactory("name", E.sortString))(a,b); };
 	E.sortBlocksByProgress = function ext_sortBlocksByProgress(a,b) {
 		//closed blocks 

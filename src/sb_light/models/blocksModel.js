@@ -98,11 +98,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 					var cb = self.find(c);
 					recurse(cb);
 					return prev || cb.FILTER_SHOW || cb.FILTER_PLACEHOLDER;
-				}, false)
+				}, false);
 
 				parent.FILTER_PLACEHOLDER = !parent.FILTER_SHOW && (childPassed || b.path == parent.path);
 				parent.FILTER_HIDDEN = !parent.FILTER_PLACEHOLDER && !parent.FILTER_SHOW;
-			}
+			};
 			recurse(rb);
 
 			return list;	
@@ -330,11 +330,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var bpath = p ? [p.path, b.id].join("_") : b.id;
 			var pinfo = p ? E._.find(b.parents, {parent_id:p.id}) : null;
 
-
-			var csize = 0;
-
 			var u = Q.user();
-			var uid = (u && u.id) || null
+			var uid = (u && u.id) || null;
 
 			var hs = ["bad", "warning", "good"];
 			var isNew = b.ownership_state == "new";
@@ -402,7 +399,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			//add new keys for each textarea item and add "<br/>" for each line break.
 			E.each(["body"], function(key) {
 				b[key+"_html"] =  b[key] ? b[key].replace(/(?:\r\n|\r|\n)/g, '<br />') : "<em>No Description</em>";  
-			})
+			});
 
 			b.level_display = b.level_sort;//.substr(2);
 			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);
