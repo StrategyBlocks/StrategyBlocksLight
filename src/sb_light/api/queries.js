@@ -1176,7 +1176,7 @@ define(['sb_light/globals',
 	q.blockDistance = function(a, b) {
 		a = q.block(a);
 		b = b ? q.block(b) : q.block();
-		if(!a || !b) { return 9999999; } // big number;
+		if( !(a && a.path && b && b.path)) { return Number.POSITIVE_INFINITY; } // big number;
 		a = a.path.split("_"); b = b.path.split("_");
 
 		while(a.length && b.length && a[0] == b[0]) {

@@ -94,6 +94,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var b = Q.block();
 			if(!b) { return; }
 			var recurse = function(parent) {
+				//errors
+				if (!parent) { return; }
+
 				var childPassed = (!parent.children && !parent.children.length) || E.reduce(parent.children, function(prev, c) {
 					var cb = self.find(c);
 					recurse(cb);
@@ -325,6 +328,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			if(E.isStr(b)) {
 				b = this._model[b.split("_").last()];
+			}
+
+			//Not sure why we're here...
+			if (!b) {
+				return null;
 			}
 
 			var bpath = p ? [p.path, b.id].join("_") : b.id;
