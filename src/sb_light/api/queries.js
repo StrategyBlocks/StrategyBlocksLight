@@ -276,7 +276,7 @@ define(['sb_light/globals',
 			return {value:v.id, text:name};
 		});
 		if(opts.includeEmpty) {
-			list.unshift({value:"", text:""});
+			list.unshift({value:null, text:""});
 		}
 		return list;
 
