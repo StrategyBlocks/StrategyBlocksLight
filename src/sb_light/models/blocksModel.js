@@ -54,10 +54,20 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		},
 
 		rawArray: function(type) {
-			return type === "path" ? this._pathArray : this._super();
+			switch (type) {
+				case "id": return this._super(); 
+				case "path": /* falls through */ 
+				default:
+					return this._pathArray; 
+			}
 		},
 		raw: function(type) {
-			return type === "path" ? this._pathModel : this._super();
+			switch (type) {
+				case "id": return this._super(); 
+				case "path": /* falls through */ 
+				default:
+					return this._pathModel; 
+			}
 		},
 
 
@@ -79,7 +89,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		},
 
 		filteredList: function(type) {
-			return type != "path" ? this._super() : this.filteredTree(); 
+			return /*type != "path" ? this._super() : */this.filteredTree(); 
 		},
 
 
@@ -318,6 +328,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 		//returns the path of the current block
 		_massage: function(b, p, depth, pos, schema) {
+
 			var recurse = this._massage.bind(this);
 
 			if(!p) {
@@ -330,8 +341,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				b = this._model[b.split("_").last()];
 			}
 
-			//Not sure why we're here...
 			if (!b) {
+				//Not sure why we're here...
 				return null;
 			}
 
@@ -369,7 +380,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				overdue: overdueDays,
 				is_root:(depth===0),
 				is_closed: !!b.closed,
-				is_link: ((pinfo && pinfo.linked_parent_id !== null) ? true : false),
+				is_link: (p && (p.is_link || pinfo.linked_parent_id !== null)),
 				is_company: (b.sub_company_block ? true: false),
 				is_open: ((isNew || b.closed) ? false : true),
 				is_overdue: (overdueDays > 0),

@@ -149,10 +149,10 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.METRICS_DESTROY,{id:id}, cb,cb);
 	};
 	controller.metricAttach = function( list, bid, cb) {
-		controller.invoke(sb.urls.METRICS_ATTACH_BLOCK,{id:bid, "metric_ids":String(list)}, cb,cb);
+		controller.invoke(sb.urls.BLOCK_ATTACH_METRIC,{id:bid, "metric_ids":String(list)}, cb,cb);
 	};
 	controller.metricDetach = function( mid, bid, cb) {
-		controller.invoke(sb.urls.METRICS_DETACH_BLOCK,{id:bid, "metric_id":mid}, cb,cb);
+		controller.invoke(sb.urls.BLOCK_DETACH_METRIC,{id:bid, "metric_id":mid}, cb,cb);
 	};
 	controller.metricDownload = function( o,  cb) {
 		controller.invoke(sb.urls.METRICS_DOWNLOAD,o, cb,cb, null, {dataType:"text"});

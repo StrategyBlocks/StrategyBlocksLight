@@ -73,6 +73,10 @@ define(['sb_light/globals'], function(sb) {
 		BLOCK_INVITE :					{url: "/blocks/%id%/invite.js",					post:true, normalParams:true},
 		BLOCK_UNWATCH: 					{url: "/blocks/%id%/unwatch.js",				post:true},
 		
+		BLOCK_ATTACH_METRIC: 	 		{url: "/blocks/attach_metric/%id%.js", normalParams:true, deleteId:true },
+		BLOCK_DETACH_METRIC:  			{url: "/blocks/detach_metric/%id%.js", normalParams:true, deleteId: true },
+
+
 		BOOKMARKS:						{url: "/saved_client_states/index.js"},
 		BOOKMARK_CREATE:				{url: "/saved_client_states/create.js", normalParams:true, post:true},
 		BOOKMARK_UPDATE:				{url: "/saved_client_states/%id%/update.js", normalParams:true, deleteId:true, post:true},
@@ -180,8 +184,6 @@ define(['sb_light/globals'], function(sb) {
 		METRICS_CREATE:  			{url: "/metrics/create.js", post:true},
 		METRICS_DESTROY:  			{url: "/metrics/%id%/destroy.js", deleteId:true, post:true},
 		METRICS_UPDATE:  			{url: "/metrics/%id%/update.js", deleteId:true, post:true},
-		METRICS_ATTACH_BLOCK:  		{url: "/blocks/attach_metric/%id%.js", normalParams:true, deleteId:true },
-		METRICS_DETACH_BLOCK:  		{url: "/blocks/detach_metric/%id%.js", normalParams:true, deleteId: true },
 		METRICS_UPDATE_GROUPS:  	{url: "/metrics/%id%/update_group_expression.js" , deleteId:true, normalParams:true},
 		METRICS_DOWNLOAD:  			{url: "/metrics.csv" },
 		METRICS_HIERARCHY:			{url: "/metrics/hierarchy_values/%id%.js", deleteId:true, normalParams:true},

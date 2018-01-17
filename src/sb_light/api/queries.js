@@ -417,8 +417,8 @@ define(['sb_light/globals',
 
 		var u = q.user.apply(q, E.slice(arguments));
 		if(u) {
-			res.blockOwner = 	E._.filter(sb.models.rawArray("blocks"), {owner_id: u.id});
-			res.blockManager = 	E._.filter(sb.models.rawArray("blocks"), {manager_id: u.id});
+			res.blockOwner = 	E._.filter(sb.models.rawArray("blocks", "id"), {owner_id: u.id});
+			res.blockManager = 	E._.filter(sb.models.rawArray("blocks", "id"), {manager_id: u.id});
 			
 			res.metricOwner = 	E._.filter(sb.models.rawArray("metrics"), {owner_id: u.id});
 			res.metricManager = E._.filter(sb.models.rawArray("metrics"), {manager_id: u.id});
@@ -1265,10 +1265,10 @@ define(['sb_light/globals',
 	};
 
 	q.blocksOpen = function() {
-		return E._.filter(sb.models.rawArray("blocks"), {is_open:true});
+		return E._.filter(sb.models.rawArray("blocks", "id"), {is_open:true});
 	};
 	q.blocksAddChildren = function() {
-		return E._.filter(sb.models.rawArray("blocks"), {is_link:false, is_company:false, is_owner:true, is_closed:false});
+		return E._.filter(sb.models.rawArray("blocks", "id"), {is_link:false, is_company:false, is_owner:true, is_closed:false});
 	};
 
 	q.blockTarget = function(b) {
@@ -1460,7 +1460,7 @@ define(['sb_light/globals',
 	
 	q.buildStrategyTree = function(prevBlockId) {
 		var b = q.block();
-		var filteredBlocks = sb.models.filteredList("blocks", "path");
+		var filteredBlocks = sb.models.filteredList("blocks");
 		// console.log("filteredBlocks", filteredBlocks); 
 		var blocks = sb.models.raw("blocks", "path");
 
