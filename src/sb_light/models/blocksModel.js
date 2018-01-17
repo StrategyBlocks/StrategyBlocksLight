@@ -160,11 +160,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 
 		filter_status: function(b, statusList) {
-			if(!statusList || !statusList.length) { return b.status !== "closed"; }
 			if(statusList.indexOf(b.status) > -1) { return true; }
 			if(b.overdue && statusList.indexOf("overdue") > -1) { return true; }
-
-			statusList = E._.filter(statusList, function(v) { return v !== "closed"; });
 
 			return statusList.length === 0; 
 		},
@@ -420,7 +417,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				b[key+"_html"] =  b[key] ? b[key].replace(/(?:\r\n|\r|\n)/g, '<br />') : "<em>No Description</em>";  
 			});
 
-			b.level_display = b.level_sort;//.substr(2);
+			var blockType = b.is_link ? "blockTypeLink " : (b.is_company ? "blockTypeCompany" : "blockTypeNormal");
+
+			b.level_display = "<span class='" + blockType + "'>" + b.level_sort + "</span>";
 			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);
 			b.last_updated = E.maxDate(b.start_date, E.minDate(b.end_date, b.last_updated));
 
