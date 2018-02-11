@@ -54,7 +54,6 @@ define(['sb_light/globals'], function(sb) {
 		BLOCKS_UPDATE: 					{url: "/blocks/update/%id%.js", 				post:true,		deleteId: true},
 
 		// BLOCKS_WATCHING_USERS: 			{url: "/blocks/watching_users/%id%.js"},
-		BLOCKS_TAGGED: 					{url: "/blocks_for_tag/%name%.js"},
 		BLOCKS_UPDATE_GROUPS :			{url: "/blocks/update_group_expression/%id%.js", normalParams:true, post:true},
 		BLOCKS_CHANGE_CHARTED_KPI: 		{url: "/blocks/set_default_kpi/%id%.js", post:true},
 		BLOCKS_UPDATE_CASHFLOWS: 		{url: "/blocks/update_net_cashflows/%id%.js", post:true},
