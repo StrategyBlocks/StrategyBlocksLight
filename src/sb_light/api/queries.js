@@ -1317,7 +1317,7 @@ define(['sb_light/globals',
 	q.isCenterPath = function(b) {
 		b = q.block(b);
 		var cb = q.block();
-		return cb.path.match(b.path) ? true : false;
+		return (cb && b && cb.path.match(b.path)) ? true : false;
 	};
 
 	q.defaultBlockType = function(type) {
