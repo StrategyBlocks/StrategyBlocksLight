@@ -3,7 +3,7 @@
 	"version": "0.2.0",
 	"main": "main",
 	"dependencies": {
-		"moment": "2.x.x"
+		"moment": "2.21.x"
 	},
 	"description": "A lightweight StrategyBlocks client that hides the complexities of interacting with the StrategyBlocks server. This provides a foundation for anyone who wants to write their own SB client, on any platform that supports javascript (e.g., nodejs, browser, titanium)",
 	"bugs": "https://github.com/glenn-strategyblocks/StrategyBlocksLight/issues",
