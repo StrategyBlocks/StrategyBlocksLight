@@ -393,12 +393,9 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	E.minDate = function ext_minDate(dates) { 	return MOMENT.min.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.maxDate = function ext_maxDate(dates) { 	return MOMENT.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.rangeDate = function ext_maxDate(date, start,end) { 	return E.minDate(start, E.maxDate(end, date)); };
-	E.serverFormat = "YYYY/MM/DD";
-	E.unixFormat = "YYYY/MM/DD HH:mm:ss Z";
+	E.serverFormat = MOMENT.HTML5_FMT.DATE;
+	E.unixFormat = MOMENT.ISO_8601;
 	
-	//07 Jun 2015 22:08 +0000
-	E.adminFormat = "DD MMM YYYY HH:mm Z";
-
 	E.userFormat = function ext_userFormat() { 
 		var u = sb.queries.user();
 		var udf = u ? u.date_format : E.serverFormat;

@@ -7,9 +7,8 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 
 
-	D.serverFormat = "YYYY/MM/DD";
-	D.adminFormat = "DD MMM YYYY HH:mm Z";
-	D.unixFormat = "YYYY/MM/DD HH:mm:ss Z";
+	D.serverFormat = MOMENT.HTML5_FMT.DATE;
+	D.unixFormat = MOMENT.ISO_8601;
 	
 	D.userFormat = function() { 
 		var u = sb.queries.user();
@@ -49,8 +48,6 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	};
 	//parse from a user format to MOMENT
 	D.parseUserDate = function(date) { return D.parse(date, D.userFormat()); };
-	//parse from a user format to MOMENT
-	D.parseAdminDate = function(date) { return D.parse(date, D.adminFormat); };
 	//parse from a user format to MOMENT
 	D.parseUnixDate = function(date) { return D.parse(date, D.unixFormat); };
 
@@ -134,27 +131,27 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 			,["parseToServer", 		[new Date()], 			MOMENT(),			 		"Date parseToServer function failed parsing DATE"]
 			,["parseToServer", 		[MOMENT()], 			MOMENT(), 					"Date parseToServer function failed parsing MOMENT"]
-			,["parseToServer", 		["2001/1/1"], 			"2001/01/01", 				"Date parseToServer function failed parsing STRING in the past"]
-			,["parseToServer", 		["2050/12/31"], 		"2050/12/31", 				"Date parseToServer function failed parsing STRING in the future"]
+			,["parseToServer", 		["2001-1-1"], 			"2001-01-01", 				"Date parseToServer function failed parsing STRING in the past"]
+			,["parseToServer", 		["2050-12-31"], 		"2050-12-31", 				"Date parseToServer function failed parsing STRING in the future"]
 
 			//historic dates from october 12, 2016
-			,["historicDate", 		["one_month", "2016/10/12"], 		"2016/09/01", 	"Date historicDate function failed one_month from october 12"]
-			,["historicDate", 		["two_months", "2016/10/12"], 		"2016/08/01", 	"Date historicDate function failed two_months from october 12"]
-			,["historicDate", 		["one_quarter", "2016/10/12"], 		"2016/07/01", 	"Date historicDate function failed one_quarter from october 12"]
-			,["historicDate", 		["two_quarters", "2016/10/12"], 	"2016/04/01", 	"Date historicDate function failed two_qurters from october 12"]
-			,["historicDate", 		["three_quarters", "2016/10/12"], 	"2016/01/01", 	"Date historicDate function failed three_qauarters from october 12"]
-			,["historicDate", 		["one_year", "2016/10/12"], 		"2015/10/01", 	"Date historicDate function failed one_year from october 12"]
-			,["historicDate", 		["two_years", "2016/10/12"], 		"2014/10/01", 	"Date historicDate function failed two_years from october 12"]
-			,["historicDate", 		["three_years", "2016/10/12"], 		"2013/10/01", 	"Date historicDate function failed three_years from october 12"]
+			,["historicDate", 		["one_month", "2016-10-12"], 		"2016-09-01", 	"Date historicDate function failed one_month from october 12"]
+			,["historicDate", 		["two_months", "2016-10-12"], 		"2016-08-01", 	"Date historicDate function failed two_months from october 12"]
+			,["historicDate", 		["one_quarter", "2016-10-12"], 		"2016-07-01", 	"Date historicDate function failed one_quarter from october 12"]
+			,["historicDate", 		["two_quarters", "2016-10-12"], 	"2016-04-01", 	"Date historicDate function failed two_qurters from october 12"]
+			,["historicDate", 		["three_quarters", "2016-10-12"], 	"2016-01-01", 	"Date historicDate function failed three_qauarters from october 12"]
+			,["historicDate", 		["one_year", "2016-10-12"], 		"2015-10-01", 	"Date historicDate function failed one_year from october 12"]
+			,["historicDate", 		["two_years", "2016-10-12"], 		"2014-10-01", 	"Date historicDate function failed two_years from october 12"]
+			,["historicDate", 		["three_years", "2016-10-12"], 		"2013-10-01", 	"Date historicDate function failed three_years from october 12"]
 			//historic dates from may 04, 2017
-			,["historicDate", 		["one_month", "2017/05/04"], 		"2017/04/01", 	"Date historicDate function failed one_month from May the forth be with you"]
-			,["historicDate", 		["two_months", "2017/05/04"], 		"2017/03/01", 	"Date historicDate function failed two_months from May the forth be with you"]
-			,["historicDate", 		["one_quarter", "2017/05/04"], 		"2017/02/01", 	"Date historicDate function failed one_quarter from May the forth be with you"]
-			,["historicDate", 		["two_quarters", "2017/05/04"], 	"2016/11/01", 	"Date historicDate function failed two_qurters from May the forth be with you"]
-			,["historicDate", 		["three_quarters", "2017/05/04"], 	"2016/08/01", 	"Date historicDate function failed three_qauarters from May the forth be with you"]
-			,["historicDate", 		["one_year", "2017/05/04"], 		"2016/05/01", 	"Date historicDate function failed one_year from May the forth be with you"]
-			,["historicDate", 		["two_years", "2017/05/04"], 		"2015/05/01", 	"Date historicDate function failed two_years from May the forth be with you"]
-			,["historicDate", 		["three_years", "2017/05/04"], 		"2014/05/01", 	"Date historicDate function failed three_years from May the forth be with you"]
+			,["historicDate", 		["one_month", "2017-05-04"], 		"2017-04-01", 	"Date historicDate function failed one_month from May the forth be with you"]
+			,["historicDate", 		["two_months", "2017-05-04"], 		"2017-03-01", 	"Date historicDate function failed two_months from May the forth be with you"]
+			,["historicDate", 		["one_quarter", "2017-05-04"], 		"2017-02-01", 	"Date historicDate function failed one_quarter from May the forth be with you"]
+			,["historicDate", 		["two_quarters", "2017-05-04"], 	"2016-11-01", 	"Date historicDate function failed two_qurters from May the forth be with you"]
+			,["historicDate", 		["three_quarters", "2017-05-04"], 	"2016-08-01", 	"Date historicDate function failed three_qauarters from May the forth be with you"]
+			,["historicDate", 		["one_year", "2017-05-04"], 		"2016-05-01", 	"Date historicDate function failed one_year from May the forth be with you"]
+			,["historicDate", 		["two_years", "2017-05-04"], 		"2015-05-01", 	"Date historicDate function failed two_years from May the forth be with you"]
+			,["historicDate", 		["three_years", "2017-05-04"], 		"2014-05-01", 	"Date historicDate function failed three_years from May the forth be with you"]
 			//try today
 			,["historicDate", 		["one_month"], 		MOMENT().subtract(1, "month").startOf("month"), "Date historicDate failed to handle TODAY"]
 			,["historicDate", 		["GGGGGGGGG"], 		null, "Date historicDate failed to return null for invalid string"]
@@ -169,15 +166,15 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 			,["futureDate", 		["year"], 		MOMENT().endOf("year"), 	"Date futureDate failed to handle YEAR from TODAY"]
 
 			//future dates from october 12, 2016
-			,["futureDate", 		["today", "2016/10/12"], 		"2016/10/12", 			"Date futureDate failed to handle Oct 12"]
-			,["futureDate", 		["month", "2016/10/12"], 		"2016/10/31", 			"Date futureDate failed to handle MONTH from Oct 12"]
-			,["futureDate", 		["quarter", "2016/10/12"], 		"2016/12/31", 			"Date futureDate failed to handle QUARTER from Oct 12"]
-			,["futureDate", 		["year", "2016/10/12"], 		"2016/12/31", 			"Date futureDate failed to handle YEAR from Oct 12"]
+			,["futureDate", 		["today", "2016-10-12"], 		"2016-10-12", 			"Date futureDate failed to handle Oct 12"]
+			,["futureDate", 		["month", "2016-10-12"], 		"2016-10-31", 			"Date futureDate failed to handle MONTH from Oct 12"]
+			,["futureDate", 		["quarter", "2016-10-12"], 		"2016-12-31", 			"Date futureDate failed to handle QUARTER from Oct 12"]
+			,["futureDate", 		["year", "2016-10-12"], 		"2016-12-31", 			"Date futureDate failed to handle YEAR from Oct 12"]
 			//future dates from may 04, 2017
-			,["futureDate", 		["today", "2017/05/04"], 		"2017/05/04", 			"Date futureDate failed to handle May 04"]
-			,["futureDate", 		["month", "2017/05/04"], 		"2017/05/31", 			"Date futureDate failed to handle MONTH from May 04"]
-			,["futureDate", 		["quarter", "2017/05/04"], 		"2017/06/30", 			"Date futureDate failed to handle QUARTER from May 04"]
-			,["futureDate", 		["year", "2017/05/04"], 		"2017/12/31", 			"Date futureDate failed to handle YEAR from May 04"]
+			,["futureDate", 		["today", "2017-05-04"], 		"2017-05-04", 			"Date futureDate failed to handle May 04"]
+			,["futureDate", 		["month", "2017-05-04"], 		"2017-05-31", 			"Date futureDate failed to handle MONTH from May 04"]
+			,["futureDate", 		["quarter", "2017-05-04"], 		"2017-06-30", 			"Date futureDate failed to handle QUARTER from May 04"]
+			,["futureDate", 		["year", "2017-05-04"], 		"2017-12-31", 			"Date futureDate failed to handle YEAR from May 04"]
 		];
 
 
