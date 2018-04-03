@@ -301,15 +301,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		},
 		
 		_massageHealth: function(d) {
-			var f = E.massageHealth;
-			var model = this._model;
-			if(!model) { return; }
-
-			E.each(d, function(dv, id) {
-				if(model[id]) {
-					model[id].health_data = f(dv);
-				}
-			});
 
 		},
 		_massageProgress: function(d) {
