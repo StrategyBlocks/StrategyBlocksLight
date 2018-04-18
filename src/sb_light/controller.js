@@ -120,7 +120,6 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 
 	controller.blockDelete = function(args, cb) {
-		args.type = "delete"; //legacy url format requires this.
 		controller.invoke(sb.urls.BLOCKS_DELETE, args, cb,cb );
 	};
 
