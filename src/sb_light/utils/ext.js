@@ -394,7 +394,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	E.maxDate = function ext_maxDate(dates) { 	return MOMENT.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
 	E.rangeDate = function ext_maxDate(date, start,end) { 	return E.minDate(start, E.maxDate(end, date)); };
 	E.serverFormat = MOMENT.HTML5_FMT.DATE;
-	E.unixFormat = MOMENT.ISO_8601;
+	E.unixFormat = "YYYY-MM-DD HH:mm:ss ZZ";
 	
 	E.userFormat = function ext_userFormat() { 
 		var u = sb.queries.user();
