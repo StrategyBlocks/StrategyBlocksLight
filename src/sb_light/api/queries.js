@@ -595,6 +595,13 @@ define(['sb_light/globals',
 		return q.isMetricOwner(m) || q.isMetricManager(m);
 	};
 
+	q.formatActual = function(m, value, nounit/*==false*/) {
+		return m.raw_actuals.length ? q.formatMetric(m, value, nounit) : "--";
+	};
+	q.formatTarget = function(m, value, nounit/*==false*/) {
+		return m.raw_target.length ? q.formatMetric(m, value, nounit) : "--";
+	};
+
 	q.formatMetric = function(m, value, nounit/*=false*/) {
 		var val = accounting.formatNumber(value, m.number_decimals);
 		if(nounit) { return val; }
@@ -1312,6 +1319,12 @@ define(['sb_light/globals',
 		var hc = sb.colors.status(b.health_type);
 		return "<i class='fa " + (size || "fa-lg") + " " + sb.icons.healthIcon(b) + "' style='color:" + hc + "'></i>";
 
+	};
+
+	q.healthStatus = function(hd, v) {
+		if(v >= hd.yellow_above) { return "good"; }
+		if(v <= -hd.yellow_below) { return "bad"; }
+		return "warning";
 	};
 
 	q.blockProgressRatioLabel = function(b) {
