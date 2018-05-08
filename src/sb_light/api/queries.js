@@ -82,6 +82,12 @@ define(['sb_light/globals',
 		return cdb;
 	};
 
+	q.dashboardsSelect = function() {
+		var dbs = sb.models.rawArray("dashboards");
+		return E.map(dbs, function(db) {
+			return {value:db.id, text:db.title};
+		});
+	};
 
 
 	/********************************
@@ -1268,7 +1274,7 @@ define(['sb_light/globals',
 		return E._.filter(sb.models.rawArray("blocks", "id"), {is_open:true});
 	};
 	q.blocksAddChildren = function() {
-		return E._.filter(sb.models.rawArray("blocks", "id"), {is_link:false, is_company:false, is_owner:true, is_closed:false});
+		return E._.filter(sb.models.rawArray("blocks", "path"), {is_company:false, is_owner:true, is_closed:false});
 	};
 
 	q.blockTarget = function(b) {
