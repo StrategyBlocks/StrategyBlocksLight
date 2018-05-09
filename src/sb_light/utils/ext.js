@@ -417,7 +417,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		} 
 		return d.format(format || E.userFormat()) + " (" + d.fromNow() + ")";
 	};
-	E.fromNow = function ext_fromNow(d, format) {		return E.moment(d, format).fromNow();	};
+	E.fromNow = function ext_fromNow(d, format, nullString) {		return d ? E.moment(d, format).fromNow() : (nullString || "N/A");	};
 
 	//return a standard format for searching via dates
 	E.filterDateString = function ext_fromNow(d) {		return E.momentFn(d).format("YYYY MMMM DD");	};

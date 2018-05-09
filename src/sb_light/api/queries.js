@@ -595,11 +595,11 @@ define(['sb_light/globals',
 		return q.isMetricOwner(m) || q.isMetricManager(m);
 	};
 
-	q.formatActual = function(m, value, nounit/*==false*/) {
-		return m.raw_actuals.length ? q.formatMetric(m, value, nounit) : "--";
+	q.formatActual = function(m, hdata, value, nounit/*==false*/) {
+		return (hdata||m).last_actual_date ? q.formatMetric(m, value, nounit) : "--";
 	};
-	q.formatTarget = function(m, value, nounit/*==false*/) {
-		return m.raw_target.length ? q.formatMetric(m, value, nounit) : "--";
+	q.formatTarget = function(m, hdata, value, nounit/*==false*/) {
+		return (hdata||m).last_target_date ? q.formatMetric(m, value, nounit) : "--";
 	};
 
 	q.formatMetric = function(m, value, nounit/*=false*/) {
@@ -616,7 +616,7 @@ define(['sb_light/globals',
 	q.metricActual = function(id, hierarchyData) {
 		var m = hierarchyData ||  q.metric(id);
 		var ma = m.last_actual_value;
-		return q.formatMetric(q.metric(id), ma);
+		return q.formatActual(q.metric(id), hierarchyData, ma);
 
 	};
 
@@ -624,7 +624,7 @@ define(['sb_light/globals',
 	q.metricTarget = function(id, hierarchyData) {
 		var m = hierarchyData ||  q.metric(id);
 		var mt = m.last_target_value;
-		return q.formatMetric(q.metric(id), mt);
+		return q.formatTarget(q.metric(id), hierarchyData, mt);
 	};
 
 	q._trendMap = {
