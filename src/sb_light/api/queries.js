@@ -1321,7 +1321,11 @@ define(['sb_light/globals',
 
 	};
 
-	q.healthStatus = function(hd, v) {
+	q.healthStatus = function(hd, v, conditional) {
+		if(conditional && hd[conditional] && E.length(hd[conditional]) === 0) {
+			return "meh";
+		}
+
 		if(v >= hd.yellow_above) { return "good"; }
 		if(v <= -hd.yellow_below) { return "bad"; }
 		return "warning";
