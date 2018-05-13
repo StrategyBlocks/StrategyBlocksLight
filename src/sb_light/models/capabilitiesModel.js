@@ -22,7 +22,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals', 'sb_light/utils/ext
 			this._modelArray = E.map(this._model, function(v, k) {
 				return {name:k, value:v};
 			});
-			//E.debug(this.name, this._modelArray.length);
 		},
 	});
 	

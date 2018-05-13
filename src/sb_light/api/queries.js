@@ -596,10 +596,10 @@ define(['sb_light/globals',
 	};
 
 	q.formatActual = function(m, hdata, value, nounit/*==false*/) {
-		return (hdata||m).last_actual_date ? q.formatMetric(m, value, nounit) : "--";
+		return (hdata||m).last_actual_date ? q.formatMetric(m, value, nounit) : Q.capability('feature.metric.empty_series_symbol');
 	};
 	q.formatTarget = function(m, hdata, value, nounit/*==false*/) {
-		return (hdata||m).last_target_date ? q.formatMetric(m, value, nounit) : "--";
+		return (hdata||m).last_target_date ? q.formatMetric(m, value, nounit) : Q.capability('feature.metric.empty_series_symbol');
 	};
 
 	q.formatMetric = function(m, value, nounit/*=false*/) {
@@ -607,7 +607,7 @@ define(['sb_light/globals',
 		if(nounit) { return val; }
 		return m ? 
 			(m.unit_before ? E.join("", m.unit, val) : E.join(" ", val, m.unit) ) : 
-			"--"
+			Q.capability('feature.metric.empty_series_symbol')
 		;
 
 	};
