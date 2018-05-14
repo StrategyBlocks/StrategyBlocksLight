@@ -34,7 +34,7 @@ define(['sb_light/globals', 'sb_light/utils/ext', 'sb_light/etc/pluralize'], fun
 		var settings = sb.state.context("settings");
 		if(!settings) { return string; }
 
-		console.log("settings", settings)
+		// console.log("settings", settings)
 
 		var labels = settings.labels;
 		options = options || [];

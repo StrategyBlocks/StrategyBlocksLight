@@ -148,7 +148,7 @@ define(['sb_light/globals',
 
 		var cfy = sb.dates.date().month(E.to_i(ms)).date(E.to_i(ds)).subtract(1, "day");
 
-		console.log("Date " + ds + "  Month " + ms + "FY END " + sb.dates.serverStr(cfy));
+		// console.log("Date " + ds + "  Month " + ms + "FY END " + sb.dates.serverStr(cfy));
 		if(cfy.isBefore(E.moment())) {
 			return cfy.add(1, "year");
 		} 
