@@ -82,6 +82,12 @@ define(['sb_light/globals',
 		return cdb;
 	};
 
+	q.dashboardsSelect = function() {
+		var dbs = sb.models.rawArray("dashboards");
+		return E.map(dbs, function(db) {
+			return {value:db.id, text:db.title};
+		});
+	};
 
 
 	/********************************
@@ -477,13 +483,13 @@ define(['sb_light/globals',
 		//Settings are basically capabilities set on a server levels
 		var settings = ST.context("settings");
 		if(settings && settings.hasOwnProperty(key)) {
-			return settings[key] === true;
+			return settings[key];
 		}
 
 
 		var cm = sb.models.raw("capabilities");
 		var c = (key &&cm &&  cm[key]) || null;
-		return !c || c.value === true;
+		return !c || c.value;
 
 	};
 
@@ -589,12 +595,19 @@ define(['sb_light/globals',
 		return q.isMetricOwner(m) || q.isMetricManager(m);
 	};
 
+	q.formatActual = function(m, hdata, value, nounit/*==false*/) {
+		return (hdata||m).last_actual_date ? q.formatMetric(m, value, nounit) : Q.capability('feature.metric.empty_series_symbol');
+	};
+	q.formatTarget = function(m, hdata, value, nounit/*==false*/) {
+		return (hdata||m).last_target_date ? q.formatMetric(m, value, nounit) : Q.capability('feature.metric.empty_series_symbol');
+	};
+
 	q.formatMetric = function(m, value, nounit/*=false*/) {
 		var val = accounting.formatNumber(value, m.number_decimals);
 		if(nounit) { return val; }
 		return m ? 
 			(m.unit_before ? E.join("", m.unit, val) : E.join(" ", val, m.unit) ) : 
-			"--"
+			Q.capability('feature.metric.empty_series_symbol')
 		;
 
 	};
@@ -603,7 +616,7 @@ define(['sb_light/globals',
 	q.metricActual = function(id, hierarchyData) {
 		var m = hierarchyData ||  q.metric(id);
 		var ma = m.last_actual_value;
-		return q.formatMetric(q.metric(id), ma);
+		return q.formatActual(q.metric(id), hierarchyData, ma);
 
 	};
 
@@ -611,7 +624,7 @@ define(['sb_light/globals',
 	q.metricTarget = function(id, hierarchyData) {
 		var m = hierarchyData ||  q.metric(id);
 		var mt = m.last_target_value;
-		return q.formatMetric(q.metric(id), mt);
+		return q.formatTarget(q.metric(id), hierarchyData, mt);
 	};
 
 	q._trendMap = {
@@ -1268,7 +1281,7 @@ define(['sb_light/globals',
 		return E._.filter(sb.models.rawArray("blocks", "id"), {is_open:true});
 	};
 	q.blocksAddChildren = function() {
-		return E._.filter(sb.models.rawArray("blocks", "id"), {is_link:false, is_company:false, is_owner:true, is_closed:false});
+		return E._.filter(sb.models.rawArray("blocks", "path"), {is_company:false, is_owner:true, is_closed:false});
 	};
 
 	q.blockTarget = function(b) {
@@ -1306,6 +1319,16 @@ define(['sb_light/globals',
 		var hc = sb.colors.status(b.health_type);
 		return "<i class='fa " + (size || "fa-lg") + " " + sb.icons.healthIcon(b) + "' style='color:" + hc + "'></i>";
 
+	};
+
+	q.healthStatus = function(hd, v, conditional) {
+		if(conditional && hd[conditional] && E.length(hd[conditional]) === 0) {
+			return "meh";
+		}
+
+		if(v >= hd.yellow_above) { return "good"; }
+		if(v <= -hd.yellow_below) { return "bad"; }
+		return "warning";
 	};
 
 	q.blockProgressRatioLabel = function(b) {

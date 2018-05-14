@@ -467,8 +467,8 @@ define([
 							ST.context(tname, data);
 							self.beforeDrawDone.bindDelay(self, 200)
 						})
-						.fail(function() {
-							E.warn("Error loading template", xhr.status + "\n" + xhr.statusText);
+						.fail(function(xhr, textStatus) {
+							E.warn("Error loading template", textStatus);
 						})
 					;
 				}

@@ -368,7 +368,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				overdue: overdueDays,
 				is_root:(depth===0),
 				is_closed: !!b.closed,
-				is_link: (p && (p.is_link || pinfo.linked_parent_id !== null)),
+				is_link: (p && (p.is_link || pinfo.linked_parent_id !== null))|| false,
 				is_company: (b.sub_company_block ? true: false),
 				is_open: ((isNew || b.closed) ? false : true),
 				is_overdue: (overdueDays > 0),
