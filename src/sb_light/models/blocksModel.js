@@ -382,8 +382,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				can_delete: (b.is_owner && !b.closed),
 				parent_title: (p ? p.title : ""),
 				schema:schema,
-				start_date_str: b.start_date,
-				end_date_str: b.end_date,
 				start_date: E.serverMoment(b.start_date),
 				end_date: E.serverMoment(b.end_date),
 				start_date_num: E.dateNumber(E.serverMoment(b.start_date)),
@@ -411,7 +409,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var blockType = b.is_link ? "blockTypeLink " : (b.is_company ? "blockTypeCompany" : "blockTypeNormal");
 
 			b.level_display = "<span class='" + blockType + "'>" + b.level_sort + "</span>";
-			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);
+			b.last_updated = E.serverMoment(b.last_progress_updated_date||b.start_date);
 			b.last_updated = E.maxDate(b.start_date, E.minDate(b.end_date, b.last_updated));
 
 			//map children ids to paths
