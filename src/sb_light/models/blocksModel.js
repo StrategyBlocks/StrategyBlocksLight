@@ -24,7 +24,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_health_queue:null,
 		
 		_properties: null,
-		_propertiesList: ["comments","news","tags","documents", "context", "watching_users"],
+		_propertiesList: ["comments","news","tags","documents", "relationship_info", "watching_users"],
 	
 		init: function() {
 			this._npv_queue = [];
@@ -223,8 +223,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		documents: function(id, cb, force) {	
 			this._property(cb, "documents", id, force);		
 		},
-		context: function(id, cb, force) {		
-			this._property(cb, "context", id, force);		
+		relationship_info: function(id, cb, force) {		
+			this._property(cb, "relationship_info", id, force);		
 		},
 		watching: function(id, cb, force) {		
 			this._property(cb, "watching_users", id, force);		

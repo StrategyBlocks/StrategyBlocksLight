@@ -34,16 +34,16 @@ define(['sb_light/globals'], function(sb) {
 
 			
 		BLOCKS_CLOSE: 					{url: "/blocks/%id%/close.js", 					post:true,		deleteId: true},
-		BLOCKS_UNCLOSE:					{url: "/blocks/%id%/unclose.js", deleteId:true},
+		BLOCKS_UNCLOSE:					{url: "/blocks/%id%/unclose.js", 				post:true, 		deleteId:true},
 
 		BLOCKS_MANAGE_CHILDREN: 		{url: "/blocks/%id%/manage_children.js", 		post:true,		deleteId: true},
 		BLOCKS_DELETE :					{url: "/blocks/%id%/delete.js", 				post:true,		normalParams:true},
 		BLOCKS_DOCUMENTS: 				{url: "/blocks/%id%/documents.js",				post:false},
 		BLOCKS_IMPORT 	:				{url: "/blocks/%id%/import.js",					post:true, 		deleteId:true, normalParams:true},
-		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/%id%/make_public.js", normalParams:true, post:true},
-		BLOCKS_MOVE :					{url: "/blocks/%id%/move.js", normalParams:true, deleteId: true, post:true},
-		BLOCKS_PROPERTIES: 				{url: "/blocks/%id%/%type%.js", normalParams:true, deleteId:true},
-		BLOCKS_RELOCATE: 				{url: "/blocks/%id%/reassign_parent.js", normalParams:true, deleteId:true, post:true},
+		BLOCKS_MAKE_PUBLIC :			{url: "/blocks/%id%/make_public.js", 			post:true, 		normalParams:true},
+		BLOCKS_MOVE :					{url: "/blocks/%id%/move.js", 					post:true,		normalParams:true, deleteId: true},
+		BLOCKS_PROPERTIES: 				{url: "/blocks/%id%/%type%.js", 				post:false,		normalParams:true, deleteId:true},
+		BLOCKS_RELOCATE: 				{url: "/blocks/%id%/reassign_parent.js", 		post:true, 		normalParams:true, deleteId:true},
 		BLOCKS_UPDATE: 					{url: "/blocks/%id%/update.js", 				post:true,		deleteId: true},
 
 		BLOCKS_UPDATE_GROUPS :			{url: "/blocks/%id%/update_group_expression.js", normalParams:true, post:true},
