@@ -69,7 +69,7 @@ define(['sb_light/globals',
 		//create a new temporary one
 
 		if(!cdb) {
-			cdb = {id:"new", title:"", manager_id:q.user().id, widgets:[]};
+			cdb = {id:"new", title:"", owner_id:q.user().id, widgets:[]};
 			// ST.context("dashboard", cdb);
 		}
 
