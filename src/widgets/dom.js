@@ -583,7 +583,7 @@ define([
 		dirty: function(delay) {
 			delay = E.first(delay , this.__delay);
 			//reset the delay
-			this.__canDrawDelay = this.__canDrawDelay >= 0 ? E.max(50, delay) : -1;
+			this.__canDrawDelay = this.__canDrawDelay >= 0 ? E.max(50, E.first(delay, 0)) : -1;
 
 			// this._consoleLogPages("DOM WIDGET dirtying: ", this.id);
 			//queue drawing so we don't end up calling it repeatedly from different events
