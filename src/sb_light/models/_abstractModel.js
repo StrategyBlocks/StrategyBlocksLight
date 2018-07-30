@@ -286,15 +286,13 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			
 			//The following order assumes a faulty server and ensures we don't update  or delete missing
 			//items.
-			var ae = E.length(data.added) === 0 && this._modelArray;
+			var ae = E.length(data.added) === 0;
 			var ue = E.length(data.updated) === 0;
 			var de = E.length(data.deleted) === 0;
 
-			//cover ass because sever sometimes sends me empty stuff. This should get fixed,
-			//but in the meantime, don't touch the model if there's nothing here, especially the 
-			//timestamp and arraycache
+
+			//EMPTY MODEL.
 			if(ae && ue && de) { 
-				// console.log("MODEL: ", this.name, " has an empty HLM");
 				if(!this._modelArray) {
 					this._modelArray = [];
 				}
