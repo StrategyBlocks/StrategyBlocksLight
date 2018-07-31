@@ -236,8 +236,12 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		
 		//should contain "added", "updated", "deleted" objects
 		manualUpdate: function(data, timestamp) {
-			if(E.first(timestamp,0)) { ST.setTimestamp(this.name, timestamp); }
-			this._processResponse(data);
+			var processed = this._processResponse(data);
+			
+			//only set timestamp if something changes
+			if(E.first(timestamp,0) && processed) { 
+				ST.setTimestamp(this.name, timestamp); 
+			}
 			this._resetArrayCache();
 			this._publish();
 		},
@@ -286,7 +290,7 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 			
 			//The following order assumes a faulty server and ensures we don't update  or delete missing
 			//items.
-			var ae = E.length(data.added) === 0;
+			var ae = E.length(data.added) === 0 && this._modelArray;
 			var ue = E.length(data.updated) === 0;
 			var de = E.length(data.deleted) === 0;
 
