@@ -288,9 +288,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		storage.context.session = state.session_startup;
 		storage.context.flash = null;
 
-		if(cid) {
-			storage.state.company_id = cid;
-		}
+		storage.state.company_id = cid || null;
 		storage.state.block = null;
 		storage.state.news = null;
 		storage.state.metric = null;
