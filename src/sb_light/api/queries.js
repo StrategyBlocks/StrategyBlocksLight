@@ -711,6 +711,7 @@ define(['sb_light/globals',
 		var start = E.min(m.range_start, m.range_end);
 		var end = E.max(m.range_start, m.range_end);
 		var today = E.serverDate(E.today());
+		var btg = m.below_target_good;
 
 		//display values
 		var targets = hierarchyData ? hierarchyData.target : m.target;
@@ -926,7 +927,7 @@ define(['sb_light/globals',
 			var dn = d.getTime();
 			var t = tScale(d);
 			var a = aScale(d);
-			var v = E.variance(a,t);
+			var v = E.variance(a,t) * (btg ? -1 : 1);
 			var u = upperScale(d);
 			var l = lowerScale(d);
 
