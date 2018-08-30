@@ -415,14 +415,14 @@ define([
 
 
 		//you can set the options here and provide a function to call after the option has been set. 
-		opts: function(str, val, handlerFunc) {
+		opts: function(str, val, handlerFunc, force/*==false*/) {
 			//destroyed (TIMING ISSUE)
 			if(!this.__opts) { return; }
 
 
 			if(arguments.length > 1 &&  this.__opts.hasOwnProperty(str)) {
 				//don't trigger redraw unless things have changed.
-				if(!E._.eq(this.__opts[str], val)) { 
+				if(!E._.eq(this.__opts[str], val) || force === true) { 
 					this.__opts[str] = val;
 					if(handlerFunc) { 
 						var f = E.isStr(handlerFunc) ? this.bind(handlerFunc) : handlerFunc;
