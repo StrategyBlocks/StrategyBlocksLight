@@ -76,10 +76,6 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.blockMove = function(args, cb) {
 		controller.invoke(sb.urls.BLOCKS_MOVE, args, cb,cb);
 	};
-	controller.blockMoveRight = function(id, closeObj, cb) {
-		//{"rating":[0-5], "comment":String}
-		controller.invoke(sb.urls.BLOCKS_CLOSE, sb.ext.mixin({id:id}, closeObj), cb,cb);
-	};
 	controller.blockPublish = function(id, children, cb) {
 		//children:bool
 		//"recurse" is expected by server... 
