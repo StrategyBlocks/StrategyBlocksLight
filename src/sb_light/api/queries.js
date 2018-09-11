@@ -60,7 +60,7 @@ define(['sb_light/globals',
 			//find the default dashboard
 			if(!cdb) {
 				cdb = E._.find(dm, {"default":true});
-				if(!cdb && dm.length) {
+				if(!cdb && dm && dm.length) {
 					//take the first one
 					cdb = dm[0];
 				}
