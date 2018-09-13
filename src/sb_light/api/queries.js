@@ -686,9 +686,9 @@ define(['sb_light/globals',
 
 
 	q._metricTypeMap = {
-		"B": "fa fa-lg fa-fw fa-user", 	//basic
-		"C": "fa fa-lg fa-fw fa-calculator",	//calculated
-		"H": "fa fa-lg fa-fw fa-sitemap",	//hierarchical
+		"basic": "fa fa-lg fa-fw fa-user", 	//basic
+		"calculated": "fa fa-lg fa-fw fa-calculator",	//calculated
+		"hierarchy": "fa fa-lg fa-fw fa-sitemap",	//hierarchical
 	};
 
 
@@ -696,7 +696,7 @@ define(['sb_light/globals',
 		var m = q.metric(id);
 		if(!m) { return sortKey ? "Z" : ""; }
 
-		var num = (m.hierarchy && "H") || ((m.calculation_actuals || m.calculation_targets) && "C") || "B";
+		var num = (m.hierarchy && "hierarchy") || ((m.calculation_actuals || m.calculation_targets) && "calculated") || "basic";
 
 		return sortKey ? num : ("<i class='" + q._metricTypeMap[num] + "'></i>");
 	};
