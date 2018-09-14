@@ -150,10 +150,19 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var res = fuse.search(searchString); 
 			return res && res.length ? true : false;
 		},
-		filter_tags: function(b, tagsList) {
-			if(!tagsList || !tagsList.length) { return true; }
+		filter_tags: function(b, tagsFilter) {
+			if(!tagsFilter) { return true; }
+			if (E.isArray(tagsFilter)) {
+				tagsFilter = {list: tagsFilter, include_desc: false};
+			}
+			if(!tagsFilter.list || !tagsFilter.list.length) { return true; }
+
+
+			var list = tagsFilter.list;
+			var desc = tagsFilter.include_desc;
 			var tags = E._.filter(sb.models.raw("tags"), function(t) {
-				return tagsList.indexOf(t.id) >= 0 && t.blocks.indexOf(b.id) >= 0;
+				var reg = new RegExp("(" + t.blocks.join("|") + ")");
+				return list.indexOf(t.id) >= 0 && reg.test(desc ? b.path : b.id);
 			});
 			return tags.length > 0;
 		},
