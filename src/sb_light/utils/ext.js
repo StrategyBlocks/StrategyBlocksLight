@@ -913,20 +913,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		
 		//fix dates and sort history for health charts
 	E.massageHealth = function ext_massageHealth(data) {
-		var series = E.map(data.historical_values, function ext_massageHealth_map(v, k) {
-			return {date: E.serverMoment(k), value:v};
-		});
-		
-							//sort by the date number
-		data.series = series.sort(E.sortDateValue);
-		
-		data.dates = E.values(data.series, "date");
-		data.dates.push(Date.parse(data.end_date));
-
 		data.status = data.status > 0 ? "good" : (data.status < 0 ? "bad" : "warning");
-	
 		return data;
-	
 	};
 	
 	
