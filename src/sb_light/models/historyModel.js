@@ -33,12 +33,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		_massageUpdatedModel: function() {
 			this._super();
 			
-			for(var i in this._model) {
-				var h = this._model[i];
-				h.fromNow = E.fromNow(h.created_at, E.unixFormat);
-				h.date = E.moment(h.created_at, E.unixFormat);
-				h.created_at = E.moment(h.created_at, E.unixFormat);
-			}
 		}
 
 	});

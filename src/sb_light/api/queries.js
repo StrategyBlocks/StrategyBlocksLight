@@ -24,7 +24,6 @@ define(['sb_light/globals',
 	'use strict';
 	var q = {};
 	var Q = q;
-	
 
 
 
@@ -95,7 +94,6 @@ define(['sb_light/globals',
 	*********************************/
 	q.company = function(cid /*optional*/) {
 		var cc = ST.context("company") || null;
-		var cm = sb.models.rawArray("companies");
 		if(!cid) { 
 			return cc;
 		}
@@ -143,13 +141,12 @@ define(['sb_light/globals',
 	q.yearEnd = function() {
 		var c = Q.company();
 		var fy = c ? c.npv.financial_year_starts_on : "1/4";
-		var ds = fy.match(/^(\d\d?)\//)[1];
-		var ms = fy.match(/\/(\d\d?)$/)[1];
+		var d = E.to_i(fy.match(/^(\d\d?)\//)[1]);
+		var m = E.to_i(fy.match(/\/(\d\d?)$/)[1]);
 
-		var cfy = sb.dates.date().month(E.to_i(ms)).date(E.to_i(ds)).subtract(1, "day");
+		var cfy = sb.dates.create().month(m).date(d).subtract(1, "day");
 
-		// console.log("Date " + ds + "  Month " + ms + "FY END " + sb.dates.serverStr(cfy));
-		if(cfy.isBefore(E.moment())) {
+		if(cfy.isBefore(sb.dates.create())) {
 			return cfy.add(1, "year");
 		} 
 		return cfy; 
@@ -158,12 +155,12 @@ define(['sb_light/globals',
 	q.yearStart = function() {
 		var c = Q.company();
 		var fy = c ? c.npv.financial_year_starts_on : "1/4";
-		var ds = fy.match(/^(\d\d?)\//)[1];
-		var ms = fy.match(/\/(\d\d?)$/)[1];
+		var d = E.to_i(fy.match(/^(\d\d?)\//)[1]);
+		var m = E.to_i(fy.match(/\/(\d\d?)$/)[1]) - 1;
 
-		var cfy = sb.dates.date().month(E.to_i(ms)-1).date(E.to_i(ds));
+		var cfy = sb.dates.create().month(m).date(d);
 
-		if(cfy.isAfter(E.moment())) {
+		if(cfy.isAfter(sb.dates.create())) {
 			return cfy.subtract(1, "year");
 		} 
 		return cfy; 
@@ -257,7 +254,8 @@ define(['sb_light/globals',
 		opts = E.merge({
 			includeInactive: false,
 			sort: sb.ext.sortUsers
-		},opts||{})
+		},opts||{});
+
 		var cid = ST.state("company_id");
 		return sb.models.rawArray("users").filter(function(el) {
 			
@@ -272,7 +270,7 @@ define(['sb_light/globals',
 			shorten: 0,
 			reverse:true,
 			includeEmpty: false
-		},opts||{})
+		},opts||{});
 
 		var list = E.map(Q.authors(opts), function(v) {
 			var name = opts.reverse ? Q.fullnameReverse(v.id) : Q.fullname(v.id);
@@ -286,7 +284,7 @@ define(['sb_light/globals',
 		}
 		return list;
 
-	}
+	};
 
 
 
@@ -531,12 +529,12 @@ define(['sb_light/globals',
 		opts = E.merge({}, opts||{});
 		var list = E.map(sb.models.rawArray("focus"), function(v,k) {
 			return {value:v.id, text:(v.level_display + ". " + v.title)};
-		})
+		});
 
 		list = E._.orderBy(list, "text");
 
 		return list;
-	}
+	};
 	
 	/********************************
 		Levels
@@ -704,31 +702,33 @@ define(['sb_light/globals',
 
 	q.metricChartData = function(id, hierarchyData, options) {
 		// var timer = E.moment();
+		var D = sb.dates;
+
 		options = options || {};
 
 		var m = q.metric(id);
 		var percent = m.percentage ? true : false;
 		var start = E.min(m.range_start, m.range_end);
 		var end = E.max(m.range_start, m.range_end);
-		var today = E.serverDate(E.today());
+		var today = D.serverStr("today");
 		var btg = m.below_target_good;
 
 		//display values
 		var targets = hierarchyData ? hierarchyData.target : m.target;
 		var actuals = hierarchyData ? hierarchyData.actuals : m.actuals;
 
-		targets  = (targets && targets.length) ? E._.cloneDeep(targets) : [{date:E.serverDate(), value:0}];
-		actuals  = (actuals && actuals.length) ? E._.cloneDeep(actuals) : [{date:E.serverDate(), value:0}];
+		targets  = (targets && targets.length) ? E._.cloneDeep(targets) : [{date:today, value:0}];
+		actuals  = (actuals && actuals.length) ? E._.cloneDeep(actuals) : [{date:today, value:0}];
 
 
 //		targets.push({date:today, value:(m.last_target_value||0)});
 //		actuals.push({date:today, value:(m.last_actual_value||0), comment:"Current Actual"});
 
-		targets.sort(E.sortServerDate("date", false));
-		actuals.sort(E.sortServerDate("date", false));
+		targets.sort(D.sortDates("date", false)); 
+		actuals.sort(D.sortDates("date", false));
 
-		var targetDatestr = E.values(targets, "date");
-		var actualDatestr = E.values(actuals, "date");
+		var targetDates = E.values(targets, "date");
+		var actualDates = E.values(actuals, "date");
 
 		var targetValues = E.values(targets, "value");
 		var actualValues = E.values(actuals, "value");
@@ -749,7 +749,7 @@ define(['sb_light/globals',
 
 
 		//add all the date strings to an array. Optionally add a lower-cap and an upper cap
-		var all_dates = E._.union(targetDatestr, actualDatestr).sort();
+		var all_dates = E._.union(targetDates, actualDates).sort();
 		if (options.limit_past) {
 			all_dates.push(options.limit_past);
 		} 
@@ -758,65 +758,61 @@ define(['sb_light/globals',
 		} 
 
 		//ceate a unique, sorted list of dates. 
-		var datestr = all_dates.sort(function(a,b) {
-			return E.sortDate(E.serverMoment(a), E.serverMoment(b));
-		});
+		var dates = all_dates.sort(D.compareDates);
 
 		//if today is in the middle, add the date and re-sort
-		var first = E.serverMoment(datestr[0]);
-		var last = E.serverMoment(datestr.last());
+		var first = dates[0];
+		var last = dates.last();
 
 		if(options.limit_past) {
-			datestr = E._.filter(datestr, function(v) {
-				return E.daysDiff(v, options.limit_past) >= 0;
+			dates = E._.filter(dates, function(v) {
+				return D.range(options.limit_past, v) >= 0;
 			});
 		}
 		if(options.limit_future) {
-			datestr = E._.filter(datestr, function(v) {
-				return E.daysDiff(options.limit_future, v) >= 0;
+			dates = E._.filter(dates, function(v) {
+				return D.range(v, options.limit_future) >= 0;
 			});
 		}
 
 		//add TODAY if we don't have it and it falls into range between first/last dates, or we only have a single value  
-		if(datestr.indexOf(today) < 0 && (datestr.length < 2 || (E.daysDiff(today, first) > 0 && E.daysDiff(last,today) > 0 ))) {
-			datestr.push(today);
-			datestr = datestr.sort(function(a,b) {
-				return E.sortDate(E.serverMoment(a), E.serverMoment(b));
-			});
+		if(dates.indexOf(today) < 0 && (dates.length < 2 || (D.range(first, today) > 0 && D.range(today,last) > 0 ))) {
+			dates.push(today);
+			dates = dates.sort(D.compareDates);
 		}
 
 		//add a dummy date one month ago if we dont't yet have enough data to chart. 
-		if(datestr.length < 2) {
-			datestr.unshift(E.moment().subtract(1,"month").format(E.serverFormat));
+		if(dates.length < 2) {
+			dates.unshift(D.serverStr("today", {"months": -1}));
 		}
 
 
 
 		//convert date strings to date objects for the time scales
 		var dm = function(v) { 
-			return E.serverMoment(v).toDate(); 
+			return D.date(v); 
 		};
 
-		var targetDates = targetDatestr.map(dm);
-		var actualDates = actualDatestr.map(dm);
+		var tds = targetDates.map(dm);
+		var ads = actualDates.map(dm);
 
 
-		var actualDomain = actualDates;
+		var actualDomain = ads;
 		var actualRange = actualValues;
 		if(actualDomain.length === 1) { 
-			actualDomain.push(E.moment().add(1, "month").toDate());
-			actualDomain.unshift(E.today());
+			actualDomain.push(D.date("today", {months: 1}));
+			actualDomain.unshift(D.date("today"));
 
 			actualRange.push(actualValues[0]);
 			actualRange.unshift(0);
 		}
-		var targetDomain = targetDates;
+		var targetDomain = tds;
 		var targetRange = targetValues;
 		var upperRange = upperValues;
 		var lowerRange = lowerValues;
 		if(targetDomain.length === 1) { 
-			targetDomain.push(E.moment().add(1, "month").toDate());
-			targetDomain.unshift(E.today());
+			targetDomain.push(D.date("today", {months: 1}));
+			targetDomain.unshift(D.date("today"));
 			targetRange.push(targetValues[0]);
 			upperRange.push(upperValues[0]);
 			lowerRange.push(lowerValues[0]);
@@ -831,7 +827,7 @@ define(['sb_light/globals',
 			arScale, trScale, alScale, tlScale
 		;
 
-		actualDomain.unshift(E.moment(actualDomain[0]).subtract(1,"minute").toDate());
+		actualDomain.unshift(D.date(actualDomain[0], {minutes:-1}));
 		actualRange.unshift(0);
 		var aScale = d3.time.scale().domain(actualDomain).range(actualRange).clamp(true);
 		// var raScale = d3.time.scale().domain(raDomain).range(raRange).clamp(true);
@@ -846,25 +842,25 @@ define(['sb_light/globals',
 
 		var scales = [aScale, tScale/*, raScale, rtScale*/, upperScale, lowerScale];
 		if(hierarchyData) {
-			var arList = E._.clone(hierarchyData.actuals_rollup.sort(E.sortServerDate("date",false)));
-			var trList = E._.clone(hierarchyData.target_rollup.sort(E.sortServerDate("date",false)));
-			var alList = E._.clone(hierarchyData.actuals_local.sort(E.sortServerDate("date",false)));
-			var tlList = E._.clone(hierarchyData.target_local.sort(E.sortServerDate("date",false)));
+			var arList = E._.clone(hierarchyData.actuals_rollup.sort(D.sortDates("date",false)));
+			var trList = E._.clone(hierarchyData.target_rollup.sort(D.sortDates("date",false)));
+			var alList = E._.clone(hierarchyData.actuals_local.sort(D.sortDates("date",false)));
+			var tlList = E._.clone(hierarchyData.target_local.sort(D.sortDates("date",false)));
 
 			//make sure each list has at least two items
 			E.each([arList, trList, alList, tlList], function(list) {
 				if(!list.length) {
-					list.push({date:E.serverDate(E.today()), value:0});
+					list.push({date:today, value:0});
 				}
 				if(list.length < 2) {
-					list.push({date:E.serverMoment(list[0].date).subtract(1, "day"), value:0});	
+					list.push({date:D.serverStr(list[0].date, {days: -1}), value:0});	
 				}
 			});
 
-			arList.sort(E.sortServerDate("date", false));
-			alList.sort(E.sortServerDate("date", false));
-			trList.sort(E.sortServerDate("date", false));
-			tlList.sort(E.sortServerDate("date", false));
+			arList.sort(D.sortDates("date", false));
+			alList.sort(D.sortDates("date", false));
+			trList.sort(D.sortDates("date", false));
+			tlList.sort(D.sortDates("date", false));
 
 			// Rollup and local raw values
 			arRange = E.values(arList, "value");
@@ -872,10 +868,10 @@ define(['sb_light/globals',
 			alRange = E.values(alList, "value");
 			tlRange = E.values(tlList, "value");
 
-			arDomain = E.values(arList, "date", E.serverToDate);
-			trDomain = E.values(trList, "date", E.serverToDate);
-			alDomain = E.values(alList, "date", E.serverToDate);
-			tlDomain = E.values(tlList, "date", E.serverToDate);
+			arDomain = E.values(arList, "date", D.date);
+			trDomain = E.values(trList, "date", D.date);
+			alDomain = E.values(alList, "date", D.date);
+			tlDomain = E.values(tlList, "date", D.date);
 
 
 			arDomain.unshift(E.moment(arDomain[0]).subtract(1,"minute").toDate());
@@ -921,10 +917,10 @@ define(['sb_light/globals',
 			res.tls = tlScale;
 		}
 
-		res.series = E.map(datestr, function(ds) {
-			var dm = E.serverMoment(ds);
-			var d = dm.toDate();
-			var dn = d.getTime();
+		res.series = E.map(dates, function(ds) {
+			var dm = D.change(ds);
+			var d = D.date(ds);
+			var dn = D.number(ds);
 			var t = tScale(d);
 			var a = aScale(d);
 			var v = E.variance(a,t) * (btg ? -1 : 1);
@@ -964,22 +960,24 @@ define(['sb_light/globals',
 
 
 	q.progressChartData = function(progressData, bid) {
+		var D = sb.dates;
+
 		var pd = progressData[String(bid)];
 		if(!pd) { return null;}
 
 		var percent = true;
 		var start = E.min(pd.range_end, pd.range_end)/100;
 		var end = E.max(pd.range_start, pd.range_end)/100;
-		var today = E.today();
-		var tomorrow = E.moment().add(1, "day");
+		var today = D.serverStr("today");
+		var tomorrow = D.serverStr("today", {days:1});
 		var targets  = (pd.target && pd.target.length) ? E._.cloneDeep(pd.target) : [{date:today, value:0}];
 		var actuals  = (pd.actuals && pd.actuals.length) ? E._.cloneDeep(pd.actuals) : [{date:today, value:0}];
 		
-		targets.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
-		actuals.sort(E.sortFactory("date", E.sortDate, false, E.serverMoment));
+		targets.sort(D.sortDates("date", false));
+		actuals.sort(D.sortDates("date", false));
 
-		var targetDates = E.map(targets, function(v) { return E.serverMoment(v.date); });
-		var actualDates = E.map(actuals, function(v) { return E.serverMoment(v.date); });
+		var targetDates = E._.map(targets, "date");
+		var actualDates = E._.map(actuals, "date");
 
 		var targetValues = E.values(targets, "value");
 		var actualValues = E.values(actuals, "value");
@@ -993,19 +991,21 @@ define(['sb_light/globals',
 
 		var actualsMap = E.toObject(actuals, "date");
 		//ceate a unique, sorted list of dates. 
-		var dates = E._.union([today], targetDates, actualDates).sort(E.sortDate);
+		var dates = E._.union([today], targetDates, actualDates).sort(D.compareDates);
 
 		//convert date strings to date objects for the time scales
-		var dm = function(v) { return E.date(v); };
+		var dm = function(v) { 
+			return D.date(v); 
+		};
 		var td = targetDates.map(dm);
 		var ad = actualDates.map(dm);
 
 		if(td.length < 2) {
-			td.push(E.moment(td[0]).add(1, "day").toDate());
+			td.push(D.date(td[0], {days:1}));
 			targetValues.push(targetValues[0]);
 		}
 		if(ad.length < 2) {
-			ad.push(E.moment(ad[0]).add(1, "day").toDate());
+			ad.push(D.date(ad[0], {days: 1}));
 			actualValues.push(actualValues[0]);
 		}
 
@@ -1024,7 +1024,7 @@ define(['sb_light/globals',
 		};
 
 		res.series = E.map(dates, function(ds) {
-			var d = E.date(ds);
+			var d = D.date(ds);
 			var t = Math.floor(tscale(d));
 			var a = Math.floor(ascale(d));
 			var v = E.variance(a,t);
@@ -1034,7 +1034,7 @@ define(['sb_light/globals',
 			return {
 				date:d,
 				dateStr: ds,
-				dateNum: d.getTime(),
+				dateNum: D.number(ds),
 				target:t,
 				actual:a,
 				upper:u,

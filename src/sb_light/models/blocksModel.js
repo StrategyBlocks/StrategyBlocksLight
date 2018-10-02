@@ -4,7 +4,7 @@
 define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _Model, sb, Fuse ) {
 	'use strict';
 
-	var E, Q;
+	var E, Q, D;
 
 	var Model = _Model.extend({
 
@@ -34,6 +34,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			E = sb.ext;
 			Q = sb.queries;
+			D = sb.dates;
 
 			this._dataHandlers = {
 				"_health": 	this._massageHealth,
@@ -391,10 +392,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				can_delete: (b.is_owner && !b.closed),
 				parent_title: (p ? p.title : ""),
 				schema:schema,
-				start_date: E.serverMoment(b.start_date),
-				end_date: E.serverMoment(b.end_date),
-				start_date_num: E.dateNumber(E.serverMoment(b.start_date)),
-				end_date_num: E.dateNumber(E.serverMoment(b.end_date)),
 				variance_progress: E.variance(b.percent_progress, b.expected_progress),
 				groups_inherited: sb.groups.parseExpression(b.group_expression_inherited, true),
 				groups: b.group_ids.concat(sb.groups.parseExpression(b.group_expression_inherited, true)),
@@ -418,8 +415,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var blockType = b.is_link ? "blockTypeLink " : (b.is_company ? "blockTypeCompany" : "blockTypeNormal");
 
 			b.level_display = "<span class='" + blockType + "'>" + b.level_sort + "</span>";
-			b.last_updated = E.serverMoment(b.last_progress_updated_date||b.start_date);
-			b.last_updated = E.maxDate(b.start_date, E.minDate(b.end_date, b.last_updated));
+			b.last_updated = b.last_progress_updated_date;
 
 			//map children ids to paths
 			b.children = b.children ? E.map(b.children, function(cpath, i) {

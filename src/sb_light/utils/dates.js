@@ -8,7 +8,8 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 
 	D.serverFormat = MOMENT.HTML5_FMT.DATE;
-	D.unixFormat = MOMENT.ISO_8601;
+	D.timeFormat = "YYYY-MM-DDThh:mm:ss Z";
+	D.filterFormat = "YYYY MMMM DD"; //used for searching using month name
 	
 	D.userFormat = function() { 
 		var u = sb.queries.user();
@@ -22,41 +23,154 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	MOMENT.fn.userStr = function() {
 		return this.format(D.userFormat());
 	};
+	MOMENT.fn.timeStr = function() {
+		return this.format(D.timeFormat);
+	};
+
+	MOMENT.fn.filterStr = function() {
+		return this.format(D.filterFormat);
+	};
 
 	/////////////////////////////////////////////////////////////////////////////////////////
 
 
 
-	D.date = function(adjustments) { 
-		var m = MOMENT();
+	D.create = function(adjustments) { 
+		return D.change("today", adjustments);
+	};
+
+	D.change = function(d, adjustments, funcStr) {
+		d = D.parse(d);
 		adjustments = adjustments || {};
 		E.each(adjustments, function(v,k) {
-			m.add(v, k);
+			d = d.add(v, k);
 		});
-		return m; 
+		return (funcStr && d) ? d[funcStr]() : d; 
 	};
 
-	D.serverStr = function(moment, adjustments) { return (moment || D.date(adjustments)).serverStr(); };
-	D.userStr = function(moment, adjustments) { return (moment || D.date(adjustments)).userStr(); };
+	D.serverStr = function(date, adjustments) { return D.change(date, adjustments, "serverStr"); };
+	D.userStr = function(date, adjustments) { return D.change(date, adjustments, "userStr"); };
+	D.timeStr = function(date, adjustments) { return D.change(date, adjustments, "timeStr"); };
+	D.filterStr = function(date, adjustments) { return D.change(date, adjustments, "filterStr");  };
+
+	//convert to a specific JS object
+	D.number = function(date, adjustments) { return D.change(date, adjustments, "valueOf"); };
+	D.date= function(date, adjustments) { return D.change(date, adjustments, "toDate"); };
+
 
 	D.parse = function(date, format) {
-		format = format || D.serverFormat;
 		if(E.isStr(date)) {
+			if(date == 'today') { return MOMENT(); }
+			format = format || (date.length > 10 ? D.timeFormat : D.serverFormat);
 			return MOMENT(date,format);
 		}
-		return MOMENT(date);
+		// NULL , undefinded, 0, false, "" etc... will all return null
+		return date ? MOMENT(date) : null;
 	};
+
+	//to parse in a map. extra args in the map function messes with format argument in the parse func. 
+	D.mapParse = function(v/*,i, arr*/) {
+		return D.parse(v);
+	};
+
+
+
 	//parse from a user format to MOMENT
 	D.parseUserDate = function(date) { return D.parse(date, D.userFormat()); };
-	//parse from a user format to MOMENT
-	D.parseUnixDate = function(date) { return D.parse(date, D.unixFormat); };
 
 	//Parse and output as a string
-	D.parseToUser 	= function(date, format) { return D.parse(date,format).userStr(); 	};
+	D.parseToUser 	= function(date, format) { return D.parse(date,format).userStr(); 		};
 	D.parseToServer = function(date, format) { return D.parse(date,format).serverStr(); 	};
 
 
 
+	/*************************************************************************************
+	/*****              FROM NOW                                       *******************
+	/*************************************************************************************/
+	D.serverTodayStr = D.serverStr("today");
+	D.serverYesterdayStr = D.serverStr("today", {days: -1});
+	D.serverTomorrowStr = D.serverStr("today", {days: 1});
+
+	D.fromNow = function(dstr) {
+		if (!arguments.length || !dstr) { 
+			return 'Never'; 
+		}
+		switch(dstr) {
+			case D.serverTodayStr: 		return "Today";
+			case D.serverYesterdayStr: 	return "Yesterday";
+			case D.serverTomorrowStr:  	return "Tomorrow";
+			default:
+				var m = MOMENT();
+				var d = D.mapParse(dstr);
+				if(dstr.length <= 10) {
+					//set dates (not date-time) to be "now" for the purposes of the fromNow 
+					d = d.set({hour:m.get('hour'), minute: m.get('minute')});
+				}
+				return d.fromNow();
+		}
+	};
+
+	D.fromNowAfter = function(dstr) {
+		return D.userStr(dstr) + " (" + D.fromNow(dstr) + ")";
+	};
+
+	D.fromNowBefore = function(dstr) {
+		return D.fromNow(dstr) + " (" + D.userStr(dstr) + ")";
+	};
+
+	//days difference. 
+	D.range = function(start, end, endOfDay/*=false*/) {
+		if(!start || !end) { return "Never";}
+
+		start = D.parse(start);
+		end = D.parse(end);
+		endOfDay = endOfDay ? 1 : 0;
+
+		return end.diff(start, 'days') + endOfDay;
+	};
+
+	D.absFrom = function(start, end, endOfDay/*=false*/) {
+		if(!start || !end) { return "Never";}
+		
+		var min = D.min(start, end);
+		var max = D.max(start,end);
+
+		var range = D.range(min,max, endOfDay);
+		switch(range) {
+			case 0: return "0 days";
+			case 1: return "1 day";
+			default:
+				return MOMENT().from(MOMENT().add({days: range}), true);
+		}
+	};
+
+	/*************************************************************************************
+	/*****              Sorting / Comparing                            *******************
+	/*************************************************************************************/
+	D.compareDates = function(a,b) {
+		return D.parse(a) - D.parse(b);
+	};
+	D.min = function(dates) {
+		dates = arguments.length > 1 ? E.slice(arguments) : dates;
+		return MOMENT.min.apply(null, E._.map(dates, D.mapParse));
+	};
+	D.max = function(dates) {
+		dates = arguments.length > 1 ? E.slice(arguments) : dates;
+		return MOMENT.max.apply(null, E._.map(dates, D.mapParse));
+	};
+	D.minMap = function(list, key) {
+		return D.min(E._.map(list, key));
+	};
+	D.maxMap = function(list, key) {
+		return D.max(E._.map(list, key));
+	};
+
+	D.sortDates = E._.curry(E.sortFactory)(E._, D.compareDates, E._, D.parse);
+
+
+	/*************************************************************************************
+	/*****              HISTORIC DATES                                 *******************
+	/*************************************************************************************/
 	D.historicDateList = {
 		"one_month": 		{unit:"months", 	subtract: 1, min_unit: "days", 		min:20, 	label: "One Month"},
 		"two_months": 		{unit:"months", 	subtract: 2, min_unit: "days", 		min:40, 	label: "Two Months"},
@@ -73,7 +187,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	//finds a period earliers that the current date, or passed date
 	//subtract the period amount from the date, and then shift to the start of the month. 
 	D.historicDate = function(str, date) {
-		var cd = D.parse(date);
+		var cd = D.parse(date || "today");
 		var def = D.historicDateList[str];
 
 		var d = null;
@@ -82,7 +196,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 				var ys = Q.yearStart();
 				d = ys.subtract(def.subtract-1, "years");
 			} else {
-				d = MOMENT(cd).subtract(def.subtract, def.unit).startOf("month");
+				d = cd.subtract(def.subtract, def.unit).startOf("month");
 			}
 
 		}
@@ -90,6 +204,9 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	};
 
 
+	/*************************************************************************************
+	/*****              FUTURE DATES                                   *******************
+	/*************************************************************************************/
 	D.futureDateList = {
 		"today": 		{unit:"day", label: "Today"},
 		"month": 		{unit:"months", label: "End of Month"},
@@ -99,7 +216,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	};
 
 	D.futureDate = function(str,date) {
-		var cd = D.parse(date);
+		var cd = D.parse(date || "today");
 		var def = D.futureDateList[str];
 
 		var d = null;
@@ -120,13 +237,14 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	if(SB_OPTIONS.debug) {
 		/* jshint laxcomma: true */
 		var __TESTS = [
-			 ["serverStr", 	[], 							MOMENT(), 							"Date serverStr function failed"]
-			,["serverStr", 	[null, {months:3}], 			MOMENT().add(3, "months"), 			"Date serverStr function failed to add 3 months "]
-			,["serverStr", 	[null, {months:-3}], 			MOMENT().subtract(3, "months"), 	"Date serverStr function failed to subtract 3 months "]
-			,["serverStr", 	[null, {M:3}], 					MOMENT().add(3, "months"), 			"Date serverStr function failed to add 3 months "]
-			,["serverStr", 	[null, {M:-3}], 				MOMENT().subtract(3, "months"), 	"Date serverStr function failed to subtract 3 months "]
-			,["serverStr", 	[null, {days:3}], 				MOMENT().add(3, "days"), 			"Date serverStr function failed to add 3 months "]
-			,["serverStr", 	[null, {days:-3}], 				MOMENT().subtract(3, "days"), 		"Date serverStr function failed to subtract 3 months "]
+			 /*["serverStr", 	[], 							null, 								"Date serverStr function failed"]
+			,["serverStr", 	["today"], 						MOMENT(), 							"Date serverStr function failed"]
+			,["serverStr", 	["today", {months:3}], 			MOMENT().add(3, "months"), 			"Date serverStr function failed to add 3 months "]
+			,["serverStr", 	["today", {months:-3}], 		MOMENT().subtract(3, "months"), 	"Date serverStr function failed to subtract 3 months "]
+			,["serverStr", 	["today", {M:3}], 				MOMENT().add(3, "months"), 			"Date serverStr function failed to add 3 months "]
+			,["serverStr", 	["today", {M:-3}], 				MOMENT().subtract(3, "months"), 	"Date serverStr function failed to subtract 3 months "]
+			,["serverStr", 	["today", {days:3}], 			MOMENT().add(3, "days"), 			"Date serverStr function failed to add 3 months "]
+			,["serverStr", 	["today", {days:-3}], 			MOMENT().subtract(3, "days"), 		"Date serverStr function failed to subtract 3 months "]
 			
 
 			,["parseToServer", 		[new Date()], 			MOMENT(),			 		"Date parseToServer function failed parsing DATE"]
@@ -134,9 +252,31 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 			,["parseToServer", 		["2001-1-1"], 			"2001-01-01", 				"Date parseToServer function failed parsing STRING in the past"]
 			,["parseToServer", 		["2050-12-31"], 		"2050-12-31", 				"Date parseToServer function failed parsing STRING in the future"]
 
+			,["fromNow",			[null],									"Never",			"Date fromNow failed to say NEVER"]
+			,["fromNow",			[""],									"Never",			"Date fromNow failed to say NEVER"]
+			,["fromNow",			[],										"Never",			"Date fromNow failed to say NEVER"]
+			,["fromNow",			[D.serverStr()],						"Never",			"Date fromNow failed to say NEVER"]
+			,["fromNow",			[D.serverStr("today")],					"Today",			"Date fromNow failed to say TODAY"]
+			,["fromNow",			[D.serverStr("today", {days:-1})],		"Yesterday",		"Date fromNow failed to say YESTERDAY"] 
+			,["fromNow",			[D.serverStr("today", {days:1})],		"Tomorrow",			"Date fromNow failed to say TOMORROW"] 
+
+			,["absFrom",			[null, null, false],				"Never",			"Date absFrom failed"]
+			,["absFrom",			[null, null, true],					"Never",			"Date absFrom failed"]
+			,["absFrom",			["2001-02-02", "2001-02-02", false],"0 days",			"Date absFrom failed"]
+			,["absFrom",			["2001-02-02", "2001-02-02", true],	"1 day",			"Date absFrom failed"]
+			,["absFrom",			["2001-02-03", "2001-02-02", true],	"2 days",			"Date absFrom failed"]
+			,["absFrom",			["2001-02-03", "2001-02-02", false],"1 day",			"Date absFrom failed"]
+			,["absFrom",			["2001-02-03", "2001-02-17", false],"14 days",			"Date absFrom failed"]
+			,["absFrom",			["2001-02-17", "2001-02-03", false],"14 days",			"Date absFrom failed"]
+			,["absFrom",			["2001-02-03", "2001-03-17", false],"a month",			"Date absFrom failed"]
+			,["absFrom",			["2001-03-17", "2001-02-03", false],"a month",			"Date absFrom failed"]
+
+
+
+
 			//historic dates from october 12, 2016
 			,["historicDate", 		["one_month", "2016-10-12"], 		"2016-09-01", 	"Date historicDate function failed one_month from october 12"]
-			,["historicDate", 		["two_months", "2016-10-12"], 		"2016-08-01", 	"Date historicDate function failed two_months from october 12"]
+			,*/["historicDate", 		["two_months", "2016-10-12"], 		"2016-08-01", 	"Date historicDate function failed two_months from october 12"]
 			,["historicDate", 		["one_quarter", "2016-10-12"], 		"2016-07-01", 	"Date historicDate function failed one_quarter from october 12"]
 			,["historicDate", 		["two_quarters", "2016-10-12"], 	"2016-04-01", 	"Date historicDate function failed two_qurters from october 12"]
 			,["historicDate", 		["three_quarters", "2016-10-12"], 	"2016-01-01", 	"Date historicDate function failed three_qauarters from october 12"]
@@ -178,7 +318,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 		];
 
 
-		E.each(__TESTS, function(v) {
+		E.each(__TESTS, function(v, i) {
 			var func = D[v[0]];
 			var args = v[1] || [];
 			var expected = v[2];
@@ -196,7 +336,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 			}
 
 			if (response != expected) {
-				var msg = message + "  response=" + response + "   expected=" + expected;
+				var msg = message + "  response=" + response + "   expected=" + expected + " Test Index = " + i;
 				E.warn(msg);
 				throw msg; 
 			}
