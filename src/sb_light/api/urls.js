@@ -167,8 +167,8 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 
 
 		METRICS_COMMENTS:			{url: "/metrics/%id%/comments.js"},
-		METRICS_COMMENT_ADD:		{url: "/metrics/%id%/comment.js", normalParams:true},
-		METRICS_COMMENT_REMOVE:		{url: "/metrics/%id%/delete_comment.js", normalParams:true},
+		METRICS_COMMENT_ADD:		{url: "/metrics/%id%/comment.js", normalParams:true, post:true},
+		METRICS_COMMENT_REMOVE:		{url: "/metrics/%id%/delete_comment.js", normalParams:true, post:true},
 
 
 		METRIC_FILE_ADD: 			{url: "/metrics/%id%/attach_document.js", post:true},
