@@ -261,7 +261,7 @@ define(['sb_light/globals',
 		opts = E.merge({
 			includeInactive: false,
 			sort: sb.ext.sortUsers
-		},opts||{})
+		},opts||{});
 		var cid = ST.state("company_id");
 		return sb.models.rawArray("users").filter(function(el) {
 			
@@ -276,7 +276,7 @@ define(['sb_light/globals',
 			shorten: 0,
 			reverse:true,
 			includeEmpty: false
-		},opts||{})
+		},opts||{});
 
 		var list = E.map(Q.authors(opts), function(v) {
 			var name = opts.reverse ? Q.fullnameReverse(v.id) : Q.fullname(v.id);
@@ -290,7 +290,7 @@ define(['sb_light/globals',
 		}
 		return list;
 
-	}
+	};
 
 
 
@@ -535,12 +535,12 @@ define(['sb_light/globals',
 		opts = E.merge({}, opts||{});
 		var list = E.map(sb.models.rawArray("focus"), function(v,k) {
 			return {value:v.id, text:(v.level_display + ". " + v.title)};
-		})
+		});
 
 		list = E._.orderBy(list, "text");
 
 		return list;
-	}
+	};
 	
 	/********************************
 		Levels
@@ -721,7 +721,7 @@ define(['sb_light/globals',
 		end = percent ? end/100 : end;
 
 		//display values
-		var data = {}
+		var data = {};
 
 
 		E.each(["targets", "actuals", "raw_targets", "raw_actuals"], function(k) {
@@ -737,6 +737,12 @@ define(['sb_light/globals',
 			return v + (percent ? (v*end) : end );
 		});
 		data.lower_values = E.map(data.targets_values, function(v) {
+			return v + (percent ? (v*start) : start );
+		});
+		data.raw_upper_values = E.map(data.raw_targets_values, function(v) {
+			return v + (percent ? (v*end) : end );
+		});
+		data.raw_lower_values = E.map(data.raw_targets_values, function(v) {
 			return v + (percent ? (v*start) : start );
 		});
 
@@ -809,20 +815,29 @@ define(['sb_light/globals',
 		data.raw_targets_range = data.raw_targets_values;
 		data.upper_range = data.upper_values;
 		data.lower_range = data.lower_values;
+		data.raw_upper_range = data.raw_upper_values;
+		data.raw_lower_range = data.raw_lower_values;
 
 		if(data.targets_domain.length === 1) { 
 			data.targets_domain.push(E.moment().add(1, "month").toDate());
 			data.targets_domain.unshift(E.today());
 
 			data.targets_range.push(data.targets_values[0]);
-			data.raw_targets_range.push(data.raw_targets_values[0]);
 			data.upper_range.push(data.upper_values[0]);
 			data.lower_range.push(data.lower_values[0]);
+		
+			data.raw_targets_range.push(data.raw_targets_values[0]);
+			data.raw_upper_range.push(data.upper_values[0]);
+			data.raw_lower_range.push(data.lower_values[0]);
+			
 
 			data.targets_range.unshift(0);
-			data.raw_targets_range.unshift(0);
 			data.upper_range.unshift(0);
 			data.lower_range.unshift(0);
+			
+			data.raw_targets_range.unshift(0);
+			data.raw_upper_range.unshift(0);
+			data.raw_lower_range.unshift(0);
 		}
 
 
@@ -835,10 +850,13 @@ define(['sb_light/globals',
 		data.raw_targets_scale = d3.time.scale().domain(data.raw_targets_domain).range(data.raw_targets_range).clamp(true);
 		data.upper_scale = d3.time.scale().domain(data.targets_domain).range(data.upper_range).clamp(true);
 		data.lower_scale = d3.time.scale().domain(data.targets_domain).range(data.lower_range).clamp(true);
+		data.raw_upper_scale = d3.time.scale().domain(data.raw_targets_domain).range(data.raw_upper_range).clamp(true);
+		data.raw_lower_scale = d3.time.scale().domain(data.raw_targets_domain).range(data.raw_lower_range).clamp(true);
 		data.scales = [
 			data.actuals_scale, data.raw_actuals_scale,
 			data.targets_scale, data.raw_targets_scale,
-			data.upper_scale, data.lower_scale
+			data.upper_scale, data.lower_scale,
+			data.raw_upper_scale, data.raw_lower_scale
 		];
 
 		if(hierarchyData) {
@@ -878,7 +896,7 @@ define(['sb_light/globals',
 
 				data[sk] = d3.time.scale().domain(data[dk]).range(data[rk]).clamp(true);
 				data.scales.push(data[sk]);
-			})
+			});
 		}
 
 		if(!m.interpolate_values) {
@@ -904,6 +922,8 @@ define(['sb_light/globals',
 			var v = E.variance(a,t) * (btg ? -1 : 1);
 			var u = data.upper_scale(d);
 			var l = data.lower_scale(d);
+			var ru = data.raw_upper_scale(d);
+			var rl = data.raw_lower_scale(d);
 
 			var comment = (
 				E._.find(data.actuals_local, {date:ds}) || 
@@ -934,6 +954,8 @@ define(['sb_light/globals',
 
 				upper:u,
 				lower:l,
+				raw_upper:ru,
+				raw_lower:rl,
 				variance:v,
 				comment:comment,
 				isRealActual: (data.actuals_dates.indexOf(ds) >= 0),
