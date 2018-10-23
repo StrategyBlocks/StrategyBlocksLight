@@ -138,11 +138,13 @@ define(['sb_light/globals',
 		return E.shorten(t, 25);
 	};
 
-	q.yearEnd = function() {
-		var c = Q.company();
-		var fy = c ? c.npv.financial_year_starts_on : "1/4";
+	q.yearEnd = function(fy/*DD/MM == null*/) {
+		if (!fy) {
+			var c = Q.company();
+			fy = c ? c.npv.financial_year_starts_on : "1/4";
+		}
 		var d = E.to_i(fy.match(/^(\d\d?)\//)[1]);
-		var m = E.to_i(fy.match(/\/(\d\d?)$/)[1]);
+		var m = E.to_i(fy.match(/\/(\d\d?)$/)[1]) - 1;
 
 		var cfy = sb.dates.create().month(m).date(d).subtract(1, "day");
 
@@ -152,11 +154,13 @@ define(['sb_light/globals',
 		return cfy; 
 	};
 
-	q.yearStart = function() {
-		var c = Q.company();
-		var fy = c ? c.npv.financial_year_starts_on : "1/4";
+	q.yearStart = function(fy/*DD/MM == null*/) {
+		if (!fy) {
+			var c = Q.company();
+			fy = c ? c.npv.financial_year_starts_on : "1/4";
+		}
 		var d = E.to_i(fy.match(/^(\d\d?)\//)[1]);
-		var m = E.to_i(fy.match(/\/(\d\d?)$/)[1]) - 1;
+		var m = E.to_i(fy.match(/\/(\d\d?)$/)[1]);
 
 		var cfy = sb.dates.create().month(m).date(d);
 
@@ -255,7 +259,6 @@ define(['sb_light/globals',
 			includeInactive: false,
 			sort: sb.ext.sortUsers
 		},opts||{});
-
 		var cid = ST.state("company_id");
 		return sb.models.rawArray("users").filter(function(el) {
 			
@@ -713,183 +716,186 @@ define(['sb_light/globals',
 		var today = D.serverStr("today");
 		var btg = m.below_target_good;
 
-		//display values
-		var targets = hierarchyData ? hierarchyData.target : m.target;
-		var actuals = hierarchyData ? hierarchyData.actuals : m.actuals;
-
-		targets  = (targets && targets.length) ? E._.cloneDeep(targets) : [{date:today, value:0}];
-		actuals  = (actuals && actuals.length) ? E._.cloneDeep(actuals) : [{date:today, value:0}];
-
-
-//		targets.push({date:today, value:(m.last_target_value||0)});
-//		actuals.push({date:today, value:(m.last_actual_value||0), comment:"Current Actual"});
-
-		targets.sort(D.sortDates("date", false)); 
-		actuals.sort(D.sortDates("date", false));
-
-		var targetDates = E.values(targets, "date");
-		var actualDates = E.values(actuals, "date");
-
-		var targetValues = E.values(targets, "value");
-		var actualValues = E.values(actuals, "value");
-
-
 		start = percent ? start/100 : start;
 		end = percent ? end/100 : end;
 
-		var upperValues = targetValues.map(function(v) {
+		//display values
+		var data = {};
+
+
+		E.each(["targets", "actuals", "raw_targets", "raw_actuals"], function(k) {
+			var singular = k.replace(/targets/, "target");
+			var d = hierarchyData ? hierarchyData[singular] : m[singular];
+
+			data[k] = (d && d.length ) ? E._.cloneDeep(d) : [{date: today, value: 0}];
+			data[k+"_dates"] = E.values(data[k], "date");
+			data[k+"_values"] = E.values(data[k], "value");
+		});
+
+		data.upper_values = E.map(data.targets_values, function(v) {
 			return v + (percent ? (v*end) : end );
 		});
-		var lowerValues = targetValues.map(function(v) {
+		data.lower_values = E.map(data.targets_values, function(v) {
+			return v + (percent ? (v*start) : start );
+		});
+		data.raw_upper_values = E.map(data.raw_targets_values, function(v) {
+			return v + (percent ? (v*end) : end );
+		});
+		data.raw_lower_values = E.map(data.raw_targets_values, function(v) {
 			return v + (percent ? (v*start) : start );
 		});
 
-		var actualsMap = E.toObject(actuals, "date");
-		var targetsMap = E.toObject(targets, "date");
-
 
 		//add all the date strings to an array. Optionally add a lower-cap and an upper cap
-		var all_dates = E._.union(targetDates, actualDates).sort();
+		data.all_dates = E._.union(data.targets_dates, data.actuals_dates);
 		if (options.limit_past) {
-			all_dates.push(options.limit_past);
+			data.all_dates.push(options.limit_past);
 		} 
 		if (options.limit_future) {
-			all_dates.push(options.limit_future);
+			data.all_dates.push(options.limit_future);
 		} 
 
 		//ceate a unique, sorted list of dates. 
-		var dates = all_dates.sort(D.compareDates);
+		data.all_dates = E._.uniq(data.all_dates.sort(D.compareDates));
 
-		//if today is in the middle, add the date and re-sort
-		var first = dates[0];
-		var last = dates.last();
 
 		if(options.limit_past) {
-			dates = E._.filter(dates, function(v) {
+			data.all_dates = E._.filter(data.all_dates, function(v) {
 				return D.range(options.limit_past, v) >= 0;
 			});
 		}
 		if(options.limit_future) {
-			dates = E._.filter(dates, function(v) {
+			data.all_dates = E._.filter(data.all_dates, function(v) {
 				return D.range(v, options.limit_future) >= 0;
 			});
 		}
 
+		var first = data.all_dates[0];
+		var last = data.all_dates.last();
+
 		//add TODAY if we don't have it and it falls into range between first/last dates, or we only have a single value  
-		if(dates.indexOf(today) < 0 && (dates.length < 2 || (D.range(first, today) > 0 && D.range(today,last) > 0 ))) {
-			dates.push(today);
-			dates = dates.sort(D.compareDates);
+		//if today is in the middle, add the date and re-sort
+		if(data.all_dates.indexOf(today) < 0 && (data.all_dates.length < 2 || (D.range(first, today) > 0 && D.range(today, last) > 0 ))) {
+			data.all_dates.push(today);
+			data.all_dates = data.all_dates.sort(D.compareDates);
 		}
 
 		//add a dummy date one month ago if we dont't yet have enough data to chart. 
-		if(dates.length < 2) {
-			dates.unshift(D.serverStr("today", {"months": -1}));
+		if(data.all_dates.length < 2) {
+			data.all_dates.unshift(D.serverStr("today", {months: -1}));
 		}
 
 
+		
+		data.actuals_domain = E.map(data.actuals_dates, D.date);
+		data.actuals_range = data.actuals_values;
+		
+		data.raw_actuals_domain = E.map(data.raw_actuals_dates, D.date);
+		data.raw_actuals_range = data.raw_actuals_values;
 
-		//convert date strings to date objects for the time scales
-		var dm = function(v) { 
-			return D.date(v); 
-		};
+		if(data.actuals_domain.length === 1) { 
+			data.actuals_domain.push(D.date("today", {months:1}));
+			data.actuals_domain.unshift(D.create());
 
-		var tds = targetDates.map(dm);
-		var ads = actualDates.map(dm);
-
-
-		var actualDomain = ads;
-		var actualRange = actualValues;
-		if(actualDomain.length === 1) { 
-			actualDomain.push(D.date("today", {months: 1}));
-			actualDomain.unshift(D.date("today"));
-
-			actualRange.push(actualValues[0]);
-			actualRange.unshift(0);
+			data.actuals_range.push(data.actuals_values[0]);
+			data.actuals_range.unshift(0);
+			
+			data.raw_actuals_range.push(data.raw_actuals_values[0]);
+			data.raw_actuals_range.unshift(0);
 		}
-		var targetDomain = tds;
-		var targetRange = targetValues;
-		var upperRange = upperValues;
-		var lowerRange = lowerValues;
-		if(targetDomain.length === 1) { 
-			targetDomain.push(D.date("today", {months: 1}));
-			targetDomain.unshift(D.date("today"));
-			targetRange.push(targetValues[0]);
-			upperRange.push(upperValues[0]);
-			lowerRange.push(lowerValues[0]);
+		
+		data.targets_domain = E.map(data.targets_dates, D.date); 
+		data.raw_targets_domain = E.map(data.raw_targets_dates, D.date); 
+		data.targets_range = data.targets_values;
+		data.raw_targets_range = data.raw_targets_values;
+		data.upper_range = data.upper_values;
+		data.lower_range = data.lower_values;
+		data.raw_upper_range = data.raw_upper_values;
+		data.raw_lower_range = data.raw_lower_values;
 
-			targetRange.unshift(0);
-			upperRange.unshift(0);
-			lowerRange.unshift(0);
+		if(data.targets_domain.length === 1) { 
+			data.targets_domain.push(D.date("today", {months:1}));
+			data.targets_domain.unshift(D.create());
+
+			data.targets_range.push(data.targets_values[0]);
+			data.upper_range.push(data.upper_values[0]);
+			data.lower_range.push(data.lower_values[0]);
+		
+			data.raw_targets_range.push(data.raw_targets_values[0]);
+			data.raw_upper_range.push(data.upper_values[0]);
+			data.raw_lower_range.push(data.lower_values[0]);
+			
+
+			data.targets_range.unshift(0);
+			data.upper_range.unshift(0);
+			data.lower_range.unshift(0);
+			
+			data.raw_targets_range.unshift(0);
+			data.raw_upper_range.unshift(0);
+			data.raw_lower_range.unshift(0);
 		}
 
-		var arRange, trRange, alRange, tlRange,
-			arDomain, trDomain, alDomain, tlDomain,
-			arScale, trScale, alScale, tlScale
-		;
 
-		actualDomain.unshift(D.date(actualDomain[0], {minutes:-1}));
-		actualRange.unshift(0);
-		var aScale = d3.time.scale().domain(actualDomain).range(actualRange).clamp(true);
-		// var raScale = d3.time.scale().domain(raDomain).range(raRange).clamp(true);
+		data.actuals_domain.unshift(D.date(data.actuals_domain[0], {minutes: -1}));
+		data.actuals_range.unshift(0);
 
+		data.actuals_scale = d3.time.scale().domain(data.actuals_domain).range(data.actuals_range).clamp(true);
+		data.targets_scale = d3.time.scale().domain(data.targets_domain).range(data.targets_range).clamp(true);
+		data.raw_actuals_scale = d3.time.scale().domain(data.raw_actuals_domain).range(data.raw_actuals_range).clamp(true);
+		data.raw_targets_scale = d3.time.scale().domain(data.raw_targets_domain).range(data.raw_targets_range).clamp(true);
+		data.upper_scale = d3.time.scale().domain(data.targets_domain).range(data.upper_range).clamp(true);
+		data.lower_scale = d3.time.scale().domain(data.targets_domain).range(data.lower_range).clamp(true);
+		data.raw_upper_scale = d3.time.scale().domain(data.raw_targets_domain).range(data.raw_upper_range).clamp(true);
+		data.raw_lower_scale = d3.time.scale().domain(data.raw_targets_domain).range(data.raw_lower_range).clamp(true);
+		data.scales = [
+			data.actuals_scale, data.raw_actuals_scale,
+			data.targets_scale, data.raw_targets_scale,
+			data.upper_scale, data.lower_scale,
+			data.raw_upper_scale, data.raw_lower_scale
+		];
 
-		var tScale = d3.time.scale().domain(targetDomain).range(targetRange).clamp(true);
-		// var rtScale = d3.time.scale().domain(rtDomain).range(rtRange).clamp(true);
-
-
-		var upperScale = d3.time.scale().domain(targetDomain).range(upperRange).clamp(true);
-		var lowerScale = d3.time.scale().domain(targetDomain).range(lowerRange).clamp(true);
-
-		var scales = [aScale, tScale/*, raScale, rtScale*/, upperScale, lowerScale];
 		if(hierarchyData) {
-			var arList = E._.clone(hierarchyData.actuals_rollup.sort(D.sortDates("date",false)));
-			var trList = E._.clone(hierarchyData.target_rollup.sort(D.sortDates("date",false)));
-			var alList = E._.clone(hierarchyData.actuals_local.sort(D.sortDates("date",false)));
-			var tlList = E._.clone(hierarchyData.target_local.sort(D.sortDates("date",false)));
+			var types = [
+				"actuals_rollup", "targets_rollup", 
+				"actuals_local", "targets_local", 
+				"raw_actuals_rollup", "raw_targets_rollup", 
+				"raw_actuals_local", "raw_targets_local"
+			];
 
-			//make sure each list has at least two items
-			E.each([arList, trList, alList, tlList], function(list) {
-				if(!list.length) {
-					list.push({date:today, value:0});
+			E.each(types, function(k) {
+				var singular = k.replace(/targets/, "target");
+				data[k] = E._.clone(hierarchyData[singular].sort(D.sortDates("date",false)));
+				
+				//make sure each list has 2 items
+				if(!data[k].length) {
+					data[k].push({date:today, value:0});
 				}
-				if(list.length < 2) {
-					list.push({date:D.serverStr(list[0].date, {days: -1}), value:0});	
+				if(data[k].length < 2) {
+					data[k].push({date:D.serverStr(data[k][0].date, {days: -1}), value:0});	
 				}
+
+				//sort the lists
+				data[k] = data[k].sort(D.sortDates("date", false));
+
+				var dk = k+"_domain";
+				var rk = k+"_range";
+				var sk = k+"_scale";
+
+				data[rk] = E.values(data[k], "value");
+				data[dk] = E.values(data[k], "dates", D.serverStr);
+
+				if(k.match(/actuals/))  {
+					data[dk].unshift(D.date(data[dk][0], {minutes: -1}));
+					data[rk].unshift(0);
+				}
+
+				data[sk] = d3.time.scale().domain(data[dk]).range(data[rk]).clamp(true);
+				data.scales.push(data[sk]);
 			});
-
-			arList.sort(D.sortDates("date", false));
-			alList.sort(D.sortDates("date", false));
-			trList.sort(D.sortDates("date", false));
-			tlList.sort(D.sortDates("date", false));
-
-			// Rollup and local raw values
-			arRange = E.values(arList, "value");
-			trRange = E.values(trList, "value");
-			alRange = E.values(alList, "value");
-			tlRange = E.values(tlList, "value");
-
-			arDomain = E.values(arList, "date", D.date);
-			trDomain = E.values(trList, "date", D.date);
-			alDomain = E.values(alList, "date", D.date);
-			tlDomain = E.values(tlList, "date", D.date);
-
-
-			arDomain.unshift(E.moment(arDomain[0]).subtract(1,"minute").toDate());
-			arRange.unshift(0);
-			alDomain.unshift(E.moment(alDomain[0]).subtract(1,"minute").toDate());
-			alRange.unshift(0);
-
-	
-			arScale = d3.time.scale().domain(arDomain).range(arRange).clamp(true);
-			alScale = d3.time.scale().domain(alDomain).range(alRange).clamp(true);
-			trScale = d3.time.scale().domain(trDomain).range(trRange).clamp(true);
-			tlScale = d3.time.scale().domain(tlDomain).range(tlRange).clamp(true);
-
-			scales.put(arScale,alScale,trScale,tlScale);
 		}
 
 		if(!m.interpolate_values) {
-			E.each(scales, function(s) {
+			E.each(data.scales, function(s) {
 				s.interpolate(function(a,b) {
 					//step-after interpolate
 					return function(t) {
@@ -901,61 +907,58 @@ define(['sb_light/globals',
 		}
 
 
-		var res = {
-			td:targetDates,			tv:targetValues,
-			ad:actualDates,			av:actualValues,
-			as:aScale,				ts:tScale,
-			// ras:raScale,			rts:rtScale,
-			us:upperScale,			ls:lowerScale,
-			uv:upperValues,			lv:lowerValues
-		};
 
-		if(hierarchyData) {
-			res.ars = arScale;
-			res.als = alScale;
-			res.trs = trScale;
-			res.tls = tlScale;
-		}
-
-		res.series = E.map(dates, function(ds) {
-			var dm = D.change(ds);
+		data.series = E.map(data.all_dates, function(ds) {
 			var d = D.date(ds);
-			var dn = D.number(ds);
-			var t = tScale(d);
-			var a = aScale(d);
+			var dn = d.getTime();
+			var t = data.targets_scale(d);
+			var a = data.actuals_scale(d);
 			var v = E.variance(a,t) * (btg ? -1 : 1);
-			var u = upperScale(d);
-			var l = lowerScale(d);
+			var u = data.upper_scale(d);
+			var l = data.lower_scale(d);
+			var ru = data.raw_upper_scale(d);
+			var rl = data.raw_lower_scale(d);
 
-			var c = (E._.find(alList, {date:ds}) || actualsMap[ds] || {}).comment || "";
+			var comment = (
+				E._.find(data.actuals_local, {date:ds}) || 
+				E._.find(data.actuals, {date:ds}) || 
+				{}
+			).comment || "";
 
-			var isActual =  actualsMap[ds] ? true : false;
-			var isTarget = targetsMap[ds] ? true : false;
 
 			var el = {
 				date:d,
-				moment:dm,
 				dateStr: ds,
 				dateNum: dn,
 				target:t,
-				target_rollup: (trScale ? trScale(d) : null),
-				target_local: (tlScale ? tlScale(d) : null),
+				target_rollup: (data.targets_rollup_scale ? data.targets_rollup_scale(d) : null),
+				target_local: (data.targets_local_scale ? data.targets_local_scale(d) : null),
+				raw_target: (data.raw_targets_scale ? data.raw_targets_scale(d) : null), 
+				raw_target_rollup: (data.raw_targets_rollup_scale ? data.raw_targets_rollup_scale(d) : null), 
+				raw_target_local: (data.raw_targets_local_scale ? data.raw_targets_local_scale(d) : null), 
+
 
 				actual:a,
-				actual_rollup: (arScale ? arScale(d) : null),
-				actual_local: (alScale ? alScale(d) : null),
+				actual_rollup: (data.actuals_rollup_scale ? data.actuals_rollup_scale(d) : null),
+				actual_local: (data.actuals_local_scale ? data.actuals_local_scale(d) : null),
+				raw_actual: (data.raw_actuals_scale ? data.raw_actuals_scale(d) : null), 
+				raw_actual_rollup: (data.raw_actuals_rollup_scale ? data.raw_actuals_rollup_scale(d) : null), 
+				raw_actual_local: (data.raw_actuals_local_scale ? data.raw_actuals_local_scale(d) : null), 
+
 				upper:u,
 				lower:l,
+				raw_upper:ru,
+				raw_lower:rl,
 				variance:v,
-				comment:c,
-				isRealActual: isActual,
-				isRealTarget: isTarget
+				comment:comment,
+				isRealActual: (data.actuals_dates.indexOf(ds) >= 0),
+				isRealTarget: (data.targets_dates.indexOf(ds) >= 0)
 			};
 
 			return el;
 		});
 
-		return res;
+		return data;
 	};
 
 

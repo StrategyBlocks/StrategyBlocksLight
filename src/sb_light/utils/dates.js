@@ -186,7 +186,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 	//finds a period earliers that the current date, or passed date
 	//subtract the period amount from the date, and then shift to the start of the month. 
-	D.historicDate = function(str, date) {
+	D.historicDate = function(str, date, fy/*MM/DD=null*/) {
 		var cd = D.parse(date || "today");
 		var def = D.historicDateList[str];
 
@@ -215,7 +215,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 		"year": 		{unit:"years", label: "End of Year"},
 	};
 
-	D.futureDate = function(str,date) {
+	D.futureDate = function(str,date, fy/*MM/DD=null*/) {
 		var cd = D.parse(date || "today");
 		var def = D.futureDateList[str];
 
