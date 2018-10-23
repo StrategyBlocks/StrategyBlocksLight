@@ -216,9 +216,9 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		
 		LOGIN_REMEMBER_ME :			{url: "/login/remember_me.js"},
 	
-		PAYMENTS :					{url: "/purchases/index.js"},
-		PAYMENTS_QUOTE :			{url: "/purchases/quote.js"},
-		PAYMENTS_CREATE: 			{url: "/purchases/create.js"},
+		PAYMENTS :					{url: "/purchases.js", post:false},
+		PAYMENTS_QUOTE :			{url: "/purchases/quote.js", post:false},
+		PAYMENTS_CREATE: 			{url: "/purchases/create.js", post:true},
 		
 		ADMIN_RAISE: 				{url:"/admin/log_client_error.js", post:true},
 		ADMIN_SUPPORT:				{ url:"/admin/log_support.js", post:true},
