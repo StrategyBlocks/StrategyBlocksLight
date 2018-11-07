@@ -359,6 +359,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),
+				body: (b.body || ""),
 				path:bpath,
 				parentPath:(p ? p.path : null),
 				parent:p,
@@ -385,6 +386,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				is_mine: (b.owner_id == uid || b.manager_id == uid),
 				is_real_owner: (b.owner_id==uid),
 				is_real_manager: (b.manager_id == uid),
+				is_new: isNew,
 				is_watching: (E._.find(b.watching_user_ids, uid) != null),
 				position: pos,
 				can_move_left: (b.is_manager && (pos> 0)),
