@@ -887,7 +887,7 @@ define(['sb_light/globals',
 				var sk = k+"_scale";
 
 				data[rk] = E.values(data[k], "value");
-				data[dk] = E.values(data[k], "dates", E.serverToDate);
+				data[dk] = E.values(data[k], "date", E.serverToDate);
 
 				if(k.match(/actuals/))  {
 					data[dk].unshift(E.moment(data[dk][0]).subtract(1,"minute").toDate());
