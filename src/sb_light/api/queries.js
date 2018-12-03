@@ -160,7 +160,7 @@ define(['sb_light/globals',
 			fy = c ? c.npv.financial_year_starts_on : "1/4";
 		}
 		var d = E.to_i(fy.match(/^(\d\d?)\//)[1]);
-		var m = E.to_i(fy.match(/\/(\d\d?)$/)[1]);
+		var m = E.to_i(fy.match(/\/(\d\d?)$/)[1]) - 1;
 
 		var cfy = sb.dates.create().month(m).date(d);
 
