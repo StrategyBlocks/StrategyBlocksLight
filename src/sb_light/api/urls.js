@@ -73,7 +73,7 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		BOOKMARK_DELETE:				{url: "/saved_client_states/%id%/delete.js", post:true},
 				 
 		COMMENT_PROPERTIES_ADD: 		{url: "/blocks/%id%/comment.js", normalParams:true, post:true},
-		COMMENT_PROPERTIES_REMOVE:		{url: "/blockSettings/%id%/delete_comment.js", normalParams:true, post:true},
+		COMMENT_PROPERTIES_REMOVE:		{url: "/blocks/%id%/delete_comment.js", normalParams:true, post:true},
 		
 		COMPANIES_UPDATE: 				{url: "/companies/update.js", post:true},
 		COMPANIES_UPLOAD_LOGO: 			{url: "/companies/logo_upload.js", post:true},
