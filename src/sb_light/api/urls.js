@@ -45,6 +45,8 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		BLOCKS_PROPERTIES: 				{url: "/blocks/%id%/%type%.js", 				post:false,		normalParams:true},
 		BLOCKS_RELOCATE: 				{url: "/blocks/%id%/reassign_parent.js", 		post:true, 		normalParams:true},
 		BLOCKS_UPDATE: 					{url: "/blocks/%id%/update.js", 				post:true},
+		BLOCKS_ADD_DEPENDENCY:			{url: "/blocks/%id%/add_dependency.js", post:true, normalParams:true},
+		BLOCKS_REMOVE_DEPENDENCY:		{url: "/blocks/%id%/remove_dependency.js", post:true, normalParams:true},
 
 		BLOCKS_UPDATE_GROUPS :			{url: "/blocks/%id%/update_group_expression.js", normalParams:true, post:true},
 		BLOCKS_HEALTH :					{url: "/blocks/health.js", normalParams:true},

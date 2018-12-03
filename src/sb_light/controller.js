@@ -94,6 +94,13 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.BLOCKS_PROPERTIES, o, cb,cb, null, {post:true});
 	};
 
+	controller.blockAddDependency = function(o, cb) {
+		controller.invoke(sb.urls.BLOCKS_ADD_DEPENDENCY, o, cb,cb);
+	};
+
+	controller.blockRemoveDependency = function(o, cb) {
+		controller.invoke(sb.urls.BLOCKS_REMOVE_DEPENDENCY, o, cb,cb);
+	};
 
 
 	controller.comment = function(type, id, message, cb) {
