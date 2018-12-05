@@ -1255,7 +1255,7 @@ define(['sb_light/globals',
 		} else {
 			var ds = E.daysDiff(E.today(), b.start_date);
 			if(ds < 0) {
-				return "Starts in <strong>" + ds + "</strong> days.";
+				return "Starts in <strong>" + (-ds) + "</strong> days.";
 			} else if (ds === 0) {
 				return "Starts <strong>today</strong>";
 			} else {
