@@ -399,7 +399,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				groups: b.group_ids.concat(sb.groups.parseExpression(b.group_expression_inherited, true)),
 				ownership: 	(b.owner_id == uid ? "owned" : 
 							(b.manager_id == uid ? "managed" : 
-							(b.ownership_state == "watched" ? "watched" : "none") ) )
+							(b.ownership_state == "watched" ? "watched" : "none") ) ),
+
+				dependencies: (b.dependencies || [])
 			});
 
 			E._.each(b.metrics, function(v) {
