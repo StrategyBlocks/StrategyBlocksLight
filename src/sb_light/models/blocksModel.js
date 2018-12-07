@@ -401,7 +401,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 							(b.manager_id == uid ? "managed" : 
 							(b.ownership_state == "watched" ? "watched" : "none") ) ),
 
-				dependencies: (b.dependencies || [])
+				dependency_ids: (b.dependency_ids || [])
 			});
 
 			E._.each(b.metrics, function(v) {
