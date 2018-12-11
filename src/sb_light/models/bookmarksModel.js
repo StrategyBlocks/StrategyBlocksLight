@@ -70,8 +70,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				} else {
 					d.state = JSON.parse(d.state);
 				}
-				d.created_moment  = E.moment(d.created_at, E.unixFormat);
-				d.created_str = E.serverDate(d.created_moment);
 
 			});	
 
