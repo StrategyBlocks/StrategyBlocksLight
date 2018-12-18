@@ -64,8 +64,8 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		BLOCK_INVITE :					{url: "/blocks/%id%/invite.js",					post:true, normalParams:true},
 		BLOCK_UNWATCH: 					{url: "/blocks/%id%/unwatch.js",				post:true},
 		
-		BLOCK_ATTACH_METRIC: 	 		{url: "/blocks/%id%/attach_metric.js", normalParams:true },
-		BLOCK_DETACH_METRIC:  			{url: "/blocks/%id%/detach_metric.js", normalParams:true },
+		BLOCK_ATTACH_METRIC: 	 		{url: "/blocks/%id%/attach_metric.js", normalParams:true, post: true },
+		BLOCK_DETACH_METRIC:  			{url: "/blocks/%id%/detach_metric.js", normalParams:true, post: true },
 
 
 		BOOKMARK_CREATE:				{url: "/saved_client_states/create.js", normalParams:true, post:true},
