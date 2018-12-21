@@ -214,7 +214,7 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		
 		//Args:
 		//	username: users email address
-		LOGIN_FORGOT_PASSWORD: 		{url: "/login/forgot_password.js", normalParams:true},
+		LOGIN_FORGOT_PASSWORD: 		{url: "/login/forgot_password.js", normalParams:true, post: true},
 		
 		LOGIN_REMEMBER_ME :			{url: "/login/remember_me.js"},
 	

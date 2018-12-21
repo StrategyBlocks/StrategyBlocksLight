@@ -395,6 +395,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		for (var m in models) {
 			params[m+"_timestamp"] = models[m].timestamp;
 		}
+		return params;
 	};
 
 	//if no requests are made and we're in a good state, poll the server to make sure the session is alive
