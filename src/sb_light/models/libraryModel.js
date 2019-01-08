@@ -31,7 +31,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				v.public = v.status == "public";
 				v.rating = v.rating || 0;
 				v.local = v.company_id == Q.company().id;
-				v.fromNow  = sb.dates.change({days: v.duration}).toNow(true);
+				v.fromNow  = sb.dates.create({days: v.duration}).toNow(true);
 			});
 		}
 

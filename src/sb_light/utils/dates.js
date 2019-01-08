@@ -237,7 +237,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	if(SB_OPTIONS.debug) {
 		/* jshint laxcomma: true */
 		var __TESTS = [
-			 /*["serverStr", 	[], 							null, 								"Date serverStr function failed"]
+			 ["serverStr", 	[], 							null, 								"Date serverStr function failed"]
 			,["serverStr", 	["today"], 						MOMENT(), 							"Date serverStr function failed"]
 			,["serverStr", 	["today", {months:3}], 			MOMENT().add(3, "months"), 			"Date serverStr function failed to add 3 months "]
 			,["serverStr", 	["today", {months:-3}], 		MOMENT().subtract(3, "months"), 	"Date serverStr function failed to subtract 3 months "]
@@ -260,6 +260,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 			,["fromNow",			[D.serverStr("today", {days:-1})],		"Yesterday",		"Date fromNow failed to say YESTERDAY"] 
 			,["fromNow",			[D.serverStr("today", {days:1})],		"Tomorrow",			"Date fromNow failed to say TOMORROW"] 
 
+
 			,["absFrom",			[null, null, false],				"Never",			"Date absFrom failed"]
 			,["absFrom",			[null, null, true],					"Never",			"Date absFrom failed"]
 			,["absFrom",			["2001-02-02", "2001-02-02", false],"0 days",			"Date absFrom failed"]
@@ -276,7 +277,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 			//historic dates from october 12, 2016
 			,["historicDate", 		["one_month", "2016-10-12"], 		"2016-09-01", 	"Date historicDate function failed one_month from october 12"]
-			,*/["historicDate", 		["two_months", "2016-10-12"], 		"2016-08-01", 	"Date historicDate function failed two_months from october 12"]
+			,["historicDate", 		["two_months", "2016-10-12"], 		"2016-08-01", 	"Date historicDate function failed two_months from october 12"]
 			,["historicDate", 		["one_quarter", "2016-10-12"], 		"2016-07-01", 	"Date historicDate function failed one_quarter from october 12"]
 			,["historicDate", 		["two_quarters", "2016-10-12"], 	"2016-04-01", 	"Date historicDate function failed two_qurters from october 12"]
 			,["historicDate", 		["three_quarters", "2016-10-12"], 	"2016-01-01", 	"Date historicDate function failed three_qauarters from october 12"]
