@@ -542,7 +542,7 @@ define([
 					require([src], function(El) {
 
 						//no guarantee of order this happens
-						if(El && self.__creatingChildren[key]) {
+						if(El && self.__creatingChildren && self.__creatingChildren[key]) {
 							c.push(new El(opts));
 							delete self.__creatingChildren[key];
 						} else {
