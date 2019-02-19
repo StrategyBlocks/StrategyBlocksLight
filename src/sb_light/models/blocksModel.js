@@ -171,7 +171,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 		filter_status: function(b, statusList) {
 			if(statusList.indexOf(b.status) > -1) { return true; }
-			if(b.overdue && statusList.indexOf("overdue") > -1) { return true; }
+			if(b.is_overdue && statusList.indexOf("overdue") > -1) { return true; }
 
 			return statusList.length === 0; 
 		},
