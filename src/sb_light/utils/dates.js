@@ -124,6 +124,11 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 		start = D.parse(start);
 		end = D.parse(end);
+
+
+		start.startOf('day')
+		end.startOf('day')
+
 		endOfDay = endOfDay ? 1 : 0;
 
 		return end.diff(start, 'days') + endOfDay;
