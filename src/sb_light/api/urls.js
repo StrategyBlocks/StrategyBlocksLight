@@ -77,6 +77,7 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		
 		COMPANIES_UPDATE: 				{url: "/companies/update.js", post:true},
 		COMPANIES_UPLOAD_LOGO: 			{url: "/companies/logo_upload.js", post:true},
+		COMPANIES_REMOVE_LOGO: 			{url: "/companies/logo_remove.js", post:true},
 
 		COMPANIES_HEALTH_CREATE: 		{url: "/health_calculations/create.js", post:true},
 		COMPANIES_HEALTH_UPDATE :		{url: "/health_calculations/%id%/update.js", post:true},

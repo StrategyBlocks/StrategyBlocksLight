@@ -16,6 +16,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.updateCompany = function(obj, cb) {
 		controller.invoke(sb.urls.COMPANIES_UPDATE, obj, cb, cb);
 	};
+	controller.removeCompanyLogo = function(cb) {
+		controller.invoke(sb.urls.COMPANIES_REMOVE_LOGO, {}, cb, cb);
+	};
 	controller.companyBroadcast = function(o, cb) {
 		controller.invoke(sb.urls.COMPANIES_BROADCAST, o, cb, cb);
 	};
