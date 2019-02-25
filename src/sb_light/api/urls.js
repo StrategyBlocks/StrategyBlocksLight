@@ -295,8 +295,7 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		//generic - TBD
 		ADMIN_POST:					{														post:true, normalParams:true},
 		ADMIN_USERS:				{url: "/admin/users/%admin_company_id%.js", 			post:false, normalParams:true, company:"admin_company_id"},
-		ADMIN_USER_EMAILS:			{url: "/admin/emails.js", 								post:false, normalParams:true},
-		ADMIN_ZERO_PROGRESS:		{url: "/admin/companies_with_no_progress_closed_leaf_blocks.js", 	post:false, normalParams:true},
+		ADMIN_USER_EMAILS:			{url: "/admin/emails.js", 								post:false, normalParams:true}
 
 
 	};

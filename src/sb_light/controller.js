@@ -92,9 +92,8 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 
 	controller.blockUpdateTags = function(id, tags, cb) {
-		var o = {id:id, type:"tags"};
-		o["tag[list]"] = tags.join(" ");
-		controller.invoke(sb.urls.BLOCKS_PROPERTIES, o, cb,cb, null, {post:true});
+		var o = {id:id, type:"tags", tags: tags};
+		controller.invoke(sb.urls.BLOCKS_PROPERTIES, o, cb,cb, null, {post:true, normalParams: false});
 	};
 
 	controller.blockAddDependency = function(o, cb) {
@@ -449,8 +448,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		var url = sb.urls.url(urlObj, args);
 		var params = {};
 		overrides = sb.ext.merge({}, overrides);
-		
-		if (urlObj.deleteId) {
+		if (urlObj.deleteId || overrides.deleteId) {
 			delete args.id;
 		}
 		
@@ -461,10 +459,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 				params.json = JSON.stringify(requestArgs);
 			}
 			else if (Object.keys(requestArgs).length > 0) {
-				if (urlObj.normalParams) {
+				if (urlObj.normalParams && overrides.normalParams !== false) {
 					params = requestArgs;
-				}
-				else {
+				} else {
 					params.json = JSON.stringify(requestArgs);
 				}
 			}
