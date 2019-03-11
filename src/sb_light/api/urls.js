@@ -145,7 +145,6 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		RISK_INVITE :				{url: "/risks/%id%/invite.js",		post:true, normalParams:true},
 		RISK_UNWATCH: 				{url: "/risks/%id%/unwatch.js",		post:true},
 		
-		RISKS_DUMMY_REFRESH :		{url: "/risks/%id%/refresh_risk.js"},
 		RISKS_UPDATE_GROUPS:  		{url: "/risks/%id%/update_group_expression.js", normalParams:true, post:true },
 		RISKS_NEWS: 				{url: "/risks/%id%/news.js"},
 		
