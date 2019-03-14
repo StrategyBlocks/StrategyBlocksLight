@@ -1027,7 +1027,7 @@ define(['sb_light/globals',
 		};
 
 		res.series = E.map(dates, function(ds) {
-			var d = D.date(ds);
+			var d = D.parse(ds).endOf('day').toDate();
 			var t = Math.floor(tscale(d));
 			var a = Math.floor(ascale(d));
 			var v = E.variance(a,t);
