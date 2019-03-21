@@ -60,9 +60,13 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 	D.parse = function(date, format) {
 		if(E.isStr(date)) {
-			if(date == 'today') { return MOMENT(); }
+			if(date == 'today') { return MOMENT().endOf("day"); }
 			format = format || (date.length > 10 ? D.timeFormat : D.serverFormat);
-			return MOMENT(date,format);
+			var m = MOMENT(date,format);
+			if (format == D.serverFormat ) {
+				m.endOf("day");
+			}
+			return m;
 		}
 		// NULL , undefinded, 0, false, "" etc... will all return null
 		return date ? MOMENT(date) : null;
