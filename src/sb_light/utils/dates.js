@@ -43,7 +43,12 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 		d = D.parse(d);
 		adjustments = adjustments || {};
 		E.each(adjustments, function(v,k) {
-			d = d.add(v, k);
+			switch(k){
+				case "start_of": d = d.startOf(v); break;
+				case "end_of": d = d.endOf(v); break;
+				default:
+					d = d.add(v, k);
+			}
 		});
 		return (funcStr && d) ? d[funcStr]() : d; 
 	};
@@ -60,11 +65,20 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 	D.parse = function(date, format) {
 		if(E.isStr(date)) {
-			if(date == 'today') { return MOMENT().endOf("day"); }
-			format = format || (date.length > 10 ? D.timeFormat : D.serverFormat);
-			var m = MOMENT(date,format);
-			if (format == D.serverFormat ) {
-				m.endOf("day");
+			var m;
+
+			if(date == 'today') { 
+				m = MOMENT(); 
+			} else {
+				format = format || (date.length > 10 ? D.timeFormat : D.serverFormat);
+				m = MOMENT(date,format);
+			}
+
+			if (format == D.serverFormat || date == "today") {
+				m.set({
+					hour: 12, 
+					minute: 0
+				});
 			}
 			return m;
 		}
@@ -130,8 +144,8 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 		end = D.parse(end);
 
 
-		start.endOf('day')
-		end.endOf('day')
+		// start.endOf('day')
+		// end.endOf('day')
 
 		endOfDay = endOfDay ? 1 : 0;
 
