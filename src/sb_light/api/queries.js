@@ -911,8 +911,8 @@ define(['sb_light/globals',
 		data.series = E.map(data.all_dates, function(ds) {
 			var d = D.date(ds);
 			var dn = d.getTime();
-			var t = data.targets_scale(d);
-			var a = data.actuals_scale(d);
+			var t = ds == today ? (hierarchyData||m).last_target_value : data.targets_scale(d);
+			var a = ds == today ? (hierarchyData||m).last_actual_value : data.actuals_scale(d);
 			var v = E.variance(a,t) * (btg ? -1 : 1);
 			var u = data.upper_scale(d);
 			var l = data.lower_scale(d);
@@ -931,16 +931,16 @@ define(['sb_light/globals',
 				dateStr: ds,
 				dateNum: dn,
 				target:t,
-				target_rollup: (data.targets_rollup_scale ? data.targets_rollup_scale(d) : null),
-				target_local: (data.targets_local_scale ? data.targets_local_scale(d) : null),
+				target_rollup: (data.targets_rollup_scale ? (ds==today ? hierarchyData.last_target_value_rollup : data.targets_rollup_scale(d)) : null),
+				target_local: (data.targets_local_scale ? (ds==today ? hierarchyData.last_target_value_local : data.targets_local_scale(d)) : null),
 				raw_target: (data.raw_targets_scale ? data.raw_targets_scale(d) : null), 
 				raw_target_rollup: (data.raw_targets_rollup_scale ? data.raw_targets_rollup_scale(d) : null), 
 				raw_target_local: (data.raw_targets_local_scale ? data.raw_targets_local_scale(d) : null), 
 
 
 				actual:a,
-				actual_rollup: (data.actuals_rollup_scale ? data.actuals_rollup_scale(d) : null),
-				actual_local: (data.actuals_local_scale ? data.actuals_local_scale(d) : null),
+				actual_rollup: (data.actuals_rollup_scale ? (ds==today ? hierarchyData.last_actual_value_rollup : data.actuals_rollup_scale(d)) : null),
+				actual_local: (data.actuals_local_scale ? (ds==today ? hierarchyData.last_actual_value_local : data.actuals_local_scale(d)) : null),
 				raw_actual: (data.raw_actuals_scale ? data.raw_actuals_scale(d) : null), 
 				raw_actual_rollup: (data.raw_actuals_rollup_scale ? data.raw_actuals_rollup_scale(d) : null), 
 				raw_actual_local: (data.raw_actuals_local_scale ? data.raw_actuals_local_scale(d) : null), 
