@@ -10,6 +10,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	D.serverFormat = MOMENT.HTML5_FMT.DATE;
 	D.timeFormat = "YYYY-MM-DDThh:mm:ss Z";
 	D.filterFormat = "YYYY MMMM DD"; //used for searching using month name
+	D.monthFormat = "MMM (YYYY)"; //month display
 	
 	D.userFormat = function() { 
 		var u = sb.queries.user();
@@ -29,6 +30,10 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 	MOMENT.fn.filterStr = function() {
 		return this.format(D.filterFormat);
+	};
+
+	MOMENT.fn.monthStr = function() {
+		return this.format(D.monthFormat);
 	};
 
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -57,11 +62,11 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	D.userStr = function(date, adjustments) { return D.change(date, adjustments, "userStr"); };
 	D.timeStr = function(date, adjustments) { return D.change(date, adjustments, "timeStr"); };
 	D.filterStr = function(date, adjustments) { return D.change(date, adjustments, "filterStr");  };
+	D.monthStr = function (date, adjustments) { return D.change(date, adjustments, "monthStr");	};
 
 	//convert to a specific JS object
 	D.number = function(date, adjustments) { return D.change(date, adjustments, "valueOf"); };
 	D.date= function(date, adjustments) { return D.change(date, adjustments, "toDate"); };
-
 
 	D.parse = function(date, format) {
 		if(E.isStr(date)) {
@@ -86,6 +91,9 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 		return date ? MOMENT(date) : null;
 	};
 
+	//clone is nicer to use in code, but parse basically does the same thing when it's already a moment object.
+	D.clone = D.parse;
+
 	//to parse in a map. extra args in the map function messes with format argument in the parse func. 
 	D.mapParse = function(v/*,i, arr*/) {
 		return D.parse(v);
@@ -95,6 +103,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 
 	//parse from a user format to MOMENT
 	D.parseUserDate = function(date) { return D.parse(date, D.userFormat()); };
+	D.parseUserToServer = function(date) { return D.parseUserDate(date).serverStr(); };
 
 	//Parse and output as a string
 	D.parseToUser 	= function(date, format) { return D.parse(date,format).userStr(); 		};
@@ -173,6 +182,14 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	D.compareDates = function(a,b) {
 		return D.parse(a) - D.parse(b);
 	};
+	D.compareDays = function(a,b) {
+		return D.range(a,b);
+	};
+
+	D.isFuture = function(a) {
+		return D.range("today", a) > 0
+	};
+
 	D.min = function(dates) {
 		dates = arguments.length > 1 ? E.slice(arguments) : dates;
 		return MOMENT.min.apply(null, E._.map(dates, D.mapParse));
@@ -189,6 +206,7 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 	};
 
 	D.sortDates = E._.curry(E.sortFactory)(E._, D.compareDates, E._, D.parse);
+	D.sortDays = E._.curry(E.sortFactory)(E._, D.compareDays, E._, D.parse);
 
 
 	/*************************************************************************************

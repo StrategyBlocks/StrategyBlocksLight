@@ -704,7 +704,6 @@ define(['sb_light/globals',
 
 
 	q.metricChartData = function(id, hierarchyData, options) {
-		// var timer = E.moment();
 		var D = sb.dates;
 
 		options = options || {};
@@ -795,7 +794,7 @@ define(['sb_light/globals',
 
 		if(data.actuals_domain.length === 1) { 
 			data.actuals_domain.push(D.date("today", {months:1}));
-			data.actuals_domain.unshift(D.create());
+			data.actuals_domain.unshift(D.date("today"));
 
 			data.actuals_range.push(data.actuals_values[0]);
 			data.actuals_range.unshift(0);
@@ -815,7 +814,7 @@ define(['sb_light/globals',
 
 		if(data.targets_domain.length === 1) { 
 			data.targets_domain.push(D.date("today", {months:1}));
-			data.targets_domain.unshift(D.create());
+			data.targets_domain.unshift(D.date("today"));
 
 			data.targets_range.push(data.targets_values[0]);
 			data.upper_range.push(data.upper_values[0]);
@@ -1045,7 +1044,7 @@ define(['sb_light/globals',
 				variance:v,
 				// upperVariance:uv,
 				// lowerVariance:lv,
-				overdue: (E.daysDiff(end, d) > 0),
+				overdue: (D.range(d, end) > 0),
 				comment:(actualsMap[ds] ? actualsMap[ds].comment : "")
 			};
 		});
@@ -1055,47 +1054,6 @@ define(['sb_light/globals',
 
 
 
-
-	// q.metricData = function(id) {
-	// 	var m = q.metric(id);
-	// 	// if(m.metricData) {
-	// 	// 	return m.metricData();
-	// 	// } else {
-	// 		var percent = m.percentage ? true : false;
-	// 		var btg = m.below_target_good ? true : false;
-	// 		var ts = E.min(m.range_start, m.range_end);
-	// 		var te = E.max(m.range_start, m.range_end);
-	// 		ts = percent ? ts/100 : ts;
-	// 		te = percent ? te/100 : ts;
-
-	// 		var targetDates = E.values(m.target, "date");
-	// 		var actualDates = E.values(m.actuals, "date");
-	// 		var targetValues = E.values(m.target, "value");
-	// 		var actualValues = E.values(m.actuals, "value");
-	// 		var comments = E.toObject(m.actuals, "date");
-
-	// 		var ascale = d3.time.scale().domain(actualDates).range(actualValues);
-	// 		var tscale = d3.time.scale().domain(targetDates).range(targetValues);
-	// 		var upperScale = d3.time.scale().domain(targetDates).range(targetValues.map(function(v) {
-	// 			return v + (percent ? (v*te) : te )
-	// 		}));
-	// 		var lowerScale = d3.time.scale().domain(targetDates).range(targetValues.map(function(v) {
-	// 			return v + (percent ? (v*te) : te )
-	// 		}));
-
-	// 		//force today
-	// 		return E.map(E._.union([E.serverDate()], targetDates, actualDates), function(v) {
-	// 			return {
-	// 				data:v,
-	// 				target:tscale(v),
-	// 				actual:ascale(v),
-	// 				upper:upperScale(v),
-	// 				lower:lowerScale(v),
-	// 				comment:(comments[v].comment)
-	// 			}
-	// 		});
-	// 	// }
-	// };
 
 	/********************************
 		RISKS
@@ -1224,10 +1182,12 @@ define(['sb_light/globals',
 		return b.is_company ? "blockTypeCompany" : (b.is_link ? "blockTypeLink" : "blockTypeNormal");
 	};
 	q.blockAlertClass = function(b) {
+		var D = sb.dates; 
+
 		b = q.block(b);
 		var res = "alert alert-info";
 
-		var ds = E.daysDiff(E.today(), b.start_date);
+		var ds = D.range(b.start_date, "today");
 		if(ds < 0 || b.status == "new" || b.status == "closed") {
 			return  res;
 		}
@@ -1242,15 +1202,17 @@ define(['sb_light/globals',
 
 
 	q.blockStatusMessage = function(b) {
+		var D = sb.dates; 
+
 		b = q.block(b);
-		var dd = E.daysDiff(E.today(), b.end_date);
+		var dd = D.range(b.end_date, "today");
 		if(dd > 1) {
 			//OVERDUE
 			return "Overdue by <strong>" + dd + "</strong> days.";
 		} else if (dd === 0) {
 			return "Due <strong>today</strong>";
 		} else {
-			var ds = E.daysDiff(E.today(), b.start_date);
+			var ds = D.range(b.start_date, "today");
 			if(ds < 0) {
 				return "Starts in <strong>" + (-ds) + "</strong> days.";
 			} else if (ds === 0) {
@@ -1426,10 +1388,12 @@ define(['sb_light/globals',
 	};
 
 	q._blockProgressWeightDuration = function(block, siblings) {
+		var D = sb.dates; 
+
 		var total = E.reduce(siblings, function(prev, curr) {
-			return prev + E.daysDiff(E.moment(curr.end_date, E.serverFormat), E.moment(curr.start_date, E.serverFormat));
+			return prev + D.range(curr.start_date, curr.end_date);
 		}, 0);
-		return (E.daysDiff(E.moment(block.end_date, E.serverFormat), E.moment(block.start_date, E.serverFormat)) / total) * 100;
+		return (D.range(block.start_date, block.end_date) / total) * 100;
 	};
 
 	q._blockProgressWeightEffort = function(block/*, siblings*/) {

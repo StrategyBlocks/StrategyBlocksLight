@@ -292,16 +292,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_handleProperty: function(type, id, data) {
 			this._properties[type] = this._properties[type] || {};
 			this._properties[type][id] = data ? data.result : this._properties[type][id];
-
-			//EACH PROPERTY OBJECT IS BLOODY DIFFERENT........
-			//NEED TO HANDLE THIS STUFF IN A NON-generic manner
-					// E.each(this._properties[type][id], function(v) {
-					// 	E.each(["date", "created_at", "updated_at"], function(d) {
-					// 		if(v[d]) {
-					// 			v[d] = E.moment(v[d], E.unixFormat);
-					// 			}
-					// 	})
-					// });
 			
 			var q = this._properties[type+"_queue"];
 			while(q && q[id] && q[id].length) {
@@ -314,10 +304,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 		},
 		_massageProgress: function(d) {
-			// var f = E.massageTA;
-			// E.each(d, function(dv) {
-				// f(dv);
-			// });			
 		},
 		_massageNpv: function(d) {
 
@@ -355,7 +341,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			var cLenLen = ((p ? p.children.length : 1)+"").length;
 			var levelPos = E._.padStart( (""+(1+pos)), cLenLen, "0"); 
-			var overdueDays =  (!b.closed && E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0));
+			var overdueDays =  !b.closed && E.first(E.max(0, D.range(b.end_date, "today")), 0);
 
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),

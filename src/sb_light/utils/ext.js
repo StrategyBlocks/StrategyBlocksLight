@@ -348,46 +348,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 			} 
 			return function ext_time() { return Date.now(); };
 	}());	
+	E.minutesSince = function ext_minutesSince(ta) {
+		var tn = E.time();
+		return Math.floor((tn - ta)/(1000 * 60));
+	}; 
+
 	
-
-	E.moment = MOMENT;
-	E.momentFn = function(date, format) {
-		if(E.isStr(date) && !format) {
-			format = E.serverFormat;
-		}
-		return E.moment(date, format);
-	};
-	E.dateNumber = function ext_dateNumber(d, format) { return E.moment(d, format).valueOf();	};
-	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
-
-	//number is positive when db (e.g., start date) is earlier than da (eg., end date)
-	E.isFuture = function ext_isFuture(d) { return E.momentFn(d).diff(E.today(), "days") > 0; };
-	E.minutesDiff = function ext_minutesDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"minutes");};
-	E.hoursDiff = function ext_hoursDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"hours");};
-	E.daysDiff = function ext_daysDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"days");};
-
-
-	E.daysFrom = function ext_daysFrom(da, db, noPrefix) {return E.momentFn(db).from(da, noPrefix||false); };
-	E.today = function ext_today() { return E.todayMoment().toDate(); };
-	E.todayMoment = function ext_today_moment() { return E.moment().startOf("day"); };
-	E.maxDate = function ext_maxDate(dates) { 	return MOMENT.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
-	E.rangeDate = function ext_maxDate(date, start,end) { 	return E.minDate(start, E.maxDate(end, date)); };
-	E.serverFormat = MOMENT.HTML5_FMT.DATE;
-	
-	E.userFormat = function ext_userFormat() { 
-		var u = sb.queries.user();
-		var udf = u ? u.date_format : E.serverFormat;
-		//E.debug("User date format: ", udf);
-		return udf;
-	};
-	E.serverDate = function ext_serverDate(d,format) { return E.moment(d,format||(E.isStr(d) ? E.serverFormat: undefined)).format(E.serverFormat); };
-	E.serverMoment = function ext_serverMoment(d) { return E.moment(d,E.serverFormat); };
-	E.serverToDate = function ext_serverToDate(d) { return E.serverMoment(d).toDate(); };
-	E.month = function ext_date(d, format) { return E.moment(d,format).format("MMM (YYYY)");	};
-	E.userDate = function ext_userDate(d, format) { return E.moment(d,format||(E.isStr(d) ? E.serverFormat: undefined)).format( E.userFormat()); };
-	//return a standard format for searching via dates
-	E.filterDateString = function ext_fromNow(d) {		return E.momentFn(d).format("YYYY MMMM DD");	};
-
 
 		/************  REGEXPS ***************************/
 	E.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");
@@ -399,7 +365,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	
 		/************  SORTING ***************************/
 		//sort an array based on a property, and the function to use
-		//so if an array is [{date:...,value:...},...], you can sort using E.sortProp("date",E.sortDate); 
+		//so if an array is [{date:...,value:...},...], you can sort using E.sortProp("date",D.compareDate); 
 	E.sortFactory = function ext_sortFactory(prop, func, reverse, prepFunc) {
 		func = func || E.sortString;
 		reverse = reverse || false;
@@ -418,17 +384,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	E.sortNumber = function ext_sortNumber(a,b){ return a-b; };
 	E.sortNumbers = E.sortNumber;
 	E.sortNumStr = function ext_sortNumber(a,b){ return E.to_f(a)-E.to_f(b); };
-	E.sortDay = function ext_sortDate(a,b){ return E.daysDiff(a,b); }; 
-	E.sortDays = E.sortDay;
 	//b is larger, result is negative
-	E.sortDate = function ext_sortDate(a,b){ return E.sortNumber(E.dateNumber(a), E.dateNumber(b)); }; 
-	E.sortDates = E.sortDate;
 	E.sortString = function ext_sortString(a,b){ return String(a).localeCompare(String(b)); };
 	E.sortStrings = E.sortString;
 	E.sortBool = function ext_sortBool(a,b) { return E.sortNumber(E.bool(a)?1:0, E.bool(b)?1:0); };
 	E.sortBoolean = E.sortBool;
 	 
-	E.sortDateValue = function ext_sortDateValue(a,b) { return E.sortDate(a.date,b.date); };
 	E.sortUsers = function ext_sortUsers(a,b) {  return (E.sortFactory("last_name", E.sortString))(a,b); };
 	E.sortFocus = function ext_sortFocus(a,b) {  return (E.sortFactory("level_sort", E.sortString))(a,b); };
 	E.sortName = function ext_sortName(a,b) {  return (E.sortFactory("name", E.sortString))(a,b); };
@@ -725,14 +686,16 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		pcA = E.first(pcA, 0);
 		pcB = E.first(pcB, pcA, 0);
 
+		var D = sb.dates;
+
 		var padA, padB;
 		if(type === "date") {
-			min = E.moment(min);
-			max = E.moment(max);
-			padA = E.daysDiff(max, min) * pcA;
-			padB = E.daysDiff(max, min) * pcB;
-			min = min.subtract(padA, "days").toDate();
-			max = max.add(padB, "days").toDate();
+			min = D.parse(min);
+			max = D.parse(max);
+			padA = D.range(min, max) * pcA;
+			padB = D.range(min, max) * pcB;
+			min = D.date(min, {days: -padA})
+			max = D.date(max, {days: padB});
 		} else { 
 			//(!type || type === "number") {
 			padA = (max - min) * pcA;
@@ -789,81 +752,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 
 		
 		
-		//merge the target and actuals series into one array of objects. 
-	E.massageTA = function ext_massageTA(data) {
-		var dates = [E.today()];
 
-		data.values = data.values && data.values.length ? data.values : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
-		data.target = data.target && data.target.length ? data.target : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
-
-		data.values.forEach(function ext_massageTA_forEachVal(el) {
-			el.date = E.date(el.date);
-			dates[dates.length] = (el.date);
-		});
-		data.values.sort(E.sortDateValue);
-		if(E.daysDiff(data.values[0].date, dates[0]) > 0) {
-			data.values.push({date:dates[0], value:data.values[0].value, comment:"(today, interpolated)", interpolated:true});
-		} else if (E.daysDiff(data.values.last().date, dates[0]) < 0) {
-			data.values.push({date:dates[0], value:data.values.last().value, comment:"(today,interpolated)", interpolated:true});
-		}
-		
-		data.target.forEach(function ext_massageTA_forEachTar(el) {
-			el.date = E.date(el.date);
-			dates[dates.length] = (el.date);
-			var rs = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_start : data.tolerance.range_end;
-			var re = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_end : data.tolerance.range_start;
-			
-			el.upper = el.value  + (data.tolerance.percentage ? (el.value *rs/100) : rs);
-			el.lower = el.value  + (data.tolerance.percentage ? (el.value *re/100) : re);
-		});
-		data.target.sort(E.sortDateValue);
-		if(E.daysDiff(data.target[0], dates[0]) > 0) {
-			data.target.push({date:dates[0], value:data.target[0], comment:"(today, interpolated)", interpolated:true});
-		} else if (E.daysDiff(data.target.last(), dates[0]) > 0) {
-			data.target.push({date:dates[0], value:data.target.last(), comment:"(today,interpolated)", interpolated:true});
-		}
-		
-		data.dates = dates.sort(E.sortDate);
-
-		var vdata = data.values;
-		var tdata = data.target;
-
-		var v = 0;
-		var ts = 0;
-		var tn = Math.min(tdata.length-1, 1);
-		while(v < vdata.length) {
-			var vd = vdata[v];
-			var tsd = tdata[ts];
-			var tnd = tdata[tn];
-
-			//v is before ts
-			if(E.daysDiff(vd.date, tsd.date) <= 0) {
-				vd.target = tsd.value; v++; continue;
-			}
-			//v is after next target
-			if(E.daysDiff(vd.date, tnd.date) > 0) {
-				if(tn == tdata.length-1) {
-					vd.target = tnd.value;
-					v++; continue; 
-				} else {
-					ts++; tn++; continue;
-				}
-			}
-
-			//v is before tn but after ts
-			if(E.daysDiff(vd.date, tnd.date) <=0 ) {
-				var tsn = E.dateNumber(tsd.date);
-				var tnn = E.dateNumber(tnd.date);
-				var vn = E.dateNumber(vd.date);
-
-				vd.target = tsd.value + (((tnn-vn)/(tnn-tsn)) * (tnd.value - tsd.value));
-				v++;
-			}
-
-		}
-
-		return data;
-	};
 
 	//source gets priority over target
 	//all source properties are applied to target.

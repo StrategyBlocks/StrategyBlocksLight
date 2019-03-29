@@ -58,12 +58,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 		_massageUpdatedModel: function() {
 			this._super();
 
-			var t = E.moment();
-			//E.each(this._model, this._massageMetric.bind(this));
-
-			// console.log("Massage: ", E.moment().diff(t));
-
-
 			//RESET THE HIERARCHICAL CACHE STUFF
 			this._hierarchyCache = {};
 			this._queue = {};

@@ -500,7 +500,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			var data = {};
 			data[model.name] = {
 				"added": m,
-				"timestamp": (res[key+"_timestamp"] || String(E.dateNumber()))
+				"timestamp": (res[key+"_timestamp"] || String(E.time()))
 			};
 			//this cleans up the timestamps and the force request buffers
 			_updateModels(data);
