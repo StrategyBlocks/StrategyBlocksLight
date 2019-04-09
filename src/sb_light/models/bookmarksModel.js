@@ -57,18 +57,14 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		_massageUpdatedModel: function() {
 			this._super();
 
-			var self = this;
-
-
-			E.each(this._model, function(d, k) {
-				var orig = d.state;
+			E.each(this._model, function(d) {
 				d.state = JSON.parse(d.state);
 				d.created_moment  = E.moment(d.created_at, E.unixFormat);
 				d.created_str = E.serverDate(d.created_moment);
 
 			});	
 
-		};
+		}
 
 		
 		
