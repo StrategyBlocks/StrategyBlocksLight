@@ -61,15 +61,10 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 				d.state = JSON.parse(d.state);
 			});	
 
-		}
+		},
 
-		
-		
-	
 
 	});
-
-
 
 	return Model;
 });
