@@ -526,9 +526,12 @@ define(['sb_light/globals',
 
 	q.focusPath = function(fid) {
 		var list = q.focusList(fid);
-		return list.reverse().map(function(v){
+		if (list.length > 1) {
+			list.pop(); 
+		}
+		return list.map(function(v){
 			return v.title;
-		}).join(" / ");
+		}).join(" > ");
 	};
 
 	q.focusSelect = function(opts) {
