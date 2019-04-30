@@ -1246,6 +1246,15 @@ define(['sb_light/globals',
 		});
 	};
 
+
+	q.descendantBlocks = function(b) {
+		if(!b) { return []; }
+		var r = new RegExp("^" + b.path + "_");
+		return E._.filter(sb.models.raw("blocks", "path"), function(el, k) {
+			return k.match(r);
+		});
+	};
+
 	q.blocksOpen = function() {
 		return E._.filter(sb.models.rawArray("blocks", "id"), {is_open:true});
 	};
@@ -1338,7 +1347,7 @@ define(['sb_light/globals',
 	};
 
 	q.canDeleteBlock = function(b) {
-		return !Q.blockLocked(b) && b.is_manager && b.parent;
+		return !Q.blockLocked(b) && b.is_manager;
 	};
 
 	q.isBlockManager = function(b) {

@@ -293,6 +293,9 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 			,["parseToServer", 		["2001-1-1"], 			"2001-01-01", 				"Date parseToServer function failed parsing STRING in the past"]
 			,["parseToServer", 		["2050-12-31"], 		"2050-12-31", 				"Date parseToServer function failed parsing STRING in the future"]
 
+			,["parseToServer", 		["2010-02-20", "YYYY-MM-DD"], 			"2010-02-20", 		"Date parseToServer function failed parsing STRING in the past"]
+			,["parseToServer", 		["20-2-10", "DD-MM-YY"], 				"2010-02-20", 		"Date parseToServer function failed parsing STRING in the past"]
+
 			,["fromNow",			[null],									"Never",			"Date fromNow failed to say NEVER"]
 			,["fromNow",			[""],									"Never",			"Date fromNow failed to say NEVER"]
 			,["fromNow",			[],										"Never",			"Date fromNow failed to say NEVER"]
