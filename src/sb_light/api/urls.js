@@ -194,7 +194,7 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		USERS_DELETE: 				{url: "/users/%id%/delete_user.js", post:true},		
 		USERS_CHANGE_MEMBERSHIP: 	{url: "/users/%id%/update_membership.js", post:true},
 		USERS_CALENDAR_TOKEN:		{url: "/users/enable_todo_calendar.js", post:true},
-		USERS_SEND_REPORT:			{url: "/users/send_report.js", post:true},
+		USERS_GENERATE_REPORT:		{url: "/users/send_report.js", post:true},
 		USERS_DOWNLOAD_SQLITE:		{url: "/exports/sqlite.db", post:false},
 
 		USERS_UPLOAD_LOGO: 			{url: "/users/logo_upload.js", post:true},
