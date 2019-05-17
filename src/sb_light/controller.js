@@ -223,7 +223,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.USERS_CREATE_BATCH,list, cb,cb);
 	};
 	controller.usersSendReport = function( o, cb) {
-		controller.invoke(sb.urls.USERS_SEND_REPORT,o, cb,cb);
+		controller.invoke(sb.urls.USERS_EMAIL_REPORT,o, cb,cb);
 	};
 	controller.userGenerateCalendar = function(cb) {
 		controller.invoke(sb.urls.USERS_CALENDAR_TOKEN, null, cb,cb);
