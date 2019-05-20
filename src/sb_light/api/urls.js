@@ -196,6 +196,7 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		USERS_CALENDAR_TOKEN:		{url: "/users/enable_todo_calendar.js", post:true},
 		USERS_EMAIL_REPORT:			{url: "/users/send_report.js", post:true},
 		USERS_DOWNLOAD_REPORT:		{url: "/users/send_report.html", post:false, normalParams: true	},
+		USERS_CHECK_REPORT:			{url: "/users/check_report.js", post:false},
 		USERS_DOWNLOAD_SQLITE:		{url: "/exports/sqlite.db", post:false},
 
 		USERS_UPLOAD_LOGO: 			{url: "/users/logo_upload.js", post:true},
