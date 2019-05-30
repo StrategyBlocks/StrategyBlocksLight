@@ -54,12 +54,9 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		BLOCKS_CLONE :					{url: "/blocks/clone_blocks.js", normalParams:true, post:true},
 		BLOCKS_LOCK:					{url: "/blocks/admin_lock.js", post:true, normalParams:true},
 		BLOCKS_UNLOCK:					{url: "/blocks/admin_unlock.js", post:true, normalParams:true},
-		BLOCKS_EMAIL_REPORT:			{url: "/blocks/generate_report.js", post:true},
-		BLOCKS_DOWNLOAD_HTML:			{url: "/blocks/generate_report.html", post:false, normalParams: true	},
-		BLOCKS_DOWNLOAD_CSV:			{url: "/blocks/generate_report.csv", post:false, normalParams: true	},
-
-
-		BLOCKS_REPORT:					{url: "/blocks/generate_report.js", post:true, normalParams:true},
+		BLOCKS_EMAIL_REPORT:			{url: "/blocks/%id%/generate_report.js", post:true},
+		BLOCKS_DOWNLOAD_HTML:			{url: "/blocks/%id%/generate_report.html", post:false, normalParams: true	},
+		BLOCKS_DOWNLOAD_CSV:			{url: "/blocks/%id%/generate_report.csv", post:false, normalParams: true	},
 
 	
 		//singular block for controller convenience

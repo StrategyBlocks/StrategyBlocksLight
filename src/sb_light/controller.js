@@ -90,6 +90,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.blockExport = function(o, cb) {
 		controller.invoke(sb.urls.EXPORTS_CREATE, o, cb,cb);
 	};
+	controller.blockSendReport = function( o, cb) {
+		controller.invoke(sb.urls.BLOCKS_EMAIL_REPORT,o, cb,cb);
+	};
 
 	controller.blockUpdateTags = function(id, tags, cb) {
 		var o = {id:id, type:"tags", tags: tags};
