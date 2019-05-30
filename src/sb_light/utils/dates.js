@@ -82,7 +82,9 @@ define(['sb_light/globals','sb_light/utils/ext','sb_light/api/queries', 'moment'
 			if (format == D.serverFormat || date == "today") {
 				m.set({
 					hour: 12, 
-					minute: 0
+					minute: 0,
+					second: 0,
+					millisecond: 0
 				});
 			}
 			return m;
