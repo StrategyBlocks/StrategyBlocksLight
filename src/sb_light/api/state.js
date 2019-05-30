@@ -288,9 +288,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		storage.context.session = state.session_startup;
 		storage.context.flash = null;
 
-		if(cid) {
-			storage.state.company_id = cid;
-		}
+		storage.state.company_id = cid || null;
 		storage.state.block = null;
 		storage.state.news = null;
 		storage.state.metric = null;
@@ -397,6 +395,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		for (var m in models) {
 			params[m+"_timestamp"] = models[m].timestamp;
 		}
+		return params;
 	};
 
 	//if no requests are made and we're in a good state, poll the server to make sure the session is alive
@@ -501,7 +500,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			var data = {};
 			data[model.name] = {
 				"added": m,
-				"timestamp": (res[key+"_timestamp"] || String(E.dateNumber()))
+				"timestamp": (res[key+"_timestamp"] || String(E.time()))
 			};
 			//this cleans up the timestamps and the force request buffers
 			_updateModels(data);

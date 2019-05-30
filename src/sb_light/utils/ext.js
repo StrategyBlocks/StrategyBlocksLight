@@ -1,4 +1,4 @@
-/*globals define, Ti, console, d3*/
+/*globals define, Ti, console, d3, $*/
 /*jslint passfail: false */
 
 
@@ -348,80 +348,12 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 			} 
 			return function ext_time() { return Date.now(); };
 	}());	
+	E.minutesSince = function ext_minutesSince(ta) {
+		var tn = E.time();
+		return Math.floor((tn - ta)/(1000 * 60));
+	}; 
+
 	
-	E.parseDate = function ext_moment() {
-		E.deprecated("E.parseDate", "E.moment");
-	};
-	E.parseUnix = function ext_parseUnix(dn) {	return MOMENT.unix(dn); };
-	E.moment = MOMENT;
-	E.momentFn = function(date, format) {
-		if(E.isStr(date) && !format) {
-			format = E.serverFormat;
-		}
-		return E.moment(date, format);
-	};
-	E.dateNumber = function ext_dateNumber(d, format) { return E.moment(d, format).valueOf();	};
-	E.date = function ext_date(d, format) { return E.moment(d, format).toDate();	};
-
-	//number is positive when db (e.g., start date) is earlier than da (eg., end date)
-	E.isFuture = function ext_isFuture(d) { return E.momentFn(d).diff(E.today(), "days") > 0; };
-	E.minutesDiff = function ext_minutesDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"minutes");};
-	E.hoursDiff = function ext_hoursDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"hours");};
-	E.daysDiff = function ext_daysDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"days");};
-	E.weeksDiff = function ext_weeksDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"weeks");};
-	E.monthsDiff = function ext_monthsDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"months");};
-	E.yearsDiff = function ext_yearsDiff(da, db) {return E.momentFn(da).diff(E.momentFn(db),"years");};
-
-	//returns a string showing the time difference in the most logical format
-	E.dateDifference =	function ext_difference(da,db) {
-		var dd = E.roundTo(Math.abs(da.diff(db, "days", true)),0);
-		var wd = E.roundTo(Math.abs(da.diff(db, "weeks", true)),0);
-		var md = E.roundTo(Math.abs(da.diff(db, "months", true)),0);
-		var yd = E.roundTo(Math.abs(da.diff(db, "years", true)),0);
-
-		//show days if less than 2 weeks
-		if(dd < 14) { return dd + " days"; }
-		if(wd < 10) { return wd + " weeks"; }
-		if(md < 18) { return md + " months"; }
-
-		return yd + " years";
-	}
-
-	E.daysFrom = function ext_daysFrom(da, db, noPrefix) {return E.momentFn(db).from(da, noPrefix||false); };
-	E.today = function ext_today() { return E.todayMoment().toDate(); };
-	E.todayMoment = function ext_today_moment() { return E.moment().startOf("day"); };
-	E.minDate = function ext_minDate(dates) { 	return MOMENT.min.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
-	E.maxDate = function ext_maxDate(dates) { 	return MOMENT.max.apply(null, arguments.length > 1 ? E.slice(arguments) : dates); 	};
-	E.rangeDate = function ext_maxDate(date, start,end) { 	return E.minDate(start, E.maxDate(end, date)); };
-	E.serverFormat = "YYYY/MM/DD";
-	E.unixFormat = "YYYY/MM/DD HH:mm:ss Z";
-	
-	//07 Jun 2015 22:08 +0000
-	E.adminFormat = "DD MMM YYYY HH:mm Z";
-
-	E.userFormat = function ext_userFormat() { 
-		var u = sb.queries.user();
-		var udf = u ? u.date_format : E.serverFormat;
-		//E.debug("User date format: ", udf);
-		return udf;
-	};
-	E.serverDate = function ext_serverDate(d,format) { return E.moment(d,format||(E.isStr(d) ? E.serverFormat: undefined)).format(E.serverFormat); };
-	E.serverMoment = function ext_serverMoment(d) { return E.moment(d,E.serverFormat); };
-	E.serverToDate = function ext_serverToDate(d) { return E.serverMoment(d).toDate(); };
-	E.month = function ext_date(d, format) { return E.moment(d,format).format("MMM (YYYY)");	};
-	E.userDate = function ext_userDate(d, format) { return E.moment(d,format||(E.isStr(d) ? E.serverFormat: undefined)).format( E.userFormat()); };
-	E.dateFromNow = function ext_dateFromNow(d, format, reverse) { 
-		d = E.momentFn(d, format);
-		if(reverse) {
-			return d.fromNow() + " (" +  d.format(format || E.userFormat()) + ")";
-		} 
-		return d.format(format || E.userFormat()) + " (" + d.fromNow() + ")";
-	};
-	E.fromNow = function ext_fromNow(d, format, nullString) {		return d ? E.moment(d, format).fromNow() : (nullString || "N/A");	};
-
-	//return a standard format for searching via dates
-	E.filterDateString = function ext_fromNow(d) {		return E.momentFn(d).format("YYYY MMMM DD");	};
-
 
 		/************  REGEXPS ***************************/
 	E.regEmail = new RegExp("([\\w-\\.]+)@((?:[\\w]+\\.)+)([a-zA-Z]{2,4})");
@@ -433,7 +365,7 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	
 		/************  SORTING ***************************/
 		//sort an array based on a property, and the function to use
-		//so if an array is [{date:...,value:...},...], you can sort using E.sortProp("date",E.sortDate); 
+		//so if an array is [{date:...,value:...},...], you can sort using E.sortProp("date",D.compareDate); 
 	E.sortFactory = function ext_sortFactory(prop, func, reverse, prepFunc) {
 		func = func || E.sortString;
 		reverse = reverse || false;
@@ -449,21 +381,15 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	};
 
 
-	E.sortTime = function ext_sortTime(a,b) { return E.sortNumbers(E.parseDate(a).getTime(), E.parseDate(b).getTime()); }; 
 	E.sortNumber = function ext_sortNumber(a,b){ return a-b; };
 	E.sortNumbers = E.sortNumber;
 	E.sortNumStr = function ext_sortNumber(a,b){ return E.to_f(a)-E.to_f(b); };
-	E.sortDay = function ext_sortDate(a,b){ return E.daysDiff(a,b); }; 
-	E.sortDays = E.sortDay;
 	//b is larger, result is negative
-	E.sortDate = function ext_sortDate(a,b){ return E.sortNumber(E.dateNumber(a), E.dateNumber(b)); }; 
-	E.sortDates = E.sortDate;
 	E.sortString = function ext_sortString(a,b){ return String(a).localeCompare(String(b)); };
 	E.sortStrings = E.sortString;
 	E.sortBool = function ext_sortBool(a,b) { return E.sortNumber(E.bool(a)?1:0, E.bool(b)?1:0); };
 	E.sortBoolean = E.sortBool;
 	 
-	E.sortDateValue = function ext_sortDateValue(a,b) { return E.sortDate(a.date,b.date); };
 	E.sortUsers = function ext_sortUsers(a,b) {  return (E.sortFactory("last_name", E.sortString))(a,b); };
 	E.sortFocus = function ext_sortFocus(a,b) {  return (E.sortFactory("level_sort", E.sortString))(a,b); };
 	E.sortName = function ext_sortName(a,b) {  return (E.sortFactory("name", E.sortString))(a,b); };
@@ -491,17 +417,9 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		return E.sortNumbers( (a.percent_progress/aep), (b.percent_progress/bep) );
 	};
 
-	//SORT OUT THE CURRY
-	E.parseUnixDate = _.curry(E.momentFn)(_, E.unixFormat);
-	E.sortUnixDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseUnixDate);
-	E.parseServerDate = _.curry(E.momentFn)(_, E.serverFormat);
-
-	//requires property name, and whether to reverse it (newest first)
-	E.sortServerDate = _.curry(E.sortFactory)(_, E.sortDate, _, E.parseServerDate);
-
 
 	E.sortByOrder = function(list, props, orders) {
-		var orders = E.map( (orders||[]), function(v) {
+		orders = E.map( (orders||[]), function(v) {
 			return E.isBool(v) ? (v?'asc':'desc') : v;
 		});
 		return E._.orderBy.call(this, list,props,orders);
@@ -768,14 +686,16 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 		pcA = E.first(pcA, 0);
 		pcB = E.first(pcB, pcA, 0);
 
+		var D = sb.dates;
+
 		var padA, padB;
 		if(type === "date") {
-			min = E.moment(min);
-			max = E.moment(max);
-			padA = E.daysDiff(max, min) * pcA;
-			padB = E.daysDiff(max, min) * pcB;
-			min = min.subtract(padA, "days").toDate();
-			max = max.add(padB, "days").toDate();
+			min = D.parse(min);
+			max = D.parse(max);
+			padA = D.range(min, max) * pcA;
+			padB = D.range(min, max) * pcB;
+			min = D.date(min, {days: -padA})
+			max = D.date(max, {days: padB});
 		} else { 
 			//(!type || type === "number") {
 			padA = (max - min) * pcA;
@@ -832,92 +752,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 
 		
 		
-		//merge the target and actuals series into one array of objects. 
-	E.massageTA = function ext_massageTA(data) {
-		var dates = [E.today()];
 
-		data.values = data.values && data.values.length ? data.values : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
-		data.target = data.target && data.target.length ? data.target : [{date:dates[0], value:0, comment:"(today, interpolated)", interpolated:true}]; 
 
-		data.values.forEach(function ext_massageTA_forEachVal(el) {
-			el.date = E.date(el.date);
-			dates[dates.length] = (el.date);
-		});
-		data.values.sort(E.sortDateValue);
-		if(E.daysDiff(data.values[0].date, dates[0]) > 0) {
-			data.values.push({date:dates[0], value:data.values[0].value, comment:"(today, interpolated)", interpolated:true});
-		} else if (E.daysDiff(data.values.last().date, dates[0]) < 0) {
-			data.values.push({date:dates[0], value:data.values.last().value, comment:"(today,interpolated)", interpolated:true});
-		}
-		
-		data.target.forEach(function ext_massageTA_forEachTar(el) {
-			el.date = E.date(el.date);
-			dates[dates.length] = (el.date);
-			var rs = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_start : data.tolerance.range_end;
-			var re = data.tolerance.range_start > data.tolerance.range_end ? data.tolerance.range_end : data.tolerance.range_start;
-			
-			el.upper = el.value  + (data.tolerance.percentage ? (el.value *rs/100) : rs);
-			el.lower = el.value  + (data.tolerance.percentage ? (el.value *re/100) : re);
-		});
-		data.target.sort(E.sortDateValue);
-		if(E.daysDiff(data.target[0], dates[0]) > 0) {
-			data.target.push({date:dates[0], value:data.target[0], comment:"(today, interpolated)", interpolated:true});
-		} else if (E.daysDiff(data.target.last(), dates[0]) > 0) {
-			data.target.push({date:dates[0], value:data.target.last(), comment:"(today,interpolated)", interpolated:true});
-		}
-		
-		data.dates = dates.sort(E.sortDate);
-
-		var vdata = data.values;
-		var tdata = data.target;
-
-		var v = 0;
-		var ts = 0;
-		var tn = Math.min(tdata.length-1, 1);
-		while(v < vdata.length) {
-			var vd = vdata[v];
-			var tsd = tdata[ts];
-			var tnd = tdata[tn];
-
-			//v is before ts
-			if(E.daysDiff(vd.date, tsd.date) <= 0) {
-				vd.target = tsd.value; v++; continue;
-			}
-			//v is after next target
-			if(E.daysDiff(vd.date, tnd.date) > 0) {
-				if(tn == tdata.length-1) {
-					vd.target = tnd.value;
-					v++; continue; 
-				} else {
-					ts++; tn++; continue;
-				}
-			}
-
-			//v is before tn but after ts
-			if(E.daysDiff(vd.date, tnd.date) <=0 ) {
-				var tsn = E.dateNumber(tsd.date);
-				var tnn = E.dateNumber(tnd.date);
-				var vn = E.dateNumber(vd.date);
-
-				vd.target = tsd.value + (((tnn-vn)/(tnn-tsn)) * (tnd.value - tsd.value));
-				v++;
-			}
-
-		}
-
-		return data;
-	};
-
-	
-	
-		
-		//fix dates and sort history for health charts
-	E.massageHealth = function ext_massageHealth(data) {
-		data.status = data.status > 0 ? "good" : (data.status < 0 ? "bad" : "warning");
-		return data;
-	};
-	
-	
 	//source gets priority over target
 	//all source properties are applied to target.
 	//  EXCEPT the ones in ignore.
@@ -952,8 +788,8 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	};		
 	//same as combine but only takes two properties.
 	//B takes precedence over A when overlaps occur
-	E.merge = function ext_merge(a, b, ignore) {
-		return $.extend({}, a,b); //E.combine([a||{},b||{}], ignore);	
+	E.merge = function ext_merge(a, b) {
+		return $.extend({}, a,b); 
 	};
 
 	//cherry pick the key/values of an object and clone them into a new one
@@ -1076,17 +912,22 @@ define(["sb_light/globals", "lodash", "moment", "d3"], function(sb, _, MOMENT) {
 	};
 
 
-//POLYFILLS ------------------------------------------------------------------------------------------------
-//POLYFILLS ------------------------------------------------------------------------------------------------
-//POLYFILLS ------------------------------------------------------------------------------------------------
-//POLYFILLS ------------------------------------------------------------------------------------------------
-//POLYFILLS ------------------------------------------------------------------------------------------------
-//POLYFILLS ------------------------------------------------------------------------------------------------
-//POLYFILLS ------------------------------------------------------------------------------------------------
-//POLYFILLS ------------------------------------------------------------------------------------------------
-//POLYFILLS ------------------------------------------------------------------------------------------------
+	/**************** MEMOIZE FUNCTIONS AND CLEAR CACHE AUTOMATICALLY *****************************/
+	//clear the memoization every 5 minutes
+	// E._memoized = [];
+	// setInterval(function() {
+	// 	E._.each(E._memoized, function(v) {
+	// 		v.cache = new E._.memoize.Cache();
+	// 	});
+	// }, 300000);
 
-
+	// E.memoize = function ext_memoize(func) {
+	// 	func = E._.memoize(func);
+	// 	E._memoized.push(func);
+	// 	return func;
+	// };
+	// E.mem = E.memoize;
+	/**********************************************************************************************/
 
 
 	return ext;

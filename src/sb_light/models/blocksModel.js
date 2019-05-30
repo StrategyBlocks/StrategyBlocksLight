@@ -4,7 +4,7 @@
 define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _Model, sb, Fuse ) {
 	'use strict';
 
-	var E, Q;
+	var E, Q, D;
 
 	var Model = _Model.extend({
 
@@ -24,7 +24,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_health_queue:null,
 		
 		_properties: null,
-		_propertiesList: ["comments","news","tags","documents", "context", "watching_users"],
+		_propertiesList: ["comments","news","tags","documents", "relationship_info", "watching_users"],
 	
 		init: function() {
 			this._npv_queue = [];
@@ -34,6 +34,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			E = sb.ext;
 			Q = sb.queries;
+			D = sb.dates;
 
 			this._dataHandlers = {
 				"_health": 	this._massageHealth,
@@ -170,7 +171,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 		filter_status: function(b, statusList) {
 			if(statusList.indexOf(b.status) > -1) { return true; }
-			if(b.overdue && statusList.indexOf("overdue") > -1) { return true; }
+			if(b.is_overdue && statusList.indexOf("overdue") > -1) { return true; }
 
 			return statusList.length === 0; 
 		},
@@ -232,8 +233,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		documents: function(id, cb, force) {	
 			this._property(cb, "documents", id, force);		
 		},
-		context: function(id, cb, force) {		
-			this._property(cb, "context", id, force);		
+		relationship_info: function(id, cb, force) {		
+			this._property(cb, "relationship_info", id, force);		
 		},
 		watching: function(id, cb, force) {		
 			this._property(cb, "watching_users", id, force);		
@@ -291,16 +292,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_handleProperty: function(type, id, data) {
 			this._properties[type] = this._properties[type] || {};
 			this._properties[type][id] = data ? data.result : this._properties[type][id];
-
-			//EACH PROPERTY OBJECT IS BLOODY DIFFERENT........
-			//NEED TO HANDLE THIS STUFF IN A NON-generic manner
-					// E.each(this._properties[type][id], function(v) {
-					// 	E.each(["date", "created_at", "updated_at"], function(d) {
-					// 		if(v[d]) {
-					// 			v[d] = E.moment(v[d], E.unixFormat);
-					// 			}
-					// 	})
-					// });
 			
 			var q = this._properties[type+"_queue"];
 			while(q && q[id] && q[id].length) {
@@ -310,22 +301,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		},
 		
 		_massageHealth: function(d) {
-			var f = E.massageHealth;
-			var model = this._model;
-			if(!model) { return; }
-
-			E.each(d, function(dv, id) {
-				if(model[id]) {
-					model[id].health_data = f(dv);
-				}
-			});
 
 		},
 		_massageProgress: function(d) {
-			// var f = E.massageTA;
-			// E.each(d, function(dv) {
-				// f(dv);
-			// });			
 		},
 		_massageNpv: function(d) {
 
@@ -363,7 +341,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			var cLenLen = ((p ? p.children.length : 1)+"").length;
 			var levelPos = E._.padStart( (""+(1+pos)), cLenLen, "0"); 
-			var overdueDays =  (!b.closed && E.first(E.max(0, E.daysDiff(E.moment(), E.serverMoment(b.end_date))), 0));
+			var overdueDays =  !b.closed && E.first(E.max(0, D.range(b.end_date, "today")), 0);
 
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),
@@ -402,18 +380,14 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				can_delete: (b.is_owner && !b.closed),
 				parent_title: (p ? p.title : ""),
 				schema:schema,
-				start_date_str: b.start_date,
-				end_date_str: b.end_date,
-				start_date: E.serverMoment(b.start_date),
-				end_date: E.serverMoment(b.end_date),
-				start_date_num: E.dateNumber(E.serverMoment(b.start_date)),
-				end_date_num: E.dateNumber(E.serverMoment(b.end_date)),
 				variance_progress: E.variance(b.percent_progress, b.expected_progress),
 				groups_inherited: sb.groups.parseExpression(b.group_expression_inherited, true),
 				groups: b.group_ids.concat(sb.groups.parseExpression(b.group_expression_inherited, true)),
 				ownership: 	(b.owner_id == uid ? "owned" : 
 							(b.manager_id == uid ? "managed" : 
-							(b.ownership_state == "watched" ? "watched" : "none") ) )
+							(b.ownership_state == "watched" ? "watched" : "none") ) ),
+
+				dependencies: (b.dependencies || [])
 			});
 
 			E._.each(b.metrics, function(v) {
@@ -431,8 +405,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var blockType = b.is_link ? "blockTypeLink " : (b.is_company ? "blockTypeCompany" : "blockTypeNormal");
 
 			b.level_display = "<span class='" + blockType + "'>" + b.level_sort + "</span>";
-			b.last_updated = E.serverMoment(b.last_progress_updated_date_str||b.start_date);
-			b.last_updated = E.maxDate(b.start_date, E.minDate(b.end_date, b.last_updated));
+			b.last_updated = b.last_progress_updated_date;
 
 			//map children ids to paths
 			b.children = b.children ? E.map(b.children, function(cpath, i) {
