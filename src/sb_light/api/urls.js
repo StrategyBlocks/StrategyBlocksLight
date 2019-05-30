@@ -54,6 +54,12 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		BLOCKS_CLONE :					{url: "/blocks/clone_blocks.js", normalParams:true, post:true},
 		BLOCKS_LOCK:					{url: "/blocks/admin_lock.js", post:true, normalParams:true},
 		BLOCKS_UNLOCK:					{url: "/blocks/admin_unlock.js", post:true, normalParams:true},
+		BLOCKS_EMAIL_REPORT:			{url: "/blocks/generate_report.js", post:true},
+		BLOCKS_DOWNLOAD_HTML:			{url: "/blocks/generate_report.html", post:false, normalParams: true	},
+		BLOCKS_DOWNLOAD_CSV:			{url: "/blocks/generate_report.csv", post:false, normalParams: true	},
+
+
+		BLOCKS_REPORT:					{url: "/blocks/generate_report.js", post:true, normalParams:true},
 
 	
 		//singular block for controller convenience
@@ -124,10 +130,6 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		GROUPS_REMOVE :				{url: "/groups/%id%/remove.js", post:true},
 	
 	
-		//type: IMAGE  : pdf
-		//email: true|FALSE
-		HTML_REPORT:				{url: "/html/generate_report.js", post:true,normalParams:true},
-
 		RISKS_CREATE :				{url: "/risks/create.js", post:true},
 		RISKS_DESTROY :				{url: "/risks/%id%/destroy.js", post:true},
 		RISKS_UPDATE :				{url: "/risks/%id%/update.js", post:true},
@@ -194,8 +196,9 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		USERS_DELETE: 				{url: "/users/%id%/delete_user.js", post:true},		
 		USERS_CHANGE_MEMBERSHIP: 	{url: "/users/%id%/update_membership.js", post:true},
 		USERS_CALENDAR_TOKEN:		{url: "/users/enable_todo_calendar.js", post:true},
-		USERS_EMAIL_REPORT:			{url: "/users/send_report.js", post:true},
-		USERS_DOWNLOAD_REPORT:		{url: "/users/send_report.html", post:false, normalParams: true	},
+		USERS_EMAIL_REPORT:			{url: "/users/generate_report.js", post:true},
+		USERS_DOWNLOAD_HTML:		{url: "/users/generate_report.html", post:false, normalParams: true	},
+		USERS_DOWNLOAD_CSV:			{url: "/users/generate_report.csv", post:false, normalParams: true	},
 		USERS_CHECK_REPORT:			{url: "/users/check_report.js", post:false},
 		USERS_DOWNLOAD_SQLITE:		{url: "/exports/sqlite.db", post:false},
 
