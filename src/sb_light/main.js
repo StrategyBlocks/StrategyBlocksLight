@@ -12,7 +12,6 @@ define([
 	'sb_light/utils/queue',	
 	'sb_light/utils/events',	
 	'sb_light/utils/strings',	
-	'sb_light/layout',	
 	'sb_light/utils/Class',
 	'sb_light/models',		
 	'sb_light/controller',
@@ -21,7 +20,6 @@ define([
 	'sb_light/api/urls',	
 	'sb_light/api/api',
 	'sb_light/api/ajax',
-	'widgets/main',
 
 	//ignore
 	'sb_light/utils/jqueryPlugins',	
@@ -36,7 +34,6 @@ define([
 	queue,
 	events,
 	strings,
-	layout,
 	Class,	 
 	models,	
 	controller,
@@ -44,8 +41,7 @@ define([
 	queries,	
 	urls,	
 	api,
-	ajax,
-	widgets
+	ajax
 ) {
 	'use strict';
 
@@ -63,7 +59,6 @@ define([
 	globals.queue = queue;
 	globals.events = events;
 	globals.strings = strings;
-	globals.layout = layout;
 	globals.models = models;
 	globals.controller = controller;
 	globals.state = state;	 
@@ -72,7 +67,6 @@ define([
 	globals.api = api;	 
 	globals.ajax = ajax; 
 	globals.Class = Class;
-	globals.widgets = widgets;
 	
 
 	globals.debug = false;

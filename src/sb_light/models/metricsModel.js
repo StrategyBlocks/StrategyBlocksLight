@@ -58,12 +58,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 		_massageUpdatedModel: function() {
 			this._super();
 
-			var t = E.moment();
-			//E.each(this._model, this._massageMetric.bind(this));
-
-			// console.log("Massage: ", E.moment().diff(t));
-
-
 			//RESET THE HIERARCHICAL CACHE STUFF
 			this._hierarchyCache = {};
 			this._queue = {};
@@ -139,13 +133,13 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 				//return a list
 				var res = {};
 				E.each(nodes, function(nid) {
-					res[nid] = self._hierarchyCache[mid][nid];
+					res[nid] = self._hierarchyCache[mid][nid] || null;
 				});
 				return res;
 			} else if (nodes.length) {
 				//return a single item
 				var name = "hierarchy_"+mid+"_"+nodes[0];
-				return  this._hierarchyCache[mid][nodes[0]];
+				return  this._hierarchyCache[mid][nodes[0]] || null;
 			}
 			return null;
 

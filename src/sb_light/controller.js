@@ -16,6 +16,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.updateCompany = function(obj, cb) {
 		controller.invoke(sb.urls.COMPANIES_UPDATE, obj, cb, cb);
 	};
+	controller.removeCompanyLogo = function(cb) {
+		controller.invoke(sb.urls.COMPANIES_REMOVE_LOGO, {}, cb, cb);
+	};
 	controller.companyBroadcast = function(o, cb) {
 		controller.invoke(sb.urls.COMPANIES_BROADCAST, o, cb, cb);
 	};
@@ -87,13 +90,22 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.blockExport = function(o, cb) {
 		controller.invoke(sb.urls.EXPORTS_CREATE, o, cb,cb);
 	};
-
-	controller.blockUpdateTags = function(id, tags, cb) {
-		var o = {id:id, type:"tags"};
-		o["tag[list]"] = tags.join(" ");
-		controller.invoke(sb.urls.BLOCKS_PROPERTIES, o, cb,cb, null, {post:true});
+	controller.blockSendReport = function( o, cb) {
+		controller.invoke(sb.urls.BLOCKS_EMAIL_REPORT,o, cb,cb);
 	};
 
+	controller.blockUpdateTags = function(id, tags, cb) {
+		var o = {id:id, type:"tags", tags: tags};
+		controller.invoke(sb.urls.BLOCKS_PROPERTIES, o, cb,cb, null, {post:true, normalParams: false});
+	};
+
+	controller.blockAddDependency = function(o, cb) {
+		controller.invoke(sb.urls.BLOCKS_ADD_DEPENDENCY, o, cb,cb);
+	};
+
+	controller.blockRemoveDependency = function(o, cb) {
+		controller.invoke(sb.urls.BLOCKS_REMOVE_DEPENDENCY, o, cb,cb);
+	};
 
 
 	controller.comment = function(type, id, message, cb) {
@@ -116,7 +128,6 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 
 	controller.blockDelete = function(args, cb) {
-		args.type = "delete"; //legacy url format requires this.
 		controller.invoke(sb.urls.BLOCKS_DELETE, args, cb,cb );
 	};
 
@@ -215,7 +226,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.USERS_CREATE_BATCH,list, cb,cb);
 	};
 	controller.usersSendReport = function( o, cb) {
-		controller.invoke(sb.urls.USERS_SEND_REPORT,o, cb,cb);
+		controller.invoke(sb.urls.USERS_EMAIL_REPORT,o, cb,cb);
 	};
 	controller.userGenerateCalendar = function(cb) {
 		controller.invoke(sb.urls.USERS_CALENDAR_TOKEN, null, cb,cb);
@@ -440,8 +451,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		var url = sb.urls.url(urlObj, args);
 		var params = {};
 		overrides = sb.ext.merge({}, overrides);
-		
-		if (urlObj.deleteId) {
+		if (urlObj.deleteId || overrides.deleteId) {
 			delete args.id;
 		}
 		
@@ -452,10 +462,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 				params.json = JSON.stringify(requestArgs);
 			}
 			else if (Object.keys(requestArgs).length > 0) {
-				if (urlObj.normalParams) {
+				if (urlObj.normalParams && overrides.normalParams !== false) {
 					params = requestArgs;
-				}
-				else {
+				} else {
 					params.json = JSON.stringify(requestArgs);
 				}
 			}

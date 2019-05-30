@@ -777,13 +777,10 @@ define([
 		return Dom.domById(el.id);
 	}; 
 	Dom.cleanup = function() {
-		var time = E.time();
 		E.each(DOM_REGISTER, function(v) {
 			var dom = v.dom;
-
-			if (E.minutesDiff(time, v.__age) > 1 &&  !$.contains(document, dom)) {
+			if (E.minutesSince(v.__age) > 1 &&  !$.contains(document, dom)) {
  			   v.destroy();
- 			   // this._consoleLogPages("DOM CLEANUP----REMOVED ", k, E.minutesDiff(time, dom.__age), E.length(DOM_REGISTER));
 			}
 		});
 	};

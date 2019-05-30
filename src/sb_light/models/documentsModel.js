@@ -18,8 +18,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 			this._super();
 			
 			E.each(this._model, function(d) {
-				d.created_at = E.moment(d.created_at, E.unixFormat);
-				d.updated_at = E.moment(d.updated_at, E.unixFormat);
 				d.real_id = d.id.replace(/^[\w]_(\w+)$/, "$1");
 			});
 

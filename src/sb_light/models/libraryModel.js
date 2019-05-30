@@ -27,11 +27,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals'], function( _Model, 
 		_massageUpdatedModel: function() {
 			this._super();
 			E.each(this._model, function(v) {
-				v.date = E.moment(v.created_at, E.unixFormat)
+				v.date = v.created_at;
 				v.public = v.status == "public";
 				v.rating = v.rating || 0;
 				v.local = v.company_id == Q.company().id;
-				v.fromNow  = E.moment().add(v.duration, "days").to(E.moment(), true);
+				v.fromNow  = sb.dates.create({days: v.duration}).toNow(true);
 			});
 		}
 
