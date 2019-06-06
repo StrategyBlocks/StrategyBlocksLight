@@ -76,7 +76,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals', "fuse"], function( 
 				v.trendNum = v.trend == "up" ? 1 : (v.trend == "flat" ? 2 : (v.trend == "down" ? 3 : 0)) ;
 				v.is_mine = (v.owner_id == uid || v.manager_id == uid); 
 				v.is_watching= (E._.find(v.watching_user_ids, uid) != null);
-				v.cascade_list = E._.union(v.contributing_ids, v.contributing_ids_rollup);
 				//used by other metrics
 				v.used_by_metrics = E._.union(v.used_by_metric_ids_in_calculation_actuals, v.used_by_metric_ids_in_calculation_target);
 				v.metrics_used = E._.union(v.calculation_actuals_metric_ids_used, v.calculation_target_metric_ids_used);
