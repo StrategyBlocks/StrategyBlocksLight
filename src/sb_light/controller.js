@@ -256,6 +256,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		controller.invoke(sb.urls.DASHBOARD_SHARE, o, cb, cb);
 	}
 
+	controller.briefingBookReport = function( o, cb) {
+		controller.invoke(sb.urls.REPORT_BRIEFING_BOOK, o, cb,cb);
+	};
 
 	controller.groupsUpdate = function(o, cb) {
 		if(o.id === "new") {

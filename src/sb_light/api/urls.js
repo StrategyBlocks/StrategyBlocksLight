@@ -126,6 +126,8 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		GROUPS_ADD 	:				{url: "/groups/%id%/add.js", post:true},
 		GROUPS_REMOVE :				{url: "/groups/%id%/remove.js", post:true},
 	
+		REPORT_BRIEFING_BOOK:		{url: "/reports/briefing_book.js", post:true},
+		REPORT_DOWNLOAD:			{url: "/reports/download.html", post:false},
 	
 		RISKS_CREATE :				{url: "/risks/create.js", post:true},
 		RISKS_DESTROY :				{url: "/risks/%id%/destroy.js", post:true},
