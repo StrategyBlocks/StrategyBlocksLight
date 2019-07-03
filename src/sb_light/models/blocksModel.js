@@ -208,12 +208,64 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				sb.state.state("block", root.id);
 			}
 		},
-		
 
-		
-		progress: function(cb) {
-			this._data(cb, "_progress", sb.urls.BLOCKS_PROGRESS);
+		_progress_block_queue: {},
+		_progress_block_map: {},
+
+		requestProgressQueue: _.debounce(function() {
+			var self = this;
+
+			// make unique id list
+			var id_list = Object.keys(self._progress_block_queue);
+			id_list = id_list.filter(function uniq(value, index, list) {
+				return list.indexOf(value) === index && self._progress_block_map[value] === undefined;
+			});
+
+			// dont make request if the list is empty
+			if(id_list.length === 0) {
+				return;
+			}
+
+			// this makes sure you dont request the same thing twice
+			id_list.forEach(function(value) {
+				self._progress_block_map[value] = self._progress_block_map[value] || null;
+			});
+
+			// build a url object for the request
+			var url = {
+				url: sb.urls.BLOCKS_PROGRESS.url+"?block_ids="+id_list.join(","),
+				normalParams: sb.urls.BLOCKS_PROGRESS.normalParams,
+			};
+
+			// invoke the request
+			sb.controller.invoke(url, null, function(data) {
+				Object.keys(data.result).forEach(function(key) {
+					//update data
+					self._progress_block_map[key] = data.result[key];
+
+					// tell everyone about it
+					while(self._progress_block_queue[key].length) {
+						var cb = self._progress_block_queue[key].pop();
+						cb(self._progress_block_map);
+					}
+				});
+			});
+		}, 500),
+
+		progress: function(cb, bid) {
+			if(bid !== undefined) {
+				if(this._progress_block_map[bid]) {
+					cb(this._progress_block_map);
+				} else {
+					this._progress_block_queue[bid] = this._progress_block_queue[bid] || [];
+					this._progress_block_queue[bid].push(cb);
+					this.requestProgressQueue();
+				}
+			} else {
+				this._data(cb, "_progress", sb.urls.BLOCKS_PROGRESS);
+			}
 		},
+
 		health: function(cb) {
 			this._data(cb, "_health", sb.urls.BLOCKS_HEALTH);
 		},
