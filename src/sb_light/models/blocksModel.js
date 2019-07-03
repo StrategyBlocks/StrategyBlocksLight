@@ -221,9 +221,18 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			}
 		},
 
-		health: function(cb) {
-			this._data(cb, "_health", sb.urls.BLOCKS_HEALTH);
+		healthBufferQueue: null,
+		health: function(cb, bid) {
+			if(bid !== undefined) {
+				if(!this.healthBufferQueue) {
+					this.healthBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_HEALTH, null, "block_ids", 100);
+				}
+				this.healthBufferQueue(cb, bid);
+			} else {
+				this._data(cb, "_health", sb.urls.BLOCKS_HEALTH);
+			}
 		},
+
 		npv: function(cb) {
 			this._data(cb, "_npv", sb.urls.BLOCKS_NPV);
 		},
