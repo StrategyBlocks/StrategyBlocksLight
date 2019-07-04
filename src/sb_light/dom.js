@@ -650,7 +650,11 @@ define([
 			return cd;
 		},
 
-		_isOrphan: function(node) {
+		_isOrphan: function() {
+			if(!(this.sel && this.sel[0] && this.sel[0][0])) {
+				return true;
+			}
+			var node = this.sel[0][0];
 			while(node.parentNode) {
 				node = node.parentNode;
 			}
@@ -661,7 +665,7 @@ define([
 		_beforeDraw:function() {
 			try {
 				// if this node isn't actually in the DOM, destroy it
-				if(this.sel && this._isOrphan(this.sel[0][0])) {
+				if(this._isOrphan()) {
 					this.destroy();
 					return;
 				}
