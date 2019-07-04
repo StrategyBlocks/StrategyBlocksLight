@@ -22,6 +22,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_npv_queue:null,
 		_progress_queue:null,
 		_health_queue:null,
+
+		progressBufferQueue: null,
+		healthBufferQueue: null,
 		
 		_properties: null,
 		_propertiesList: ["comments","news","tags","documents", "relationship_info", "watching_users"],
@@ -35,6 +38,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			E = sb.ext;
 			Q = sb.queries;
 			D = sb.dates;
+
+			this.progressBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_PROGRESS, null, "block_ids", 100);
+			this.healthBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_HEALTH, null, "block_ids", 100);
 
 			this._dataHandlers = {
 				"_health": 	this._massageHealth,
@@ -209,28 +215,12 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			}
 		},
 
-		progressBufferQueue: null,
-		progress: function(cb, bid) {
-			if(bid !== undefined) {
-				if(!this.progressBufferQueue) {
-					this.progressBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_PROGRESS, null, "block_ids", 100);
-				}
-				this.progressBufferQueue(cb, bid);
-			} else {
-				this._data(cb, "_progress", sb.urls.BLOCKS_PROGRESS);
-			}
+		progress: function(cb, bids) {
+			this.progressBufferQueue(cb, bids);
 		},
 
-		healthBufferQueue: null,
-		health: function(cb, bid) {
-			if(bid !== undefined) {
-				if(!this.healthBufferQueue) {
-					this.healthBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_HEALTH, null, "block_ids", 100);
-				}
-				this.healthBufferQueue(cb, bid);
-			} else {
-				this._data(cb, "_health", sb.urls.BLOCKS_HEALTH);
-			}
+		health: function(cb, bids) {
+			this.healthBufferQueue(cb, bids);
 		},
 
 		npv: function(cb) {

@@ -495,6 +495,25 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 		var queue = {};
 		var data = {};
 
+		var hasDataFor = function(ids) {
+			return !E._.some(ids, function(id) { return !data[id]; });
+		};
+
+		var waitForAll = function(cb, ids) {
+			var waitingFor = {};
+			ids.forEach(function(id) {
+				if(!data[id]) {
+					waitingFor[id] = true;
+				}
+			});
+			return function(id) {
+				delete waitingFor[id];
+				if(Object.keys(waitingFor).length === 0) {
+					cb(data);
+				}
+			};
+		};
+
 		var bufferRequest = E._.debounce(function() {
 
 			// make unique id list and remove ids that are already requested
@@ -523,30 +542,32 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 			// invoke the request
 			sb.controller.invoke(url, urlParams, function(response) {
-				Object.keys(response.result).forEach(function(key) {
+				id_list.forEach(function(id) {
 					// update our data buffer
-					data[key] = response.result[key];
+					data[id] = response.result[id];
 
 					// tell everyone about it
-					while(queue[key].length > 0) {
-						var cb = queue[key].pop();
-						cb(data);
+					while(queue[id].length > 0) {
+						var wait = queue[id].pop();
+						wait(id);
 					}
-					delete queue[key];
+					delete queue[id];
 				});
 			});
 		}, debounceTime);
 
-		return function(cb, id) {
-			console.log("---");
-			console.log("data", data);
-			console.log("queue", queue);
-			console.log("---");
-			if(data[id]) {
+		return function(cb, ids) {
+			if(!E.isArray(ids)) {
+				ids = [ids];
+			}
+			if(hasDataFor(ids)) {
 				cb(data);
 			} else {
-				queue[id] = queue[id] || [];
-				queue[id].push(cb);
+				var wait = waitForAll(cb, ids);
+				ids.forEach(function(id) {
+					queue[id] = queue[id] || [];
+					queue[id].push(wait);
+				});
 				bufferRequest();
 			}
 		};
