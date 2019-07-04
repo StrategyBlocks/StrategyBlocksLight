@@ -18,8 +18,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 		_progress: null,
 		_health: null,
-		_npv: null,
-		_npv_queue:null,
 		_progress_queue:null,
 		_health_queue:null,
 
@@ -30,7 +28,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_propertiesList: ["comments","news","tags","documents", "relationship_info", "watching_users"],
 	
 		init: function() {
-			this._npv_queue = [];
 			this._progress_queue = [];
 			this._health_queue = [];
 			this._properties = {};
@@ -45,7 +42,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			this._dataHandlers = {
 				"_health": 	this._massageHealth,
 				"_progress": 	this._massageProgress,
-				"_npv": 	this._massageNpv
 			};
 			
 			this._super("blocks", sb.urls.MODEL_BLOCKS);
@@ -194,7 +190,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			if(ts != this._timestamp) {
 				this._progress = null;
 				this._health = null;
-				this._npv = null;
 				this._properties = {};
 			}
 
@@ -221,10 +216,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 		health: function(cb, bids) {
 			this.healthBufferQueue(cb, bids);
-		},
-
-		npv: function(cb) {
-			this._data(cb, "_npv", sb.urls.BLOCKS_NPV);
 		},
 			
 		comments: function(id, cb, force) {	
@@ -310,9 +301,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 		},
 		_massageProgress: function(d) {
-		},
-		_massageNpv: function(d) {
-
 		},
 		
 
