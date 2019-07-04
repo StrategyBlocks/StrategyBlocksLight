@@ -650,11 +650,22 @@ define([
 			return cd;
 		},
 
+		_isOrphan: function(node) {
+			while(node.parentNode) {
+				node = node.parentNode;
+			}
+			return node.nodeName !== "#document";
+		},
+
 		//sanity before drawing
 		_beforeDraw:function() {
 			try {
+				// if this node isn't actually in the DOM, destroy it
+				if(this.sel && this._isOrphan(this.sel[0][0])) {
+					this.destroy();
+					return;
+				}
 				// this._consoleLogPages("DOM BEFORE DRAW:", this.id);
-
 				if(this.canDraw()) {
 					// this._consoleLogPages("DOM CAN DRAW:", this.id);
 					if(this.__beforeDrawList.length) {

@@ -541,7 +541,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 			if(baseUrl.normalParams) { url.normalParams = baseUrl.normalParams; }
 
 			// invoke the request
-			sb.controller.invoke(url, urlParams, function(response) {
+			controller.invoke(url, urlParams, function(response) {
 				id_list.forEach(function(id) {
 					// update our data buffer
 					data[id] = response.result[id];
@@ -558,7 +558,6 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 
 		return {
 			add: function(cb, ids) {
-				console.log("add buffer queue", ids);
 				if(!E.isArray(ids)) {
 					ids = [ids];
 				}
@@ -574,7 +573,6 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 				}
 			},
 			clear: function() {
-				console.log("clear buffer queue");
 				queue = {};
 				data = {};
 			}

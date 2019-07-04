@@ -247,29 +247,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			}
 		},
 		
-		//push all requests onto the queue and only invoke the controller if it's the first one and we don't have data
-		_data: function(cb, name, url) {
-			var func = this._handleData.bind(this,name );
-			this[name+"_queue"].push(cb);
-			
-			if (!this[name]) {
-				if(this[name+"_queue"].length == 1) {
-					sb.controller.invoke(url, null, func);
-				}
-			} else {
-				func();
-			}
-		},
-		
-		//process the queue for the data.
-		_handleData: function(name, data) {
-			this[name] = data ? data.result : this[name];
-			while(this[name+"_queue"].length) {
-				var cb = this[name+"_queue"].pop();
-				cb(this[name]);
-			}
-		},
-		
 		//process the properties
 		_handleProperty: function(type, id, data) {
 			this._properties[type] = this._properties[type] || {};
