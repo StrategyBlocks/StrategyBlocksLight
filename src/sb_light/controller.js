@@ -556,19 +556,27 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 			});
 		}, debounceTime);
 
-		return function(cb, ids) {
-			if(!E.isArray(ids)) {
-				ids = [ids];
-			}
-			if(hasDataFor(ids)) {
-				cb(data);
-			} else {
-				var wait = waitForAll(cb, ids);
-				ids.forEach(function(id) {
-					queue[id] = queue[id] || [];
-					queue[id].push(wait);
-				});
-				bufferRequest();
+		return {
+			add: function(cb, ids) {
+				console.log("add buffer queue", ids);
+				if(!E.isArray(ids)) {
+					ids = [ids];
+				}
+				if(hasDataFor(ids)) {
+					cb(data);
+				} else {
+					var wait = waitForAll(cb, ids);
+					ids.forEach(function(id) {
+						queue[id] = queue[id] || [];
+						queue[id].push(wait);
+					});
+					bufferRequest();
+				}
+			},
+			clear: function() {
+				console.log("clear buffer queue");
+				queue = {};
+				data = {};
 			}
 		};
 	};

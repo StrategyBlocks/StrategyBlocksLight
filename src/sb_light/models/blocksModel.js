@@ -16,11 +16,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_pathModel:null,
 		_pathArray:null,
 
-		_progress: null,
-		_health: null,
-		_progress_queue:null,
-		_health_queue:null,
-
 		progressBufferQueue: null,
 		healthBufferQueue: null,
 		
@@ -28,8 +23,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_propertiesList: ["comments","news","tags","documents", "relationship_info", "watching_users"],
 	
 		init: function() {
-			this._progress_queue = [];
-			this._health_queue = [];
 			this._properties = {};
 
 			E = sb.ext;
@@ -38,11 +31,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			this.progressBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_PROGRESS, null, "block_ids", 100);
 			this.healthBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_HEALTH, null, "block_ids", 100);
-
-			this._dataHandlers = {
-				"_health": 	this._massageHealth,
-				"_progress": 	this._massageProgress,
-			};
 			
 			this._super("blocks", sb.urls.MODEL_BLOCKS);
 		},
@@ -188,8 +176,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			this._super(update);
 			
 			if(ts != this._timestamp) {
-				this._progress = null;
-				this._health = null;
+				this.progressBufferQueue.clear();
+				this.healthBufferQueue.clear();
 				this._properties = {};
 			}
 
@@ -211,11 +199,11 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		},
 
 		progress: function(cb, bids) {
-			this.progressBufferQueue(cb, bids);
+			this.progressBufferQueue.add(cb, bids);
 		},
 
 		health: function(cb, bids) {
-			this.healthBufferQueue(cb, bids);
+			this.healthBufferQueue.add(cb, bids);
 		},
 			
 		comments: function(id, cb, force) {	
@@ -276,9 +264,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		//process the queue for the data.
 		_handleData: function(name, data) {
 			this[name] = data ? data.result : this[name];
-			if(this._dataHandlers[name] && data && data.result) {
-				this._dataHandlers[name].call(this, this[name]);
-			}
 			while(this[name+"_queue"].length) {
 				var cb = this[name+"_queue"].pop();
 				cb(this[name]);
@@ -296,13 +281,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				cb(this._properties[type][id]);
 			}
 		},
-		
-		_massageHealth: function(d) {
-
-		},
-		_massageProgress: function(d) {
-		},
-		
 
 		//returns the path of the current block
 		_massage: function(b, p, depth, pos, schema) {
