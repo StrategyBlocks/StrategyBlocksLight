@@ -465,7 +465,7 @@ define([
 							data = STR.parse(data);
 							self.$.html(data);
 							ST.context(tname, data);
-							self.beforeDrawDone.bindDelay(self, 200)
+							self.beforeDrawDone.bindDelay(self, 200);
 						})
 						.fail(function(xhr, textStatus) {
 							E.warn("Error loading template", textStatus);
@@ -581,6 +581,9 @@ define([
 		},
 
 		dirty: function(delay) {
+			// if currently destroying, dont schedule another draw
+			if(!this.__opts) { return; }
+
 			delay = E.first(delay , this.__delay);
 			//reset the delay
 			this.__canDrawDelay = this.__canDrawDelay >= 0 ? E.max(50, E.first(delay, 0)) : -1;
