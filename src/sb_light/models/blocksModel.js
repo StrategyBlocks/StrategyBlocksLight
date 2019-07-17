@@ -312,6 +312,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 			var levelPos = E._.padStart( (""+(1+pos)), cLenLen, "0"); 
 			var overdueDays =  !b.closed && E.first(E.max(0, D.range(b.end_date, "today")), 0);
 
+
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),
 				body: (b.body || ""),
@@ -340,11 +341,9 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 				is_company: (b.sub_company_block ? true: false),
 				is_open: ((isNew || b.closed) ? false : true),
 				is_overdue: (overdueDays > 0),
-				is_mine: (b.owner_id == uid || b.manager_id == uid),
 				is_real_owner: (b.owner_id==uid),
 				is_real_manager: (b.manager_id == uid),
 				is_new: isNew,
-				is_watching: (E._.find(b.watching_user_ids, uid) != null),
 				position: pos,
 				can_move_left: (b.is_manager && (pos> 0)),
 				can_move_right: (b.is_manager && p && (pos < p.children.length-1) && p.children.length > 1),
@@ -358,7 +357,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 							(b.manager_id == uid ? "managed" : 
 							(b.ownership_state == "watched" ? "watched" : "none") ) ),
 
-				dependencies: (b.dependencies || [])
+				dependencies: (b.dependencies || []),
+				watching_user_ids: (b.watching_user_ids || [])
 			});
 
 			E._.each(b.metrics, function(v) {
