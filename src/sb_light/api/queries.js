@@ -1351,10 +1351,10 @@ define(['sb_light/globals',
 	};
 
 	q.isBlockBranchManager = function(b) {
-		return !Q.blockLocked(b) && b.is_branch_manager
+		return !Q.blockLocked(b) && b.is_branch_manager;
 	};
 	q.isBlockManager = function(b) {
-		return !Q.blockLocked(b) && b.is_manager
+		return !Q.blockLocked(b) && b.is_manager;
 	};
 	q.isBlockOwner = function(b) {
 		return !Q.blockLocked(b) && b.is_owner;
