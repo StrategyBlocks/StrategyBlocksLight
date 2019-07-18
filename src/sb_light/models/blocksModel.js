@@ -1,10 +1,17 @@
 
 /*globals define */
 
-define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _Model, sb, Fuse ) {
+define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls','fuse'], function( _Model, sb, urls, Fuse ) {
 	'use strict';
 
 	var E, Q, D;
+
+
+	var QUEUES = {
+		progress: urls.BLOCKS_PROGRESS,
+		health: urls.BLOCKS_HEALTH,
+		extra_info: urls.BLOCKS_EXTRA_INFO
+	} 
 
 	var Model = _Model.extend({
 
@@ -16,21 +23,25 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_pathModel:null,
 		_pathArray:null,
 
-		progressBufferQueue: null,
-		healthBufferQueue: null,
+
+		_queues: null,
 		
 		_properties: null,
 		_propertiesList: ["comments","news","tags","documents", "relationship_info", "watching_users"],
 	
 		init: function() {
+
 			this._properties = {};
 
 			E = sb.ext;
 			Q = sb.queries;
 			D = sb.dates;
 
-			this.progressBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_PROGRESS, null, "block_ids", 100);
-			this.healthBufferQueue = sb.controller.idBufferQueueFactory(sb.urls.BLOCKS_HEALTH, null, "block_ids", 100);
+
+			var q = this._queues = {};
+			E.each(QUEUES, function(v,k) {
+				q[k] = sb.controller.idBufferQueueFactory(v, null, "block_ids", 100)
+			})
 			
 			this._super("blocks", sb.urls.MODEL_BLOCKS);
 		},
@@ -175,9 +186,13 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			this._super(update);
 			
+			var self = this;
+
 			if(ts != this._timestamp) {
-				this.progressBufferQueue.clear();
-				this.healthBufferQueue.clear();
+				var q = this._queues;
+				E.each(this._queues, function(v, k) {
+					q[k].clear()
+				})
 				this._properties = {};
 			}
 
@@ -199,12 +214,17 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		},
 
 		progress: function(cb, bids) {
-			this.progressBufferQueue.add(cb, bids);
+			this._queues.progress.add(cb, bids);
 		},
 
 		health: function(cb, bids) {
-			this.healthBufferQueue.add(cb, bids);
+			this._queues.health.add(cb, bids);
 		},
+		extra_info: function(cb, bids) {
+			this._queues.extra_info.add(cb, bids);
+		},
+
+
 			
 		comments: function(id, cb, force) {	
 			this._property(cb, "comments", id, force);		
@@ -292,6 +312,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var levelPos = E._.padStart( (""+(1+pos)), cLenLen, "0"); 
 			var overdueDays =  !b.closed && E.first(E.max(0, D.range(b.end_date, "today")), 0);
 
+
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),
 				body: (b.body || ""),
@@ -314,16 +335,15 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				overdue: overdueDays,
 				is_root:(depth===0),
 				is_closed: !!b.closed,
-				is_link: (p && (p.is_link || pinfo.linked_parent_id !== null)) || false,
-				is_real_link: (p && (pinfo.linked_parent_id !== null)) || false,
+				is_branch_manager: (pinfo ? pinfo.is_branch_manager : b.is_manager),
+				is_link: (p && (p.is_link || pinfo.fake)) || false,
+				is_real_link: (p && pinfo.fake) || false,
 				is_company: (b.sub_company_block ? true: false),
 				is_open: ((isNew || b.closed) ? false : true),
 				is_overdue: (overdueDays > 0),
-				is_mine: (b.owner_id == uid || b.manager_id == uid),
 				is_real_owner: (b.owner_id==uid),
 				is_real_manager: (b.manager_id == uid),
 				is_new: isNew,
-				is_watching: (E._.find(b.watching_user_ids, uid) != null),
 				position: pos,
 				can_move_left: (b.is_manager && (pos> 0)),
 				can_move_right: (b.is_manager && p && (pos < p.children.length-1) && p.children.length > 1),
@@ -337,7 +357,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 							(b.manager_id == uid ? "managed" : 
 							(b.ownership_state == "watched" ? "watched" : "none") ) ),
 
-				dependencies: (b.dependencies || [])
+				dependencies: (b.dependencies || []),
+				watching_user_ids: (b.watching_user_ids || [])
 			});
 
 			E._.each(b.metrics, function(v) {

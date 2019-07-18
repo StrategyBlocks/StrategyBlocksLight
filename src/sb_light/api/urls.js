@@ -51,6 +51,7 @@ define(['sb_light/globals', "sb_light/utils/ext"], function(sb, E) {
 		BLOCKS_UPDATE_GROUPS :			{url: "/blocks/%id%/update_group_expression.js", normalParams:true, post:true},
 		BLOCKS_HEALTH :					{url: "/blocks/health.js", normalParams:true},
 		BLOCKS_PROGRESS :				{url: "/blocks/progress.js", normalParams:true},
+		BLOCKS_EXTRA_INFO :				{url: "/blocks/extra_info.js", normalParams:true},
 		BLOCKS_CLONE :					{url: "/blocks/clone_blocks.js", normalParams:true, post:true},
 		BLOCKS_LOCK:					{url: "/blocks/admin_lock.js", post:true, normalParams:true},
 		BLOCKS_UNLOCK:					{url: "/blocks/admin_unlock.js", post:true, normalParams:true},
