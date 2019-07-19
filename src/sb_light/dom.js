@@ -465,7 +465,7 @@ define([
 							data = STR.parse(data);
 							self.$.html(data);
 							ST.context(tname, data);
-							self.beforeDrawDone.bindDelay(self, 200)
+							self.beforeDrawDone.bindDelay(self, 200);
 						})
 						.fail(function(xhr, textStatus) {
 							E.warn("Error loading template", textStatus);
@@ -581,6 +581,9 @@ define([
 		},
 
 		dirty: function(delay) {
+			// if currently destroying, dont schedule another draw
+			if(!this.__opts) { return; }
+
 			delay = E.first(delay , this.__delay);
 			//reset the delay
 			this.__canDrawDelay = this.__canDrawDelay >= 0 ? E.max(50, E.first(delay, 0)) : -1;
@@ -650,11 +653,26 @@ define([
 			return cd;
 		},
 
+		_isOrphan: function() {
+			if(!(this.sel && this.sel[0] && this.sel[0][0])) {
+				return true;
+			}
+			var node = this.sel[0][0];
+			while(node.parentNode) {
+				node = node.parentNode;
+			}
+			return node.nodeName !== "#document";
+		},
+
 		//sanity before drawing
 		_beforeDraw:function() {
 			try {
+				// if this node isn't actually in the DOM, destroy it
+				if(this._isOrphan()) {
+					this.destroy();
+					return;
+				}
 				// this._consoleLogPages("DOM BEFORE DRAW:", this.id);
-
 				if(this.canDraw()) {
 					// this._consoleLogPages("DOM CAN DRAW:", this.id);
 					if(this.__beforeDrawList.length) {

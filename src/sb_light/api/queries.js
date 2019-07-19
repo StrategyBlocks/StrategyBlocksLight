@@ -1347,11 +1347,14 @@ define(['sb_light/globals',
 	};
 
 	q.canDeleteBlock = function(b) {
-		return Q.isBlockManager(b, b.parent);
+		return Q.isBlockBranchManager(b);
 	};
 
-	q.isBlockManager = function(b, p) {
-		return !Q.blockLocked(b) && (p? b.is_branch_manager[+p.id] : b.is_manager);
+	q.isBlockBranchManager = function(b) {
+		return !Q.blockLocked(b) && b.is_branch_manager;
+	};
+	q.isBlockManager = function(b) {
+		return !Q.blockLocked(b) && b.is_manager;
 	};
 	q.isBlockOwner = function(b) {
 		return !Q.blockLocked(b) && b.is_owner;

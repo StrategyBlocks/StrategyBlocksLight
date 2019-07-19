@@ -194,10 +194,10 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 	controller.riskAddImpact = function(rid, bid, cb) {
 		controller.invoke(sb.urls.RISKS_ADD_IMPACT, {id:rid, strategy_item_id:bid}, cb,cb);
-	}
+	};
 	controller.riskRemoveImpact = function(rid, bid, cb) {
 		controller.invoke(sb.urls.RISKS_REMOVE_IMPACT, {id:rid, strategy_item_id:bid}, cb,cb);
-	}
+	};
 
 
 	controller.riskMatrixSizeUpdate = function(size, cb) {
@@ -230,7 +230,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 	controller.userGenerateCalendar = function(cb) {
 		controller.invoke(sb.urls.USERS_CALENDAR_TOKEN, null, cb,cb);
-	}
+	};
 
 	controller.exportDelete = function(id, cb) {
 		controller.invoke(sb.urls.EXPORTS_DELETE,{id:id}, cb,cb);
@@ -254,7 +254,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};	
 	controller.dashboardShare = function(o, cb) {
 		controller.invoke(sb.urls.DASHBOARD_SHARE, o, cb, cb);
-	}
+	};
 
 	controller.briefingBookReport = function( o, cb) {
 		controller.invoke(sb.urls.REPORT_BRIEFING_BOOK, o, cb,cb);
@@ -484,6 +484,100 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	};
 
 	
+	/**
+	 * Create a queue and data buffer that requests by id
+	 * @param {{url, post, normalParams}} baseUrl the url object to send the request to
+	 * @param {*} urlParams object to pass as url parameters
+	 * @param {String} idListParam the name of the id list parameter
+	 * @param {Number} debounceTime the amount of time to wait for more requests before sending the request
+	 */
+	controller.idBufferQueueFactory = function(baseUrl, urlParams, idListParam, debounceTime) {
+		var queue = {};
+		var data = {};
+
+		var hasDataFor = function(ids) {
+			return !E._.some(ids, function(id) { return !data[id]; });
+		};
+
+		var waitForAll = function(cb, ids) {
+			var waitingFor = {};
+			ids.forEach(function(id) {
+				if(!data[id]) {
+					waitingFor[id] = true;
+				}
+			});
+			return function(id) {
+				delete waitingFor[id];
+				if(Object.keys(waitingFor).length === 0) {
+					cb(data);
+				}
+			};
+		};
+
+		var bufferRequest = E._.debounce(function() {
+
+			// make unique id list and remove ids that are already requested
+			// undefined = never requested, null = currently waiting for response
+			var id_list = Object.keys(queue);
+			id_list = id_list.filter(function uniq(id, index, list) {
+				return list.indexOf(id) === index && data[id] === undefined;
+			});
+
+			// dont make request if the list is empty
+			if(id_list.length === 0) {
+				return;
+			}
+
+			// this makes sure you dont request the same thing twice
+			id_list.forEach(function(id) {
+				data[id] = data[id] || null;
+			});
+
+			// build a url object for the request
+			var url = {
+				url: baseUrl.url+"?"+idListParam+"="+id_list.join(","),
+			};
+			if(baseUrl.post) { url.post = baseUrl.post; }
+			if(baseUrl.normalParams) { url.normalParams = baseUrl.normalParams; }
+
+			// invoke the request
+			controller.invoke(url, urlParams, function(response) {
+				id_list.forEach(function(id) {
+					// update our data buffer
+					data[id] = response.result[id];
+
+					// tell everyone about it
+					while(queue[id].length > 0) {
+						var wait = queue[id].pop();
+						wait(id);
+					}
+					delete queue[id];
+				});
+			});
+		}, debounceTime);
+
+		return {
+			add: function(cb, ids) {
+				if(!E.isArray(ids)) {
+					ids = [ids];
+				}
+				if(hasDataFor(ids)) {
+					cb(data);
+				} else {
+					var wait = waitForAll(cb, ids);
+					ids.forEach(function(id) {
+						queue[id] = queue[id] || [];
+						queue[id].push(wait);
+					});
+					bufferRequest();
+				}
+			},
+			clear: function() {
+				queue = {};
+				data = {};
+			}
+		};
+	};
 	
 	return controller;
 });

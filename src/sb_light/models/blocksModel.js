@@ -1,10 +1,17 @@
 
 /*globals define */
 
-define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _Model, sb, Fuse ) {
+define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls','fuse'], function( _Model, sb, urls, Fuse ) {
 	'use strict';
 
 	var E, Q, D;
+
+
+	var QUEUES = {
+		progress: urls.BLOCKS_PROGRESS,
+		health: urls.BLOCKS_HEALTH,
+		extra_info: urls.BLOCKS_EXTRA_INFO
+	} 
 
 	var Model = _Model.extend({
 
@@ -16,31 +23,25 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 		_pathModel:null,
 		_pathArray:null,
 
-		_progress: null,
-		_health: null,
-		_npv: null,
-		_npv_queue:null,
-		_progress_queue:null,
-		_health_queue:null,
+
+		_queues: null,
 		
 		_properties: null,
 		_propertiesList: ["comments","news","tags","documents", "relationship_info", "watching_users"],
 	
 		init: function() {
-			this._npv_queue = [];
-			this._progress_queue = [];
-			this._health_queue = [];
+
 			this._properties = {};
 
 			E = sb.ext;
 			Q = sb.queries;
 			D = sb.dates;
 
-			this._dataHandlers = {
-				"_health": 	this._massageHealth,
-				"_progress": 	this._massageProgress,
-				"_npv": 	this._massageNpv
-			};
+
+			var q = this._queues = {};
+			E.each(QUEUES, function(v,k) {
+				q[k] = sb.controller.idBufferQueueFactory(v, null, "block_ids", 100)
+			})
 			
 			this._super("blocks", sb.urls.MODEL_BLOCKS);
 		},
@@ -185,10 +186,13 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 
 			this._super(update);
 			
+			var self = this;
+
 			if(ts != this._timestamp) {
-				this._progress = null;
-				this._health = null;
-				this._npv = null;
+				var q = this._queues;
+				E.each(this._queues, function(v, k) {
+					q[k].clear()
+				})
 				this._properties = {};
 			}
 
@@ -209,69 +213,18 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			}
 		},
 
-		_progress_block_queue: {},
-		_progress_block_map: {},
-
-		requestProgressQueue: _.debounce(function() {
-			var self = this;
-
-			// make unique id list
-			var id_list = Object.keys(self._progress_block_queue);
-			id_list = id_list.filter(function uniq(value, index, list) {
-				return list.indexOf(value) === index && self._progress_block_map[value] === undefined;
-			});
-
-			// dont make request if the list is empty
-			if(id_list.length === 0) {
-				return;
-			}
-
-			// this makes sure you dont request the same thing twice
-			id_list.forEach(function(value) {
-				self._progress_block_map[value] = self._progress_block_map[value] || null;
-			});
-
-			// build a url object for the request
-			var url = {
-				url: sb.urls.BLOCKS_PROGRESS.url+"?block_ids="+id_list.join(","),
-				normalParams: sb.urls.BLOCKS_PROGRESS.normalParams,
-			};
-
-			// invoke the request
-			sb.controller.invoke(url, null, function(data) {
-				Object.keys(data.result).forEach(function(key) {
-					//update data
-					self._progress_block_map[key] = data.result[key];
-
-					// tell everyone about it
-					while(self._progress_block_queue[key].length) {
-						var cb = self._progress_block_queue[key].pop();
-						cb(self._progress_block_map);
-					}
-				});
-			});
-		}, 500),
-
-		progress: function(cb, bid) {
-			if(bid !== undefined) {
-				if(this._progress_block_map[bid]) {
-					cb(this._progress_block_map);
-				} else {
-					this._progress_block_queue[bid] = this._progress_block_queue[bid] || [];
-					this._progress_block_queue[bid].push(cb);
-					this.requestProgressQueue();
-				}
-			} else {
-				this._data(cb, "_progress", sb.urls.BLOCKS_PROGRESS);
-			}
+		progress: function(cb, bids) {
+			this._queues.progress.add(cb, bids);
 		},
 
-		health: function(cb) {
-			this._data(cb, "_health", sb.urls.BLOCKS_HEALTH);
+		health: function(cb, bids) {
+			this._queues.health.add(cb, bids);
 		},
-		npv: function(cb) {
-			this._data(cb, "_npv", sb.urls.BLOCKS_NPV);
+		extra_info: function(cb, bids) {
+			this._queues.extra_info.add(cb, bids);
 		},
+
+
 			
 		comments: function(id, cb, force) {	
 			this._property(cb, "comments", id, force);		
@@ -314,32 +267,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			}
 		},
 		
-		//push all requests onto the queue and only invoke the controller if it's the first one and we don't have data
-		_data: function(cb, name, url) {
-			var func = this._handleData.bind(this,name );
-			this[name+"_queue"].push(cb);
-			
-			if (!this[name]) {
-				if(this[name+"_queue"].length == 1) {
-					sb.controller.invoke(url, null, func);
-				}
-			} else {
-				func();
-			}
-		},
-		
-		//process the queue for the data.
-		_handleData: function(name, data) {
-			this[name] = data ? data.result : this[name];
-			if(this._dataHandlers[name] && data && data.result) {
-				this._dataHandlers[name].call(this, this[name]);
-			}
-			while(this[name+"_queue"].length) {
-				var cb = this[name+"_queue"].pop();
-				cb(this[name]);
-			}
-		},
-		
 		//process the properties
 		_handleProperty: function(type, id, data) {
 			this._properties[type] = this._properties[type] || {};
@@ -351,16 +278,6 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				cb(this._properties[type][id]);
 			}
 		},
-		
-		_massageHealth: function(d) {
-
-		},
-		_massageProgress: function(d) {
-		},
-		_massageNpv: function(d) {
-
-		},
-		
 
 		//returns the path of the current block
 		_massage: function(b, p, depth, pos, schema) {
@@ -395,6 +312,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 			var levelPos = E._.padStart( (""+(1+pos)), cLenLen, "0"); 
 			var overdueDays =  !b.closed && E.first(E.max(0, D.range(b.end_date, "today")), 0);
 
+
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),
 				body: (b.body || ""),
@@ -417,16 +335,15 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 				overdue: overdueDays,
 				is_root:(depth===0),
 				is_closed: !!b.closed,
-				is_link: (p && (p.is_link || pinfo.linked_parent_id !== null)) || false,
-				is_real_link: (p && (pinfo.linked_parent_id !== null)) || false,
+				is_branch_manager: (pinfo ? pinfo.is_branch_manager : b.is_manager),
+				is_link: (p && (p.is_link || pinfo.fake)) || false,
+				is_real_link: (p && pinfo.fake) || false,
 				is_company: (b.sub_company_block ? true: false),
 				is_open: ((isNew || b.closed) ? false : true),
 				is_overdue: (overdueDays > 0),
-				is_mine: (b.owner_id == uid || b.manager_id == uid),
 				is_real_owner: (b.owner_id==uid),
 				is_real_manager: (b.manager_id == uid),
 				is_new: isNew,
-				is_watching: (E._.find(b.watching_user_ids, uid) != null),
 				position: pos,
 				can_move_left: (b.is_manager && (pos> 0)),
 				can_move_right: (b.is_manager && p && (pos < p.children.length-1) && p.children.length > 1),
@@ -440,7 +357,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','fuse'], function( _
 							(b.manager_id == uid ? "managed" : 
 							(b.ownership_state == "watched" ? "watched" : "none") ) ),
 
-				dependencies: (b.dependencies || [])
+				dependencies: (b.dependencies || []),
+				watching_user_ids: (b.watching_user_ids || [])
 			});
 
 			E._.each(b.metrics, function(v) {
