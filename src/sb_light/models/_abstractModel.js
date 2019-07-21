@@ -45,7 +45,6 @@ define(['sb_light/utils/Class','sb_light/globals'], function( Class , sb) {
 		reset: function(publish) {
 			this._model = null;
 			this._modelArray = null;
-			ST.resetTimestamp(this.name);
 			if(publish) {
 				this._publish();
 			}

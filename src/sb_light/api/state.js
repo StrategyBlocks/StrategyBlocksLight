@@ -322,7 +322,6 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		if(!_forceUpdateBusy[model.name] && state.authorized()) {
 			_forceUpdateBusy[model.name] = true;
 			var m = models[model.name];
-			m.timestamp = 0;
 			//request the model directly, but we will only process the high level model elements
 			// IF THOSE HLM elements exist
 			var url = sb.urls.url(m.urlDef);
