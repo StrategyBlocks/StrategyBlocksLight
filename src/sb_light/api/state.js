@@ -484,7 +484,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		var key = model.responseKey || model.name;
 		var m = res[key] || res;
 		
-		if(model.raw() === null && m) {
+		if(m) {
 			if(E.isArray(m)) {
 				m = m.reduce( (function(prev,el) {
 					if(!el.id) {
