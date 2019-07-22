@@ -326,7 +326,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			// IF THOSE HLM elements exist
 			var url = sb.urls.url(m.urlDef);
 			var cb = _handleModelResponse.bind(state,model);
-			sb.api.get(url, null, cb);
+			sb.api.get(url, null, cb, null, null, {data: {}});
 		}
 	};
 	
