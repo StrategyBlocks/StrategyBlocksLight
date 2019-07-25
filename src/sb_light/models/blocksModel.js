@@ -185,15 +185,16 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 			var ts = this._timestamp;
 
 			this._super(update);
-			
-			var self = this;
 
 			if(ts != this._timestamp) {
-				var q = this._queues;
-				E.each(this._queues, function(v, k) {
-					q[k].clear();
-				});
 				this._properties = {};
+				// clear queues on next tick
+				var q = this._queues;
+				setTimeout(function(){
+					E.each(q, function(v, k) {
+						q[k].clear();
+					});
+				}, 0);
 			}
 
 		}, 

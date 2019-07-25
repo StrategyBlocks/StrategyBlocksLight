@@ -494,6 +494,7 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	controller.idBufferQueueFactory = function(baseUrl, urlParams, idListParam, debounceTime) {
 		var queue = {};
 		var data = {};
+		var clearTime = +Date.now();
 
 		var hasDataFor = function(ids) {
 			return !E._.some(ids, function(id) { return !data[id]; });
@@ -506,55 +507,75 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 					waitingFor[id] = true;
 				}
 			});
-			return function(id) {
-				delete waitingFor[id];
-				if(Object.keys(waitingFor).length === 0) {
-					cb(data);
+			var obj = {
+				remove: function(id) {
+					delete waitingFor[id];
+					if(Object.keys(waitingFor).length === 0) {
+						cb(data);
+					}
+				},
+				getParams: function() {
+					return {cb: cb, ids: ids};
 				}
 			};
+			return obj;
 		};
 
 		var bufferRequest = E._.debounce(function() {
-
+			var requestTime = clearTime;
 			// make unique id list and remove ids that are already requested
 			// undefined = never requested, null = currently waiting for response
-			var id_list = Object.keys(queue);
-			id_list = id_list.filter(function uniq(id, index, list) {
+			var idList = Object.keys(queue);
+			idList = idList.filter(function uniq(id, index, list) {
 				return list.indexOf(id) === index && data[id] === undefined;
 			});
 
 			// dont make request if the list is empty
-			if(id_list.length === 0) {
+			if(idList.length === 0) {
 				return;
 			}
 
 			// this makes sure you dont request the same thing twice
-			id_list.forEach(function(id) {
+			idList.forEach(function(id) {
 				data[id] = data[id] || null;
 			});
 
 			// build a url object for the request
 			var url = {
-				url: baseUrl.url+"?"+idListParam+"="+id_list.join(","),
+				url: baseUrl.url+"?"+idListParam+"="+idList.join(","),
 			};
 			if(baseUrl.post) { url.post = baseUrl.post; }
 			if(baseUrl.normalParams) { url.normalParams = baseUrl.normalParams; }
 
-			// invoke the request
-			controller.invoke(url, urlParams, function(response) {
-				id_list.forEach(function(id) {
+			var responseHandler = function(response) {
+				if(requestTime != clearTime) {
+					return;
+				}
+				idList.forEach(function(id) {
 					// update our data buffer
 					data[id] = response.result[id];
 
 					// tell everyone about it
-					while(queue[id].length > 0) {
-						var wait = queue[id].pop();
-						wait(id);
-					}
+					var queueList = queue[id];
 					delete queue[id];
+					while(queueList.length > 0) {
+						var wait = queueList.pop();
+						wait.remove(id);
+					}
 				});
-			});
+			};
+
+			// invoke the request
+			controller.invoke(url, urlParams, responseHandler);
 		}, debounceTime);
+
+		var addToQueue = function(q, cb, ids) {
+			var wait = waitForAll(cb, ids);
+			ids.forEach(function(id) {
+				q[id] = q[id] || [];
+				q[id].push(wait);
+			});
+		};
 
 		return {
 			add: function(cb, ids) {
@@ -564,17 +585,25 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 				if(hasDataFor(ids)) {
 					cb(data);
 				} else {
-					var wait = waitForAll(cb, ids);
-					ids.forEach(function(id) {
-						queue[id] = queue[id] || [];
-						queue[id].push(wait);
-					});
+					addToQueue(queue, cb, ids);
 					bufferRequest();
 				}
 			},
 			clear: function() {
-				queue = {};
+				// change the clearTime so old requests get ignored
+				clearTime = +Date.now();
+				// reset the data and queue
+				var oldQueue = queue;
 				data = {};
+				queue = {};
+				Object.keys(oldQueue).forEach(function(id) {
+					oldQueue[id].forEach(function(wait) {
+						var params = wait.getParams();
+						addToQueue(queue, params.cb, params.ids);
+					});
+				});
+				// buffer a new request
+				bufferRequest();
 			}
 		};
 	};
