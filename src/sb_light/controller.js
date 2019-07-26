@@ -492,37 +492,34 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 	 * @param {Number} debounceTime the amount of time to wait for more requests before sending the request
 	 */
 	controller.idBufferQueueFactory = function(baseUrl, urlParams, idListParam, debounceTime) {
-		var queue = {};
-		var data = {};
-		var clearTime = +Date.now();
+		var globalQueue = {};
+		var globalData = {};
 
 		var hasDataFor = function(ids) {
-			return !E._.some(ids, function(id) { return !data[id]; });
+			return !E._.some(ids, function(id) { return !globalData[id]; });
 		};
 
 		var waitForAll = function(cb, ids) {
+			var data = globalData;
 			var waitingFor = {};
 			ids.forEach(function(id) {
 				if(!data[id]) {
 					waitingFor[id] = true;
 				}
 			});
-			var obj = {
-				remove: function(id) {
+			return {
+				receive: function(id) {
 					delete waitingFor[id];
 					if(Object.keys(waitingFor).length === 0) {
 						cb(data);
 					}
-				},
-				getParams: function() {
-					return {cb: cb, ids: ids};
 				}
 			};
-			return obj;
 		};
 
 		var bufferRequest = E._.debounce(function() {
-			var requestTime = clearTime;
+			var queue = globalQueue;
+			var data = globalData;
 			// make unique id list and remove ids that are already requested
 			// undefined = never requested, null = currently waiting for response
 			var idList = Object.keys(queue);
@@ -548,9 +545,6 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 			if(baseUrl.normalParams) { url.normalParams = baseUrl.normalParams; }
 
 			var responseHandler = function(response) {
-				if(requestTime != clearTime) {
-					return;
-				}
 				idList.forEach(function(id) {
 					// update our data buffer
 					data[id] = response.result[id];
@@ -558,9 +552,9 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 					// tell everyone about it
 					var queueList = queue[id];
 					delete queue[id];
-					while(queueList.length > 0) {
+					while(queueList && queueList.length > 0) {
 						var wait = queueList.pop();
-						wait.remove(id);
+						wait.receive(id);
 					}
 				});
 			};
@@ -583,27 +577,15 @@ define(['sb_light/globals', 'sb_light/utils/ext'], function(sb, E) {
 					ids = [ids];
 				}
 				if(hasDataFor(ids)) {
-					cb(data);
+					cb(globalData);
 				} else {
-					addToQueue(queue, cb, ids);
+					addToQueue(globalQueue, cb, ids);
 					bufferRequest();
 				}
 			},
 			clear: function() {
-				// change the clearTime so old requests get ignored
-				clearTime = +Date.now();
-				// reset the data and queue
-				var oldQueue = queue;
-				data = {};
-				queue = {};
-				Object.keys(oldQueue).forEach(function(id) {
-					oldQueue[id].forEach(function(wait) {
-						var params = wait.getParams();
-						addToQueue(queue, params.cb, params.ids);
-					});
-				});
-				// buffer a new request
-				bufferRequest();
+				globalData = {};
+				globalQueue = {};
 			}
 		};
 	};
