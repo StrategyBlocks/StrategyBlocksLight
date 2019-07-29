@@ -47,8 +47,8 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 		}, overrides);
 
 		var args = {url:url, params:params, post:post, opts:opts, success:success, failure:failure};
-		opts.success = _success.bind(null, args)
-		opts.error = _failure.bind(null, args)
+		opts.success = _success.bind(null, args);
+		opts.error = _failure.bind(null, args);
 
 		api.ajax(sb.ext.merge(opts, overrides||{}));
 	}
@@ -155,7 +155,7 @@ define(['sb_light/utils/ext','sb_light/api/state', 'sb_light/globals'], function
 	}
 	
 	var _checkContext = 0;
-	var _checkTimeout = 3000
+	var _checkTimeout = 3000;
 	var _failedArgs = null;
 	function _watchConnection() {
 		sb.ext.debug("Watching Connection ", ST.context("session"), _checkContext);

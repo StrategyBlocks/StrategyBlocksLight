@@ -11,7 +11,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 		progress: urls.BLOCKS_PROGRESS,
 		health: urls.BLOCKS_HEALTH,
 		extra_info: urls.BLOCKS_EXTRA_INFO
-	} 
+	};
 
 	var Model = _Model.extend({
 
@@ -40,8 +40,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 
 			var q = this._queues = {};
 			E.each(QUEUES, function(v,k) {
-				q[k] = sb.controller.idBufferQueueFactory(v, null, "block_ids", 100)
-			})
+				q[k] = sb.controller.idBufferQueueFactory(v, null, "block_ids", 100);
+			});
 			
 			this._super("blocks", sb.urls.MODEL_BLOCKS);
 		},
@@ -185,15 +185,16 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 			var ts = this._timestamp;
 
 			this._super(update);
-			
-			var self = this;
 
 			if(ts != this._timestamp) {
-				var q = this._queues;
-				E.each(this._queues, function(v, k) {
-					q[k].clear()
-				})
 				this._properties = {};
+				// clear queues on next tick
+				var q = this._queues;
+				setTimeout(function(){
+					E.each(q, function(v, k) {
+						q[k].clear();
+					});
+				}, 0);
 			}
 
 		}, 
@@ -336,8 +337,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 				is_root:(depth===0),
 				is_closed: !!b.closed,
 				is_branch_manager: (pinfo ? pinfo.is_branch_manager : b.is_manager),
-				is_link: (p && (p.is_link || pinfo.fake)) || false,
-				is_real_link: (p && pinfo.fake) || false,
+				is_link: (p && (p.is_link || (pinfo && pinfo.fake))) || false,
+				is_real_link: (p && pinfo && pinfo.fake) || false,
 				is_company: (b.sub_company_block ? true: false),
 				is_open: ((isNew || b.closed) ? false : true),
 				is_overdue: (overdueDays > 0),

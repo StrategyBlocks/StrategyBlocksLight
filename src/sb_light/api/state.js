@@ -327,7 +327,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 			// IF THOSE HLM elements exist
 			var url = sb.urls.url(m.urlDef);
 			var cb = _handleModelResponse.bind(state,model);
-			sb.api.get(url, null, cb);
+			sb.api.get(url, null, cb, null, null, {data: {}});
 		}
 	};
 	
@@ -485,7 +485,7 @@ define(["sb_light/globals", "sb_light/utils/ext"], function(sb,E) {
 		var key = model.responseKey || model.name;
 		var m = res[key] || res;
 		
-		if(model.raw() === null && m) {
+		if(m) {
 			if(E.isArray(m)) {
 				m = m.reduce( (function(prev,el) {
 					if(!el.id) {
