@@ -313,6 +313,7 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 			var levelPos = E._.padStart( (""+(1+pos)), cLenLen, "0"); 
 			var overdueDays =  !b.closed && E.first(E.max(0, D.range(b.end_date, "today")), 0);
 
+			var groups_inherited = JSON.parse(b.group_expression_inherited || "[]");
 
 			b = pm[bpath] = E.merge(E.merge(b, pinfo), {
 				title_lower: E.lower(b.title),
@@ -352,8 +353,8 @@ define(['sb_light/models/_abstractModel','sb_light/globals','sb_light/api/urls',
 				parent_title: (p ? p.title : ""),
 				schema:schema,
 				variance_progress: E.variance(b.percent_progress, b.expected_progress),
-				groups_inherited: sb.groups.parseExpression(b.group_expression_inherited, true),
-				groups: b.group_ids.concat(sb.groups.parseExpression(b.group_expression_inherited, true)),
+				groups_inherited: groups_inherited ,
+				groups: b.group_ids.concat(groups_inherited),
 				ownership: 	(b.owner_id == uid ? "owned" : 
 							(b.manager_id == uid ? "managed" : 
 							(b.ownership_state == "watched" ? "watched" : "none") ) ),
