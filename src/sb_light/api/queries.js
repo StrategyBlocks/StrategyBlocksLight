@@ -41,7 +41,7 @@ define(['sb_light/globals',
 	};
 
 	q.customFieldsRestricted = function() {
-		var fields = sb.models.rawArray("custom_fields");
+		var fields = sb.models.rawArray("custom_fields") || [];
 		if(q.isAdmin()) { return fields; }
 		return fields.filter(function(field) { return !field.external; });
 	};
